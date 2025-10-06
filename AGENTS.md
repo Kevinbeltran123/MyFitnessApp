@@ -1,4 +1,44 @@
-# Fitness Tracker App - Development Guidelines
+Eres un desarrollador Flutter experto. Necesito que inicies un proyecto fitness tracker con lo esencial para empezar:
+
+## TAREA PRINCIPAL
+Crear la estructura base del proyecto "my_fitness_tracker" que consume APIs de nutrición y ejercicios.
+
+## PASOS ESPECÍFICOS:
+
+### 1. ESTRUCTURA DE CARPETAS
+Crea solo estas carpetas dentro de `lib/`:Eres un desarrollador Flutter experto. Necesito que inicies un proyecto fitness tracker con lo esencial para empezar:
+
+## TAREA PRINCIPAL
+Crear la estructura base del proyecto "my_fitness_tracker" que consume APIs de nutrición y ejercicios.
+
+## PASOS ESPECÍFICOS:
+
+### 1. ESTRUCTURA DE CARPETAS
+Crea solo estas carpetas dentro de `lib/`:Eres un desarrollador Flutter experto. Necesito que inicies un proyecto fitness tracker con lo esencial para empezar:
+
+## TAREA PRINCIPAL
+Crear la estructura base del proyecto "my_fitness_tracker" que consume APIs de nutrición y ejercicios.
+
+## PASOS ESPECÍFICOS:
+
+### 1. ESTRUCTURA DE CARPETAS
+Crea solo estas carpetas dentro de `lib/`:Eres un desarrollador Flutter experto. Necesito que inicies un proyecto fitness tracker con lo esencial para empezar:
+
+## TAREA PRINCIPAL
+Crear la estructura base del proyecto "my_fitness_tracker" que consume APIs de nutrición y ejercicios.
+
+## PASOS ESPECÍFICOS:
+
+### 1. ESTRUCTURA DE CARPETAS
+Crea solo estas carpetas dentro de `lib/`:Eres un desarrollador Flutter experto. Necesito que inicies un proyecto fitness tracker con lo esencial para empezar:
+
+## TAREA PRINCIPAL
+Crear la estructura base del proyecto "my_fitness_tracker" que consume APIs de nutrición y ejercicios.
+
+## PASOS ESPECÍFICOS:
+
+### 1. ESTRUCTURA DE CARPETAS
+Crea solo estas carpetas dentro de `lib/`:# Fitness Tracker App - Development Guidelines
 
 ## Project Overview
 This ## Coding Style & Naming Conventions
