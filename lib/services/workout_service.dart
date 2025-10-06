@@ -7,6 +7,7 @@ class WorkoutService {
   WorkoutService(this._client);
 
   final ApiClient _client;
+  WorkoutAvailableFilters? _cachedFilters;
 
   Uri _buildUri(String path, [Map<String, String?>? queryParameters]) {
     final base = Uri.parse(AppConstants.workoutsBaseUrl);
@@ -52,13 +53,52 @@ class WorkoutService {
 
   Future<WorkoutPlansResponse> searchExercises(
     String query, {
+    String? muscle,
+    String? equipment,
     int limit = 10,
     int offset = 0,
     double threshold = 0.3,
   }) async {
     final trimmedQuery = query.trim();
-    if (trimmedQuery.isEmpty) {
-      throw const FormatException('El término de búsqueda no puede estar vacío.');
+    final normalizedMuscle = _normalizeFilterValue(muscle);
+    final normalizedEquipment = _normalizeFilterValue(equipment);
+    final bool hasQuery = trimmedQuery.isNotEmpty;
+    final bool hasFilters =
+        (normalizedMuscle != null && normalizedMuscle.isNotEmpty) ||
+        (normalizedEquipment != null && normalizedEquipment.isNotEmpty);
+
+    if (!hasQuery && !hasFilters) {
+      return fetchExercises(limit: limit, offset: offset);
+    }
+
+    if (hasFilters) {
+      final response = await filterExercises(
+        targetMuscle: normalizedMuscle,
+        equipment: normalizedEquipment,
+        limit: limit,
+        offset: offset,
+        sortBy: hasQuery ? 'name' : 'targetMuscles',
+        sortOrder: 'asc',
+      );
+
+      if (!hasQuery) {
+        return response;
+      }
+
+      final filteredPlans = response.plans
+          .where(
+            (WorkoutPlan plan) => plan.name.toLowerCase().contains(
+                  trimmedQuery.toLowerCase(),
+                ),
+          )
+          .toList(growable: false);
+
+      final metadata = response.metadata?.copyWith(
+        totalExercises: filteredPlans.length,
+        totalPages: response.metadata?.totalPages ?? 1,
+      );
+
+      return response.copyWith(plans: filteredPlans, metadata: metadata);
     }
 
     final uri = _buildUri(
@@ -194,11 +234,50 @@ class WorkoutService {
     return WorkoutPlanDetailResponse.fromJson(json).plan;
   }
 
+  Future<WorkoutAvailableFilters> getAvailableFilters() async {
+    if (_cachedFilters != null) {
+      return _cachedFilters!;
+    }
+    const muscles = <String>[
+      'abs',
+      'chest',
+      'back',
+      'shoulders',
+      'arms',
+      'legs',
+      'triceps',
+      'biceps',
+    ];
+    const equipments = <String>[
+      'body weight',
+      'barbell',
+      'dumbbell',
+      'machine',
+      'cable',
+    ];
+    _cachedFilters = const WorkoutAvailableFilters(
+      muscles: muscles,
+      equipments: equipments,
+    );
+    return _cachedFilters!;
+  }
+
   void _ensureSuccess(Map<String, dynamic> json) {
     if (json['success'] == true) {
       return;
     }
     final message = json['message']?.toString() ?? 'La API de ejercicios respondió con un error.';
     throw ApiException(message);
+  }
+
+  String? _normalizeFilterValue(String? value) {
+    if (value == null) {
+      return null;
+    }
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+    return trimmed.toLowerCase();
   }
 }

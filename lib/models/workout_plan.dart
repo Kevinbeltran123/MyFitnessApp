@@ -40,6 +40,18 @@ class WorkoutPlansResponse {
       'data': plans.map((WorkoutPlan plan) => plan.toJson()).toList(),
     };
   }
+
+  WorkoutPlansResponse copyWith({
+    bool? success,
+    WorkoutPaginationMetadata? metadata,
+    List<WorkoutPlan>? plans,
+  }) {
+    return WorkoutPlansResponse(
+      success: success ?? this.success,
+      metadata: metadata ?? this.metadata,
+      plans: plans ?? this.plans,
+    );
+  }
 }
 
 class WorkoutPlanDetailResponse {
@@ -97,6 +109,22 @@ class WorkoutPaginationMetadata {
       'previousPage': previousPage?.toString(),
       'nextPage': nextPage?.toString(),
     };
+  }
+
+  WorkoutPaginationMetadata copyWith({
+    int? totalPages,
+    int? totalExercises,
+    int? currentPage,
+    Uri? previousPage,
+    Uri? nextPage,
+  }) {
+    return WorkoutPaginationMetadata(
+      totalPages: totalPages ?? this.totalPages,
+      totalExercises: totalExercises ?? this.totalExercises,
+      currentPage: currentPage ?? this.currentPage,
+      previousPage: previousPage ?? this.previousPage,
+      nextPage: nextPage ?? this.nextPage,
+    );
   }
 }
 
@@ -162,6 +190,26 @@ class WorkoutPlan {
 
   String get primaryTarget =>
       targetMuscles.isNotEmpty ? targetMuscles.first : 'General';
+}
+
+class WorkoutAvailableFilters {
+  const WorkoutAvailableFilters({
+    required this.muscles,
+    required this.equipments,
+  });
+
+  final List<String> muscles;
+  final List<String> equipments;
+
+  WorkoutAvailableFilters copyWith({
+    List<String>? muscles,
+    List<String>? equipments,
+  }) {
+    return WorkoutAvailableFilters(
+      muscles: muscles ?? this.muscles,
+      equipments: equipments ?? this.equipments,
+    );
+  }
 }
 
 Uri? _tryParseUri(Object? value) {
