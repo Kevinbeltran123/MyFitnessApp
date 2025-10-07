@@ -3,11 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:my_fitness_tracker/models/workout_plan.dart';
 
 class ExerciseGridItem extends StatelessWidget {
-  const ExerciseGridItem({
-    super.key,
-    required this.plan,
-    required this.onTap,
-  });
+  const ExerciseGridItem({super.key, required this.plan, required this.onTap});
 
   final WorkoutPlan plan;
   final VoidCallback onTap;
@@ -16,7 +12,9 @@ class ExerciseGridItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = plan.primaryTarget;
-    final equipment = plan.equipments.isNotEmpty ? plan.equipments.first : 'Sin equipo';
+    final equipment = plan.equipments.isNotEmpty
+        ? plan.equipments.first
+        : 'Sin equipo';
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -74,7 +72,8 @@ class ExerciseGridPlaceholder extends StatefulWidget {
   const ExerciseGridPlaceholder({super.key});
 
   @override
-  State<ExerciseGridPlaceholder> createState() => _ExerciseGridPlaceholderState();
+  State<ExerciseGridPlaceholder> createState() =>
+      _ExerciseGridPlaceholderState();
 }
 
 class _ExerciseGridPlaceholderState extends State<ExerciseGridPlaceholder>
@@ -103,9 +102,7 @@ class _ExerciseGridPlaceholderState extends State<ExerciseGridPlaceholder>
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Column(
         children: <Widget>[
-          Expanded(
-            child: ShimmerBox(controller: _controller),
-          ),
+          Expanded(child: ShimmerBox(controller: _controller)),
           const Padding(
             padding: EdgeInsets.all(12),
             child: Column(
@@ -198,12 +195,13 @@ class _ExerciseImage extends StatelessWidget {
       child: Image.network(
         gifUrl,
         fit: BoxFit.cover,
-        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? progress) {
-          if (progress == null) {
-            return child;
-          }
-          return placeholder;
-        },
+        loadingBuilder:
+            (BuildContext context, Widget child, ImageChunkEvent? progress) {
+              if (progress == null) {
+                return child;
+              }
+              return placeholder;
+            },
         errorBuilder: (_, __, ___) => placeholder,
       ),
     );

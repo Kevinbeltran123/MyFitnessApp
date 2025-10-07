@@ -33,24 +33,20 @@ class WorkoutDetailSheet extends StatelessWidget {
                   width: 48,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                    color: theme.colorScheme.onSurfaceVariant.withValues(
+                      alpha: 0.2,
+                    ),
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
-                plan.name,
-                style: theme.textTheme.headlineSmall,
-              ),
+              Text(plan.name, style: theme.textTheme.headlineSmall),
               const SizedBox(height: 16),
               if (plan.hasGif)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    plan.gifUrl,
-                    fit: BoxFit.cover,
-                  ),
+                  child: Image.network(plan.gifUrl, fit: BoxFit.cover),
                 ),
               const SizedBox(height: 16),
               _TagSection(
@@ -58,15 +54,9 @@ class WorkoutDetailSheet extends StatelessWidget {
                 values: plan.targetMuscles,
               ),
               const SizedBox(height: 12),
-              _TagSection(
-                label: 'Partes del cuerpo',
-                values: plan.bodyParts,
-              ),
+              _TagSection(label: 'Partes del cuerpo', values: plan.bodyParts),
               const SizedBox(height: 12),
-              _TagSection(
-                label: 'Equipamiento',
-                values: plan.equipments,
-              ),
+              _TagSection(label: 'Equipamiento', values: plan.equipments),
               const SizedBox(height: 12),
               if (plan.secondaryMuscles.isNotEmpty)
                 _TagSection(
@@ -74,26 +64,20 @@ class WorkoutDetailSheet extends StatelessWidget {
                   values: plan.secondaryMuscles,
                 ),
               const SizedBox(height: 20),
-              Text(
-                'Instrucciones',
-                style: theme.textTheme.titleMedium,
-              ),
+              Text('Instrucciones', style: theme.textTheme.titleMedium),
               const SizedBox(height: 12),
-              ...plan.instructions
-                  .asMap()
-                  .entries
-                  .map(
-                    (MapEntry<int, String> entry) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text('${entry.key + 1}. '),
-                          Expanded(child: Text(entry.value)),
-                        ],
-                      ),
-                    ),
+              ...plan.instructions.asMap().entries.map(
+                (MapEntry<int, String> entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text('${entry.key + 1}. '),
+                      Expanded(child: Text(entry.value)),
+                    ],
                   ),
+                ),
+              ),
             ],
           ),
         );
@@ -103,10 +87,7 @@ class WorkoutDetailSheet extends StatelessWidget {
 }
 
 class _TagSection extends StatelessWidget {
-  const _TagSection({
-    required this.label,
-    required this.values,
-  });
+  const _TagSection({required this.label, required this.values});
 
   final String label;
   final List<String> values;
@@ -131,8 +112,8 @@ class _TagSection extends StatelessWidget {
               .map(
                 (String value) => Chip(
                   label: Text(value),
-                  backgroundColor:
-                      theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+                  backgroundColor: theme.colorScheme.primaryContainer
+                      .withValues(alpha: 0.3),
                 ),
               )
               .toList(),

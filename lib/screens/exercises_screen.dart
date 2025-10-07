@@ -87,14 +87,18 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
     }
 
     final String query = _searchController.text.trim();
-    final String? muscle = _selectedMuscles.isEmpty ? null : _selectedMuscles.first;
-    final String? equipment =
-        _selectedEquipments.isEmpty ? null : _selectedEquipments.first;
+    final String? muscle = _selectedMuscles.isEmpty
+        ? null
+        : _selectedMuscles.first;
+    final String? equipment = _selectedEquipments.isEmpty
+        ? null
+        : _selectedEquipments.first;
     final String cacheKey = _buildCacheKey(query, muscle, equipment);
 
     final List<WorkoutPlan>? cachedResults = reset ? _cache[cacheKey] : null;
-    final WorkoutPaginationMetadata? cachedMetadata =
-        reset ? _metadataCache[cacheKey] : null;
+    final WorkoutPaginationMetadata? cachedMetadata = reset
+        ? _metadataCache[cacheKey]
+        : null;
 
     if (reset) {
       setState(() {
@@ -103,7 +107,9 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
         if (cachedResults != null) {
           _results = List<WorkoutPlan>.from(cachedResults);
           _pagination = cachedMetadata;
-          _hasMore = (_pagination?.totalExercises ?? _results.length) > _results.length;
+          _hasMore =
+              (_pagination?.totalExercises ?? _results.length) >
+              _results.length;
         } else {
           _results = <WorkoutPlan>[];
           _hasMore = true;
@@ -139,7 +145,9 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
         if (reset) {
           _results = response.plans;
         } else {
-          final Set<String> seenIds = _results.map((plan) => plan.exerciseId).toSet();
+          final Set<String> seenIds = _results
+              .map((plan) => plan.exerciseId)
+              .toSet();
           final List<WorkoutPlan> updated = List<WorkoutPlan>.from(_results);
           for (final WorkoutPlan plan in response.plans) {
             if (seenIds.add(plan.exerciseId)) {
@@ -284,9 +292,7 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
               label: const Text('Limpiar filtros'),
             )
           : null,
-      body: SafeArea(
-        child: _buildBody(filters),
-      ),
+      body: SafeArea(child: _buildBody(filters)),
     );
   }
 
@@ -336,9 +342,7 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
             ),
           ),
           _buildGridSliver(),
-          SliverToBoxAdapter(
-            child: SizedBox(height: _isLoadingMore ? 72 : 16),
-          ),
+          SliverToBoxAdapter(child: SizedBox(height: _isLoadingMore ? 72 : 16)),
         ],
       ),
     );
@@ -377,12 +381,12 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
               crossAxisSpacing: 16,
               childAspectRatio: 0.82,
             ),
-            delegate: SliverChildBuilderDelegate(
-              (BuildContext context, int index) {
-                return const ExerciseGridPlaceholder();
-              },
-              childCount: 6,
-            ),
+            delegate: SliverChildBuilderDelegate((
+              BuildContext context,
+              int index,
+            ) {
+              return const ExerciseGridPlaceholder();
+            }, childCount: 6),
           ),
         ),
       ],
@@ -429,19 +433,13 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
           crossAxisSpacing: 16,
           childAspectRatio: 0.82,
         ),
-        delegate: SliverChildBuilderDelegate(
-          (BuildContext context, int index) {
-            if (index >= _results.length) {
-              return const ExerciseGridPlaceholder();
-            }
-            final WorkoutPlan plan = _results[index];
-            return ExerciseGridItem(
-              plan: plan,
-              onTap: () => _openDetail(plan),
-            );
-          },
-          childCount: _results.length + (_isLoadingMore ? 2 : 0),
-        ),
+        delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
+          if (index >= _results.length) {
+            return const ExerciseGridPlaceholder();
+          }
+          final WorkoutPlan plan = _results[index];
+          return ExerciseGridItem(plan: plan, onTap: () => _openDetail(plan));
+        }, childCount: _results.length + (_isLoadingMore ? 2 : 0)),
       ),
     );
   }

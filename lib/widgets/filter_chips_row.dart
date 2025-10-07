@@ -66,25 +66,20 @@ class FilterChipsRow extends StatelessWidget {
 
     final theme = Theme.of(context);
     return <Widget>[
-      Text(
-        '$label:',
-        style: theme.textTheme.labelLarge,
-      ),
+      Text('$label:', style: theme.textTheme.labelLarge),
       const SizedBox(width: 8),
-      ...values.map(
-        (String value) {
-          final isSelected = selected.contains(value);
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(_formatLabel(value)),
-              selected: isSelected,
-              onSelected: (_) => onToggle(value),
-              selectedColor: color,
-            ),
-          );
-        },
-      ),
+      ...values.map((String value) {
+        final isSelected = selected.contains(value);
+        return Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: FilterChip(
+            label: Text(_formatLabel(value)),
+            selected: isSelected,
+            onSelected: (_) => onToggle(value),
+            selectedColor: color,
+          ),
+        );
+      }),
     ];
   }
 }

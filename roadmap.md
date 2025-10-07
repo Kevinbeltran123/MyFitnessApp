@@ -27,15 +27,15 @@
 ### 💾 Sprint 2: Persistencia y Rutinas (2.5 semanas)
 
 #### 🟥 Pre-Implementation Setup — Sistema de Rutinas Personalizadas
-- [ ] (1 d) Modelar entidades: `Routine`, `RoutineExercise`, `RoutineSession`, `SetLog` (UML + doc)
-- [ ] (6 h) Diseñar esquema Isar: colecciones, índices (por fecha, músculo, rutina)
-- [ ] (4 h) Identificar paquetes UI adicionales (`go_router: ^14.0.0`, `flex_color_scheme: ^7.3.0` si aplica)
+- [x] (1 d) Modelar entidades: `Routine`, `RoutineExercise`, `RoutineSession`, `SetLog` (UML + doc)
+- [x] (6 h) Diseñar esquema Isar: colecciones, índices (por fecha, músculo, rutina)
+- [x] (4 h) Identificar paquetes UI adicionales (`go_router: ^14.0.0`, `flex_color_scheme: ^7.3.0` si aplica)
 - [ ] (1 d) Wireframes: `RoutineListScreen`, `RoutineBuilderScreen`, `RoutineDetailScreen`, flujos en FigJam
 - [ ] (4 h) Diagrama de flujo de usuario desde creación → ejecución → registro
 
 #### 🟦 Backend/Data Layer — Rutinas
-- [ ] (2 d) Implementar colecciones Isar y migraciones (scripts `isar_schema.g.dart`)
-- [ ] (1 d) Crear DAO/Repositories (`RoutineRepository`, `RoutineSessionRepository`) con interfaces en `domain`
+- [x] (2 d) Implementar colecciones Isar y migraciones (scripts `isar_schema.g.dart`)
+- [x] (1 d) Crear DAO/Repositories (`RoutineRepository`, `RoutineSessionRepository`) con interfaces en `domain`
 - [ ] (1 d) Servicios de negocio `RoutineService` (validaciones series/reps > 0, clonado de rutinas)
 - [ ] (6 h) Cacheo en memoria + invalidación (usar `riverpod` `AsyncNotifier`)
 - [ ] (6 h) Implementar sincronización diferida placeholder (preparar para backend futuro)

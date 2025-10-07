@@ -36,15 +36,12 @@ class WorkoutService {
     String sortBy = 'name',
     String sortOrder = 'asc',
   }) async {
-    final uri = _buildUri(
-      '/exercises',
-      <String, String?>{
-        'limit': limit.clamp(1, 100).toString(),
-        if (offset > 0) 'offset': offset.toString(),
-        'sortBy': sortBy,
-        'sortOrder': sortOrder,
-      },
-    );
+    final uri = _buildUri('/exercises', <String, String?>{
+      'limit': limit.clamp(1, 100).toString(),
+      if (offset > 0) 'offset': offset.toString(),
+      'sortBy': sortBy,
+      'sortOrder': sortOrder,
+    });
 
     final json = await _client.get(uri);
     _ensureSuccess(json);
@@ -87,9 +84,8 @@ class WorkoutService {
 
       final filteredPlans = response.plans
           .where(
-            (WorkoutPlan plan) => plan.name.toLowerCase().contains(
-                  trimmedQuery.toLowerCase(),
-                ),
+            (WorkoutPlan plan) =>
+                plan.name.toLowerCase().contains(trimmedQuery.toLowerCase()),
           )
           .toList(growable: false);
 
@@ -101,15 +97,12 @@ class WorkoutService {
       return response.copyWith(plans: filteredPlans, metadata: metadata);
     }
 
-    final uri = _buildUri(
-      '/exercises/search',
-      <String, String?>{
-        'q': trimmedQuery,
-        'limit': limit.clamp(1, 100).toString(),
-        if (offset > 0) 'offset': offset.toString(),
-        'threshold': threshold.toStringAsFixed(1),
-      },
-    );
+    final uri = _buildUri('/exercises/search', <String, String?>{
+      'q': trimmedQuery,
+      'limit': limit.clamp(1, 100).toString(),
+      if (offset > 0) 'offset': offset.toString(),
+      'threshold': threshold.toStringAsFixed(1),
+    });
 
     final json = await _client.get(uri);
     _ensureSuccess(json);
@@ -133,18 +126,15 @@ class WorkoutService {
       );
     }
 
-    final uri = _buildUri(
-      '/exercises/filter',
-      <String, String?>{
-        if (targetMuscle != null) 'target': targetMuscle.trim(),
-        if (bodyPart != null) 'bodyPart': bodyPart.trim(),
-        if (equipment != null) 'equipment': equipment.trim(),
-        'limit': limit.clamp(1, 100).toString(),
-        if (offset > 0) 'offset': offset.toString(),
-        'sortBy': sortBy,
-        'sortOrder': sortOrder,
-      },
-    );
+    final uri = _buildUri('/exercises/filter', <String, String?>{
+      if (targetMuscle != null) 'target': targetMuscle.trim(),
+      if (bodyPart != null) 'bodyPart': bodyPart.trim(),
+      if (equipment != null) 'equipment': equipment.trim(),
+      'limit': limit.clamp(1, 100).toString(),
+      if (offset > 0) 'offset': offset.toString(),
+      'sortBy': sortBy,
+      'sortOrder': sortOrder,
+    });
 
     final json = await _client.get(uri);
     _ensureSuccess(json);
@@ -161,13 +151,10 @@ class WorkoutService {
       throw const FormatException('La parte del cuerpo no puede estar vacía.');
     }
 
-    final uri = _buildUri(
-      '/bodyparts/$normalized/exercises',
-      <String, String?>{
-        'limit': limit.clamp(1, 100).toString(),
-        if (offset > 0) 'offset': offset.toString(),
-      },
-    );
+    final uri = _buildUri('/bodyparts/$normalized/exercises', <String, String?>{
+      'limit': limit.clamp(1, 100).toString(),
+      if (offset > 0) 'offset': offset.toString(),
+    });
 
     final json = await _client.get(uri);
     _ensureSuccess(json);
@@ -184,13 +171,11 @@ class WorkoutService {
       throw const FormatException('El nombre del equipo no puede estar vacío.');
     }
 
-    final uri = _buildUri(
-      '/equipments/$normalized/exercises',
-      <String, String?>{
-        'limit': limit.clamp(1, 100).toString(),
-        if (offset > 0) 'offset': offset.toString(),
-      },
-    );
+    final uri =
+        _buildUri('/equipments/$normalized/exercises', <String, String?>{
+          'limit': limit.clamp(1, 100).toString(),
+          if (offset > 0) 'offset': offset.toString(),
+        });
 
     final json = await _client.get(uri);
     _ensureSuccess(json);
@@ -205,17 +190,16 @@ class WorkoutService {
   }) async {
     final normalized = muscle.trim();
     if (normalized.isEmpty) {
-      throw const FormatException('El nombre del músculo no puede estar vacío.');
+      throw const FormatException(
+        'El nombre del músculo no puede estar vacío.',
+      );
     }
 
-    final uri = _buildUri(
-      '/muscles/$normalized/exercises',
-      <String, String?>{
-        'limit': limit.clamp(1, 100).toString(),
-        if (offset > 0) 'offset': offset.toString(),
-        'includeSecondary': includeSecondary.toString(),
-      },
-    );
+    final uri = _buildUri('/muscles/$normalized/exercises', <String, String?>{
+      'limit': limit.clamp(1, 100).toString(),
+      if (offset > 0) 'offset': offset.toString(),
+      'includeSecondary': includeSecondary.toString(),
+    });
 
     final json = await _client.get(uri);
     _ensureSuccess(json);
@@ -225,7 +209,9 @@ class WorkoutService {
   Future<WorkoutPlan> fetchById(String exerciseId) async {
     final normalized = exerciseId.trim();
     if (normalized.isEmpty) {
-      throw const FormatException('El identificador del ejercicio es obligatorio.');
+      throw const FormatException(
+        'El identificador del ejercicio es obligatorio.',
+      );
     }
 
     final uri = _buildUri('/exercises/$normalized');
@@ -266,7 +252,9 @@ class WorkoutService {
     if (json['success'] == true) {
       return;
     }
-    final message = json['message']?.toString() ?? 'La API de ejercicios respondió con un error.';
+    final message =
+        json['message']?.toString() ??
+        'La API de ejercicios respondió con un error.';
     throw ApiException(message);
   }
 

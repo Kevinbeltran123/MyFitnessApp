@@ -2,9 +2,10 @@
 
 ## 1. ESTADO ACTUAL
 - 🧭 **Funcionalidades vigentes**: inicio en `lib/main.dart` con theming Material 3, `HomeScreen` con resumen diario (ejercicios destacados y contador de interacciones), explorador de ejercicios con búsqueda, filtros y paginación en `ExercisesScreen`, componentes reutilizables (`SummaryCard`, `ExerciseGridItem`, `WorkoutDetailSheet`) y capa de red tipada (`ApiClient`, `WorkoutService`).
-- 🏗️ **Arquitectura**: estructura modular por carpetas (`lib/screens`, `lib/models`, `lib/services`, `lib/widgets`, `lib/utils`); patrón de servicio + modelos inmutables; gestión de estado local por `StatefulWidget`; caché en memoria para resultados de búsqueda en `ExercisesScreen`; manejo de excepciones con utilitarios en `lib/utils`.
+- 🏗️ **Arquitectura**: transición en curso hacia capas (`lib/presentation`, `lib/application`, `lib/domain`, `lib/infrastructure`, `lib/shared`) documentada en `ARCHITECTURE.md`; se mantiene estructura original mientras se migran módulos; gestión de estado local por `StatefulWidget` con preparación para Riverpod.
 - 🌐 **APIs integradas**: ExerciseDB (`AppConstants.workoutsBaseUrl`) activo para catálogos de ejercicios; no existen dependencias vigentes hacia servicios de nutrición.
 - ✅ **Depuración completada**: se eliminaron `lib/models/nutrition_entry.dart`, `lib/services/nutrition_service.dart`, los campos de nutrición en `HomeScreen` y `AppConstants`, dejando la app enfocada exclusivamente en entrenamiento.
+- 🧱 **Infraestructura nueva**: modelos de dominio de rutinas (`lib/domain/routines`) y esquemas Isar (`lib/infrastructure/routines`) listos, con repositorio `RoutineRepositoryIsar` y providers Riverpod iniciales (`lib/presentation/home/home_providers.dart`).
 
 ## 2. PENDIENTES IDENTIFICADOS
 - 💾 Persistencia fuera de memoria para búsquedas y filtros frecuentes (hoy solo hay caché volátil en `_cache`).

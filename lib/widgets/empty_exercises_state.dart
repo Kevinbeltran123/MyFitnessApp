@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 
 class EmptyExercisesState extends StatelessWidget {
-  const EmptyExercisesState({
-    super.key,
-    required this.message,
-    this.onReset,
-  });
+  const EmptyExercisesState({super.key, required this.message, this.onReset});
 
   final String message;
   final VoidCallback? onReset;
@@ -19,11 +15,7 @@ class EmptyExercisesState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(
-              Icons.search_off,
-              size: 56,
-              color: theme.colorScheme.primary,
-            ),
+            Icon(Icons.search_off, size: 56, color: theme.colorScheme.primary),
             const SizedBox(height: 16),
             Text(
               message,

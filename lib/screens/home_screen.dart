@@ -36,16 +36,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final today = DateTime.now();
     try {
       final workoutsResponse = await _workoutService.fetchExercises(limit: 6);
-      return _HomeSummary(
-        date: today,
-        workouts: workoutsResponse.plans,
-      );
+      return _HomeSummary(date: today, workouts: workoutsResponse.plans);
     } catch (error, stackTrace) {
       debugPrint('Error loading workouts: $error\n$stackTrace');
-      return _HomeSummary(
-        date: today,
-        workouts: const <WorkoutPlan>[],
-      );
+      return _HomeSummary(date: today, workouts: const <WorkoutPlan>[]);
     }
   }
 
@@ -83,51 +77,52 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: FutureBuilder<_HomeSummary>(
           future: _summaryFuture,
-          builder: (BuildContext context, AsyncSnapshot<_HomeSummary> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
+          builder:
+              (BuildContext context, AsyncSnapshot<_HomeSummary> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-            if (snapshot.hasError || !snapshot.hasData) {
-              return _ErrorView(onRetry: _refresh);
-            }
+                if (snapshot.hasError || !snapshot.hasData) {
+                  return _ErrorView(onRetry: _refresh);
+                }
 
-            final summary = snapshot.data!;
-            final exercisesExplored = summary.workouts.length;
-            final activityMoments = exercisesExplored + _searchInteractions;
+                final summary = snapshot.data!;
+                final exercisesExplored = summary.workouts.length;
+                final activityMoments = exercisesExplored + _searchInteractions;
 
-            return Column(
-              children: <Widget>[
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: _refresh,
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: <Widget>[
-                          _HeaderCard(date: summary.date),
-                          const SizedBox(height: 24),
-                          _ProgressCard(
-                            exercises: exercisesExplored,
-                            searches: _searchInteractions,
-                            activityMoments: activityMoments,
+                return Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: RefreshIndicator(
+                        onRefresh: _refresh,
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: <Widget>[
+                              _HeaderCard(date: summary.date),
+                              const SizedBox(height: 24),
+                              _ProgressCard(
+                                exercises: exercisesExplored,
+                                searches: _searchInteractions,
+                                activityMoments: activityMoments,
+                              ),
+                              const SizedBox(height: 24),
+                              _SpotlightSection(workouts: summary.workouts),
+                            ],
                           ),
-                          const SizedBox(height: 24),
-                          _SpotlightSection(workouts: summary.workouts),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                _FixedActionBar(
-                  onMealsTap: _openMeals,
-                  onExercisesTap: _openExercises,
-                ),
-              ],
-            );
-          },
+                    _FixedActionBar(
+                      onMealsTap: _openMeals,
+                      onExercisesTap: _openExercises,
+                    ),
+                  ],
+                );
+              },
         ),
       ),
     );
@@ -135,10 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _HomeSummary {
-  const _HomeSummary({
-    required this.date,
-    required this.workouts,
-  });
+  const _HomeSummary({required this.date, required this.workouts});
 
   final DateTime date;
   final List<WorkoutPlan> workouts;
@@ -240,7 +232,11 @@ class _ProgressCard extends StatelessWidget {
         children: <Widget>[
           Row(
             children: <Widget>[
-              Icon(Icons.bar_chart_rounded, color: colorScheme.primary, size: 28),
+              Icon(
+                Icons.bar_chart_rounded,
+                color: colorScheme.primary,
+                size: 28,
+              ),
               const SizedBox(width: 12),
               Text(
                 'Tu progreso hoy 📊',
@@ -380,9 +376,7 @@ class _SpotlightSection extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   workout.instructions.take(2).join('\n'),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    height: 1.4,
-                  ),
+                  style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
                 ),
               ],
             )
@@ -416,7 +410,10 @@ class _TagChip extends StatelessWidget {
 }
 
 class _FixedActionBar extends StatelessWidget {
-  const _FixedActionBar({required this.onMealsTap, required this.onExercisesTap});
+  const _FixedActionBar({
+    required this.onMealsTap,
+    required this.onExercisesTap,
+  });
 
   final VoidCallback onMealsTap;
   final VoidCallback onExercisesTap;
