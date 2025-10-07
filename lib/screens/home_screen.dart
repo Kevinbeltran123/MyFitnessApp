@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
 import 'package:my_fitness_tracker/models/workout_plan.dart';
+import 'package:my_fitness_tracker/presentation/home/home_providers.dart';
+import 'package:my_fitness_tracker/presentation/routines/routine_list_controller.dart';
+import 'package:my_fitness_tracker/presentation/routines/routine_list_screen.dart';
 import 'package:my_fitness_tracker/screens/exercises_screen.dart';
-import 'package:my_fitness_tracker/services/api_client.dart';
 import 'package:my_fitness_tracker/services/workout_service.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  late final ApiClient _apiClient;
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   late final WorkoutService _workoutService;
   late Future<_HomeSummary> _summaryFuture;
   int _searchInteractions = 0;
@@ -21,15 +23,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _apiClient = ApiClient();
-    _workoutService = WorkoutService(_apiClient);
+    final workoutServiceAsync = ref.read(workoutServiceProvider);
+    _workoutService = workoutServiceAsync;
     _summaryFuture = _loadSummary();
-  }
-
-  @override
-  void dispose() {
-    _apiClient.close();
-    super.dispose();
   }
 
   Future<_HomeSummary> _loadSummary() async {
@@ -51,10 +47,10 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _openMeals() {
+  void _openComingSoon() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('La sección de comidas estará disponible pronto.'),
+        content: Text('Las métricas corporales llegarán muy pronto.'),
       ),
     );
   }
@@ -68,9 +64,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _openRoutines() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const RoutineListScreen(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final routinesAsync = ref.watch(routineListControllerProvider);
+    final routineCount = routinesAsync.maybeWhen(
+      data: (List<Routine> routines) => routines.length,
+      orElse: () => 0,
+    );
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -89,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 final summary = snapshot.data!;
                 final exercisesExplored = summary.workouts.length;
-                final activityMoments = exercisesExplored + _searchInteractions;
+                final activityMoments = exercisesExplored + _searchInteractions + routineCount;
 
                 return Column(
                   children: <Widget>[
@@ -108,16 +117,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                 exercises: exercisesExplored,
                                 searches: _searchInteractions,
                                 activityMoments: activityMoments,
+                                routines: routineCount,
                               ),
                               const SizedBox(height: 24),
                               _SpotlightSection(workouts: summary.workouts),
+                              const SizedBox(height: 24),
+                              routinesAsync.when(
+                                data: (List<Routine> routines) => GestureDetector(
+                                  onTap: _openRoutines,
+                                  child: _RoutineGlance(routines: routines),
+                                ),
+                                loading: () => const _RoutineGlance.loading(),
+                                error: (_, __) => const SizedBox.shrink(),
+                              ),
                             ],
                           ),
                         ),
                       ),
                     ),
                     _FixedActionBar(
-                      onMealsTap: _openMeals,
+                      onMetricsTap: _openComingSoon,
                       onExercisesTap: _openExercises,
                     ),
                   ],
@@ -203,11 +222,13 @@ class _ProgressCard extends StatelessWidget {
     required this.exercises,
     required this.searches,
     required this.activityMoments,
+    required this.routines,
   });
 
   final int exercises;
   final int searches;
   final int activityMoments;
+  final int routines;
 
   @override
   Widget build(BuildContext context) {
@@ -248,21 +269,27 @@ class _ProgressCard extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           _ProgressBullet(
+            icon: Icons.task_alt_rounded,
+            label: '$routines rutinas activas',
+            color: colorScheme.primary,
+          ),
+          const SizedBox(height: 12),
+          _ProgressBullet(
             icon: Icons.fitness_center,
             label: '$exercises entrenamientos explorados',
-            color: colorScheme.primary,
+            color: colorScheme.secondary,
           ),
           const SizedBox(height: 12),
           _ProgressBullet(
             icon: Icons.travel_explore,
             label: '$searches búsquedas realizadas',
-            color: colorScheme.secondary,
+            color: colorScheme.tertiary,
           ),
           const SizedBox(height: 12),
           _ProgressBullet(
             icon: Icons.bolt,
             label: '$activityMoments interacciones totales',
-            color: colorScheme.tertiary,
+            color: colorScheme.secondaryContainer,
           ),
         ],
       ),
@@ -393,6 +420,73 @@ class _SpotlightSection extends StatelessWidget {
   }
 }
 
+class _RoutineGlance extends StatelessWidget {
+  const _RoutineGlance({required this.routines});
+  const _RoutineGlance.loading() : routines = const <Routine>[];
+
+  final List<Routine> routines;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    if (routines.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Row(
+          children: <Widget>[
+            const Icon(Icons.flag_rounded),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Todavía no tienes rutinas activas. Crea la primera para comenzar a registrar tu progreso.',
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final preview = routines.take(3).map((Routine routine) => routine.name).join(' • ');
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Row(
+        children: <Widget>[
+          Icon(Icons.list_alt_rounded, color: theme.colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'Rutinas activas',
+                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  preview,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _TagChip extends StatelessWidget {
   const _TagChip(this.label);
 
@@ -411,11 +505,11 @@ class _TagChip extends StatelessWidget {
 
 class _FixedActionBar extends StatelessWidget {
   const _FixedActionBar({
-    required this.onMealsTap,
+    required this.onMetricsTap,
     required this.onExercisesTap,
   });
 
-  final VoidCallback onMealsTap;
+  final VoidCallback onMetricsTap;
   final VoidCallback onExercisesTap;
 
   @override
@@ -442,11 +536,11 @@ class _FixedActionBar extends StatelessWidget {
         children: <Widget>[
           Expanded(
             child: _BottomActionButton(
-              icon: '🍎',
-              label: 'COMIDAS',
+              icon: '📈',
+              label: 'MÉTRICAS',
               background: theme.colorScheme.primaryContainer,
               foreground: theme.colorScheme.onPrimaryContainer,
-              onTap: onMealsTap,
+              onTap: onMetricsTap,
             ),
           ),
           const SizedBox(width: 16),

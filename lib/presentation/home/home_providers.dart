@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_fitness_tracker/application/routines/create_routine.dart';
+import 'package:my_fitness_tracker/application/routines/routine_service.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_repository.dart';
 import 'package:my_fitness_tracker/infrastructure/isar/isar_providers.dart';
@@ -42,4 +43,9 @@ final createRoutineUseCaseProvider = Provider<AsyncValue<CreateRoutine>>((
 ) {
   final repoAsync = ref.watch(routineRepositoryProvider);
   return repoAsync.whenData(CreateRoutine.new);
+});
+
+final routineServiceProvider = Provider<AsyncValue<RoutineService>>((Ref ref) {
+  final repoAsync = ref.watch(routineRepositoryProvider);
+  return repoAsync.whenData((RoutineRepository repo) => RoutineService(repository: repo));
 });

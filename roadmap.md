@@ -30,18 +30,18 @@
 - [x] (1 d) Modelar entidades: `Routine`, `RoutineExercise`, `RoutineSession`, `SetLog` (UML + doc)
 - [x] (6 h) Diseñar esquema Isar: colecciones, índices (por fecha, músculo, rutina)
 - [x] (4 h) Identificar paquetes UI adicionales (`go_router: ^14.0.0`, `flex_color_scheme: ^7.3.0` si aplica)
-- [ ] (1 d) Wireframes: `RoutineListScreen`, `RoutineBuilderScreen`, `RoutineDetailScreen`, flujos en FigJam
-- [ ] (4 h) Diagrama de flujo de usuario desde creación → ejecución → registro
+- [x] (1 d) Wireframes: `RoutineListScreen`, `RoutineBuilderScreen`, `RoutineDetailScreen`, flujos en FigJam
+- [x] (4 h) Diagrama de flujo de usuario desde creación → ejecución → registro
 
 #### 🟦 Backend/Data Layer — Rutinas
 - [x] (2 d) Implementar colecciones Isar y migraciones (scripts `isar_schema.g.dart`)
 - [x] (1 d) Crear DAO/Repositories (`RoutineRepository`, `RoutineSessionRepository`) con interfaces en `domain`
-- [ ] (1 d) Servicios de negocio `RoutineService` (validaciones series/reps > 0, clonado de rutinas)
-- [ ] (6 h) Cacheo en memoria + invalidación (usar `riverpod` `AsyncNotifier`)
+- [x] (1 d) Servicios de negocio `RoutineService` (validaciones series/reps > 0, clonado de rutinas)
+- [x] (6 h) Cacheo en memoria + invalidación (usar `riverpod` `AsyncNotifier`)
 - [ ] (6 h) Implementar sincronización diferida placeholder (preparar para backend futuro)
 
 #### 🟩 UI Implementation — Rutinas
-- [ ] (3 d) `RoutineListScreen`: listview, filtros, CTA “Crear”
+- [x] (3 d) `RoutineListScreen`: listview, filtros, CTA “Crear”
 - [ ] (3 d) `RoutineBuilderScreen`: formularios dinámicos, selector de ejercicios (reuse `ExerciseSearchBar`)
 - [ ] (2 d) `RoutineDetailScreen` con resumen, duplicar, activar modo live
 - [ ] (1 d) Widgets reutilizables: `ExercisePickerSheet`, `SetConfigCard`

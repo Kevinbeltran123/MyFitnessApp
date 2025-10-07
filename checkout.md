@@ -6,6 +6,7 @@
 - 🌐 **APIs integradas**: ExerciseDB (`AppConstants.workoutsBaseUrl`) activo para catálogos de ejercicios; no existen dependencias vigentes hacia servicios de nutrición.
 - ✅ **Depuración completada**: se eliminaron `lib/models/nutrition_entry.dart`, `lib/services/nutrition_service.dart`, los campos de nutrición en `HomeScreen` y `AppConstants`, dejando la app enfocada exclusivamente en entrenamiento.
 - 🧱 **Infraestructura nueva**: modelos de dominio de rutinas (`lib/domain/routines`) y esquemas Isar (`lib/infrastructure/routines`) listos, con repositorio `RoutineRepositoryIsar` y providers Riverpod iniciales (`lib/presentation/home/home_providers.dart`).
+- 🗂️ **Diseño de UI**: wireframes y flujos documentados en `docs/routines_wireframes.md` para RoutineList/Builder/Detail.
 
 ## 2. PENDIENTES IDENTIFICADOS
 - 💾 Persistencia fuera de memoria para búsquedas y filtros frecuentes (hoy solo hay caché volátil en `_cache`).
