@@ -158,19 +158,41 @@
 
 ---
 
-## 📊 Progress Tracking (actualizado)
+## 📊 Progress Tracking (Updated)
 
-- Fase 1 = 80 % (refactor providers + rutina live-ready)
-- Fase 2 = 45 % (UX quick edit, navegación) — faltan validaciones avanzadas
-- Fase 3 = 30 % (motor live básico + logging) — faltan timers background/analítica
-- Actualizar % tras cada review de sprint en Jira/Linear y reflejar en README/Changelog.
+### Phase 1 Progress: ~75% Complete ✅
+- [x] **Sprint 1**: Nutrition removal & architecture setup (COMPLETED)
+- [x] **Sprint 2**: Partial - Domain models and basic persistence setup (COMPLETED)  
+- [x] **Sprint 4**: Rest timer system integration (COMPLETED from Phase 2)
+- [x] **RoutineListScreen**: Advanced filtering and metadata display (COMPLETED Dec 2024)
+- [ ] **Remaining**: RoutineBuilderScreen, metrics entry UI, database persistence
+
+### Phase 2 Progress: ~25% Complete ⚡
+- [x] **Sprint 4**: Rest timer implementation (COMPLETED)
+- [ ] **Sprint 5**: UI refinements and persistence (PENDING)
+
+### Phase 3 Progress: 0% Complete ⏸️
+- **Status**: POSTPONED - Focus redirected to Phase 1 completion
 
 ---
 
-💡 **Siguientes pasos recomendados**
-1. Diseñar servicio de timers en background (API + notificaciones) y su interfaz (`RestTimerController`).
-2. Definir modelo `BodyMetric` y esquema Isar asociado para iniciar Sprint 3.1 (Tracker de métricas).
-3. Preparar suite de integración end-to-end (List → Detail → Live logging → Persistencia) usando `integration_test`.
+## 🎯 **IMPORTANT: Roadmap Pivot**
+
+**New Development Priority:** Complete Phase 1 fundamentals before advancing to complex analytics.
+
+📋 **Active Roadmap:** See `llm_roadmap.md` for focused, actionable tasks
+🎪 **This File:** Comprehensive reference - use for technical specifications  
+🤖 **For LLM Development:** Follow `llm_roadmap.md` exclusively
+
+---
+
+💡 **Next Immediate Steps:**
+1. Review `llm_roadmap.md` for prioritized tasks
+2. Focus on RoutineListScreen and RoutineBuilderScreen implementation  
+3. Complete database persistence for routines
+4. Build basic metrics entry UI
+
+**Target:** Working app with persistent routines and metrics in 4-6 weeks
 
 ---
 

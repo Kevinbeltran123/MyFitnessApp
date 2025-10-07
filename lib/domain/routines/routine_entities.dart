@@ -162,6 +162,20 @@ class RoutineDay {
   String get shortLabel => shortLabels[(weekday - 1) % 7];
 
   static RoutineDay fromDateTime(DateTime date) => RoutineDay(date.weekday);
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other is RoutineDay && other.weekday == weekday;
+  }
+
+  @override
+  int get hashCode => weekday.hashCode;
+
+  @override
+  String toString() => 'RoutineDay(weekday: $weekday)';
 }
 
 /// Historical log for completed routine session (used later for analytics).

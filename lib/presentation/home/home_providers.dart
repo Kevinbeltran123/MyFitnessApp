@@ -46,6 +46,24 @@ final routineRepositoryProvider = FutureProvider<RoutineRepository>((
   return RoutineRepositoryIsar(isar);
 });
 
+final routineLastUsedProvider = StreamProvider<Map<String, DateTime>>((
+  Ref ref,
+) async* {
+  final repository = await ref.watch(routineRepositoryProvider.future);
+  await for (final List<RoutineSession> sessions
+      in repository.watchSessions()) {
+    final Map<String, DateTime> aggregated = <String, DateTime>{};
+    for (final RoutineSession session in sessions) {
+      final DateTime completedAt = session.completedAt;
+      final DateTime? existing = aggregated[session.routineId];
+      if (existing == null || completedAt.isAfter(existing)) {
+        aggregated[session.routineId] = completedAt;
+      }
+    }
+    yield Map<String, DateTime>.unmodifiable(aggregated);
+  }
+});
+
 final watchAllRoutinesProvider = StreamProvider<List<Routine>>((
   Ref ref,
 ) async* {

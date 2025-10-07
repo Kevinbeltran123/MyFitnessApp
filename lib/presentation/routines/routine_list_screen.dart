@@ -6,12 +6,28 @@ import 'package:my_fitness_tracker/presentation/routines/routine_builder_screen.
 import 'package:my_fitness_tracker/presentation/routines/routine_detail_screen.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_list_controller.dart';
 
-class RoutineListScreen extends ConsumerWidget {
+class RoutineListScreen extends ConsumerStatefulWidget {
   const RoutineListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RoutineListScreen> createState() => _RoutineListScreenState();
+}
+
+class _RoutineListScreenState extends ConsumerState<RoutineListScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  RoutineFocus? _selectedFocus;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final routinesAsync = ref.watch(routineListControllerProvider);
+    final lastUsedAsync = ref.watch(routineLastUsedProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mis Rutinas'),
@@ -25,56 +41,97 @@ class RoutineListScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) => const RoutineBuilderScreen(),
-          ),
-        ),
+        onPressed: _openRoutineBuilder,
         icon: const Icon(Icons.add),
         label: const Text('Crear rutina'),
       ),
       body: routinesAsync.when(
         data: (List<Routine> routines) {
-          final active = routines
+          final Map<String, DateTime> lastUsedMap =
+              lastUsedAsync.asData?.value ?? const <String, DateTime>{};
+
+          final List<Routine> active = routines
               .where((Routine routine) => !routine.isArchived)
               .toList();
-          final archived = routines
+          final List<Routine> archived = routines
               .where((Routine routine) => routine.isArchived)
               .toList();
-          if (active.isEmpty && archived.isEmpty) {
-            return _EmptyRoutineView(
-              onCreate: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (BuildContext context) =>
-                      const RoutineBuilderScreen(),
-                ),
-              ),
-            );
-          }
 
-          final widgets = <Widget>[
-            for (final Routine routine in active)
-              _RoutineTile(
-                routine: routine,
-                onTap: () => _openDetail(context, routine.id),
-                onArchive: () => _handleArchive(context, ref, routine),
-                onDuplicate: () => _handleDuplicate(context, ref, routine),
+          final List<Routine> filteredActive = active
+              .where(_matchesFilters)
+              .toList();
+          final List<Routine> filteredArchived = archived
+              .where(_matchesFilters)
+              .toList();
+
+          final bool hasAnyRoutines = active.isNotEmpty || archived.isNotEmpty;
+          final bool hasFilteredResults =
+              filteredActive.isNotEmpty || filteredArchived.isNotEmpty;
+
+          final List<Widget> children = <Widget>[
+            _buildSearchField(),
+            const SizedBox(height: 12),
+            _buildFocusFilterRow(),
+            if (lastUsedAsync.hasError) ...<Widget>[
+              const SizedBox(height: 12),
+              _ErrorBanner(
+                message:
+                    'No pudimos cargar el historial de tus rutinas. Usaremos la última actualización disponible.',
+                onRetry: () => ref.refresh(routineLastUsedProvider),
               ),
-            if (archived.isNotEmpty) ...<Widget>[
-              const _SectionLabel(label: 'Archivadas'),
-              for (final Routine routine in archived)
-                _RoutineTile(
-                  routine: routine,
-                  onTap: () => _openDetail(context, routine.id),
-                  onRestore: () => _handleRestore(context, ref, routine),
-                ),
             ],
+            const SizedBox(height: 16),
           ];
 
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            itemCount: widgets.length,
-            itemBuilder: (BuildContext context, int index) => widgets[index],
+          if (!hasAnyRoutines) {
+            children.add(_EmptyRoutineView(onCreate: _openRoutineBuilder));
+          } else if (!hasFilteredResults) {
+            children.add(
+              _NoResultsView(
+                onClearFilters: _clearFilters,
+                isFiltering: _isFiltering,
+              ),
+            );
+          } else {
+            if (filteredActive.isNotEmpty && filteredArchived.isNotEmpty) {
+              children.add(const _SectionLabel(label: 'Activas'));
+              children.add(const SizedBox(height: 8));
+            }
+
+            for (final Routine routine in filteredActive) {
+              children.add(
+                _RoutineTile(
+                  routine: routine,
+                  lastUsedAt: lastUsedMap[routine.id],
+                  onTap: () => _openDetail(routine.id),
+                  onArchive: () => _handleArchive(context, ref, routine),
+                  onDuplicate: () => _handleDuplicate(context, ref, routine),
+                ),
+              );
+            }
+
+            if (filteredArchived.isNotEmpty) {
+              if (filteredActive.isNotEmpty) {
+                children.add(const SizedBox(height: 16));
+              }
+              children.add(const _SectionLabel(label: 'Archivadas'));
+              children.add(const SizedBox(height: 8));
+              for (final Routine routine in filteredArchived) {
+                children.add(
+                  _RoutineTile(
+                    routine: routine,
+                    lastUsedAt: lastUsedMap[routine.id],
+                    onTap: () => _openDetail(routine.id),
+                    onRestore: () => _handleRestore(context, ref, routine),
+                  ),
+                );
+              }
+            }
+          }
+
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            children: children,
           );
         },
         error: (Object error, StackTrace stackTrace) => _ErrorState(
@@ -87,7 +144,111 @@ class RoutineListScreen extends ConsumerWidget {
     );
   }
 
-  void _openDetail(BuildContext context, String routineId) {
+  bool get _isFiltering =>
+      _searchController.text.trim().isNotEmpty || _selectedFocus != null;
+
+  bool _matchesFilters(Routine routine) {
+    final String query = _searchController.text.trim().toLowerCase();
+    final bool matchesQuery =
+        query.isEmpty ||
+        routine.name.toLowerCase().contains(query) ||
+        routine.description.toLowerCase().contains(query);
+    final bool matchesFocus =
+        _selectedFocus == null || routine.focus == _selectedFocus;
+    return matchesQuery && matchesFocus;
+  }
+
+  Widget _buildSearchField() {
+    return TextField(
+      controller: _searchController,
+      decoration: InputDecoration(
+        labelText: 'Buscar rutina',
+        prefixIcon: const Icon(Icons.search),
+        suffixIcon: _searchController.text.isNotEmpty
+            ? IconButton(
+                onPressed: _clearFilters,
+                icon: const Icon(Icons.close),
+                tooltip: 'Limpiar búsqueda',
+              )
+            : null,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      textInputAction: TextInputAction.search,
+      onChanged: (_) => setState(() {}),
+    );
+  }
+
+  Widget _buildFocusFilterRow() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: const Text('Todas'),
+              selected: _selectedFocus == null,
+              onSelected: (_) => setState(() => _selectedFocus = null),
+            ),
+          ),
+          for (final RoutineFocus focus in RoutineFocus.values)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(
+                label: Text(_focusLabel(focus)),
+                selected: _selectedFocus == focus,
+                onSelected: (bool selected) {
+                  setState(() {
+                    _selectedFocus = selected ? focus : null;
+                  });
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _focusLabel(RoutineFocus focus) {
+    switch (focus) {
+      case RoutineFocus.fullBody:
+        return 'Cuerpo completo';
+      case RoutineFocus.upperBody:
+        return 'Tren superior';
+      case RoutineFocus.lowerBody:
+        return 'Tren inferior';
+      case RoutineFocus.push:
+        return 'Push';
+      case RoutineFocus.pull:
+        return 'Pull';
+      case RoutineFocus.core:
+        return 'Core';
+      case RoutineFocus.mobility:
+        return 'Movilidad';
+      case RoutineFocus.custom:
+        return 'Personalizada';
+    }
+  }
+
+  void _clearFilters() {
+    if (!_isFiltering) {
+      return;
+    }
+    setState(() {
+      _searchController.clear();
+      _selectedFocus = null;
+    });
+  }
+
+  void _openRoutineBuilder() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const RoutineBuilderScreen(),
+      ),
+    );
+  }
+
+  void _openDetail(String routineId) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) =>
@@ -139,7 +300,7 @@ class RoutineListScreen extends ConsumerWidget {
   ) async {
     try {
       final service = await ref.read(routineServiceProvider.future);
-      final duplicated = await service.duplicate(routine.id);
+      final Routine duplicated = await service.duplicate(routine.id);
       if (!context.mounted) return;
       await ref.read(routineListControllerProvider.notifier).refresh();
       if (!context.mounted) return;
@@ -164,6 +325,7 @@ class RoutineListScreen extends ConsumerWidget {
 class _RoutineTile extends StatelessWidget {
   const _RoutineTile({
     required this.routine,
+    this.lastUsedAt,
     this.onTap,
     this.onArchive,
     this.onRestore,
@@ -171,6 +333,7 @@ class _RoutineTile extends StatelessWidget {
   });
 
   final Routine routine;
+  final DateTime? lastUsedAt;
   final VoidCallback? onTap;
   final VoidCallback? onArchive;
   final VoidCallback? onRestore;
@@ -178,12 +341,21 @@ class _RoutineTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final focusLabel = routine.focus.name.toUpperCase();
-    final chips = routine.daysOfWeek
-        .map((RoutineDay day) => day.shortLabel)
-        .join(' · ');
+    final ThemeData theme = Theme.of(context);
+    final MaterialLocalizations localizations = MaterialLocalizations.of(
+      context,
+    );
+    final String focusLabel = routine.focus.name.toUpperCase();
     final bool archived = routine.isArchived;
+
+    final List<String> dayLabels = routine.daysOfWeek
+        .map((RoutineDay day) => day.shortLabel)
+        .toList();
+
+    final DateTime referenceDate = lastUsedAt ?? routine.updatedAt;
+    final String subtitle = lastUsedAt != null
+        ? 'Último uso: ${localizations.formatMediumDate(lastUsedAt!)}'
+        : 'Actualizada: ${localizations.formatMediumDate(referenceDate)}';
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -247,8 +419,28 @@ class _RoutineTile extends StatelessWidget {
                 spacing: 8,
                 runSpacing: 4,
                 children: <Widget>[
-                  Chip(label: Text(chips)),
+                  if (dayLabels.isNotEmpty)
+                    Chip(label: Text(dayLabels.join(' · '))),
                   Chip(label: Text('${routine.exercises.length} ejercicios')),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: <Widget>[
+                  Icon(
+                    Icons.history,
+                    size: 16,
+                    color: theme.colorScheme.outline,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      subtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                  ),
                 ],
               ),
               if (routine.description.isNotEmpty) ...<Widget>[
@@ -277,7 +469,7 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
       child: Text(
         label,
         style: theme.textTheme.titleMedium?.copyWith(
@@ -326,6 +518,84 @@ class _EmptyRoutineView extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _NoResultsView extends StatelessWidget {
+  const _NoResultsView({
+    required this.onClearFilters,
+    required this.isFiltering,
+  });
+
+  final VoidCallback onClearFilters;
+  final bool isFiltering;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(Icons.search_off, size: 48, color: theme.colorScheme.outline),
+            const SizedBox(height: 16),
+            Text(
+              'No encontramos rutinas con esos criterios.',
+              style: theme.textTheme.titleMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isFiltering
+                  ? 'Prueba a ajustar la búsqueda o filtros para ver más resultados.'
+                  : 'Crea tu primera rutina para comenzar.',
+              style: theme.textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            if (isFiltering) ...<Widget>[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: onClearFilters,
+                icon: const Icon(Icons.filter_alt_off),
+                label: const Text('Limpiar filtros'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message, this.onRetry});
+
+  final String message;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      color: theme.colorScheme.errorContainer,
+      child: ListTile(
+        leading: Icon(
+          Icons.info_outline,
+          color: theme.colorScheme.onErrorContainer,
+        ),
+        title: Text(
+          message,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onErrorContainer,
+          ),
+        ),
+        trailing: onRetry != null
+            ? TextButton(onPressed: onRetry, child: const Text('Reintentar'))
+            : null,
       ),
     );
   }
