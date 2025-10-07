@@ -4,6 +4,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
+import 'package:my_fitness_tracker/domain/timers/rest_timer_entities.dart';
+import 'package:my_fitness_tracker/presentation/routines/rest_timer_controller.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_session_controller.dart';
 
 class RoutineSessionScreen extends ConsumerStatefulWidget {
@@ -18,14 +20,8 @@ class RoutineSessionScreen extends ConsumerStatefulWidget {
 
 class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
   Timer? _sessionTicker;
-  Timer? _restTicker;
   DateTime? _sessionStartedAt;
-  DateTime? _restStartedAt;
   Duration _sessionElapsed = Duration.zero;
-  Duration _restElapsed = Duration.zero;
-  Duration? _restTarget;
-  Duration? _lastCapturedRest;
-  bool _restRunning = false;
 
   final TextEditingController _notesController = TextEditingController();
   bool _notesInitialized = false;
@@ -33,7 +29,6 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
   @override
   void dispose() {
     _sessionTicker?.cancel();
-    _restTicker?.cancel();
     _notesController.dispose();
     super.dispose();
   }
@@ -55,50 +50,37 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
     });
   }
 
-  void _startRest(Duration suggested) {
-    _restTicker?.cancel();
-    _restStartedAt = DateTime.now();
-    _restElapsed = Duration.zero;
-    _restTarget = suggested;
-    _restRunning = true;
-    _restTicker = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted || _restStartedAt == null) {
-        return;
-      }
-      setState(() {
-        _restElapsed = DateTime.now().difference(_restStartedAt!);
-      });
-    });
-    setState(() {});
-  }
-
-  void _stopRest({bool capture = true}) {
-    _restTicker?.cancel();
-    if (capture && _restStartedAt != null) {
-      _lastCapturedRest = DateTime.now().difference(_restStartedAt!);
-    }
-    _restStartedAt = null;
-    _restElapsed = Duration.zero;
-    _restTarget = null;
-    _restRunning = false;
-    setState(() {});
-  }
-
-  void _resetRest() {
-    _restTicker?.cancel();
-    _restStartedAt = null;
-    _restElapsed = Duration.zero;
-    _restTarget = null;
-    _restRunning = false;
-    _lastCapturedRest = null;
-    setState(() {});
-  }
-
   Duration _defaultRestFor(RoutineSet? set) {
     if (set?.restInterval != null) {
       return set!.restInterval!;
     }
     return const Duration(seconds: 90);
+  }
+
+  RestTimerRequest? _restRequestForState(RoutineSessionState state) {
+    final RoutineExercise? exercise = state.currentExercise;
+    final RoutineSet? set = state.currentSet;
+    if (exercise == null || set == null) {
+      return null;
+    }
+    return RestTimerRequest(
+      routineId: state.routine.id,
+      exerciseId: exercise.exerciseId,
+      setIndex: set.setNumber,
+      config: RestTimerConfig(
+        target: _defaultRestFor(set),
+        enableNotification: true,
+        enableVibration: true,
+      ),
+      sessionId: state.savedSession?.id,
+    );
+  }
+
+  Future<void> _cancelRestTimer(RestTimerRequest? request) async {
+    if (request == null) {
+      return;
+    }
+    await ref.read(restTimerControllerProvider(request).notifier).cancel();
   }
 
   Future<void> _logCurrentSet(RoutineSessionState state) async {
@@ -107,17 +89,8 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
     if (exercise == null || routineSet == null) {
       return;
     }
-    if (_restRunning) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Detén el descanso antes de registrar la serie.'),
-        ),
-      );
-      return;
-    }
 
     final Duration suggestedRest = _defaultRestFor(routineSet);
-    final Duration initialRest = _lastCapturedRest ?? suggestedRest;
 
     final _LogSetResult? result = await showModalBottomSheet<_LogSetResult>(
       context: context,
@@ -126,7 +99,7 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
         return _LogSetSheet(
           exercise: exercise,
           routineSet: routineSet,
-          initialRest: initialRest,
+          initialRest: suggestedRest,
         );
       },
     );
@@ -135,31 +108,56 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
       return;
     }
 
-    await ref
-        .read(routineSessionControllerProvider(widget.routineId).notifier)
-        .recordSet(
-          repetitions: result.repetitions,
-          weight: result.weight,
-          restTaken: Duration(seconds: result.restSeconds),
-        );
+    final RestTimerRequest outgoingRequest = RestTimerRequest(
+      routineId: state.routine.id,
+      exerciseId: exercise.exerciseId,
+      setIndex: routineSet.setNumber,
+      config: RestTimerConfig(target: suggestedRest),
+      sessionId: state.savedSession?.id,
+    );
 
-    setState(() {
-      _lastCapturedRest = null;
-    });
+    final sessionNotifier = ref.read(
+      routineSessionControllerProvider(widget.routineId).notifier,
+    );
+
+    await sessionNotifier.recordSet(
+      repetitions: result.repetitions,
+      weight: result.weight,
+      restTaken: Duration(seconds: result.restSeconds),
+    );
+
+    // Cancel any running timer for the set just finalised.
+    await _cancelRestTimer(outgoingRequest);
 
     final RoutineSessionState? updated = ref
         .read(routineSessionControllerProvider(widget.routineId))
         .value;
-    if (!mounted || updated == null) {
+    if (!context.mounted || updated == null) {
       return;
     }
-    if (!updated.isCompleted) {
-      final RoutineSet? nextSet = updated.currentSet;
-      _startRest(_defaultRestFor(nextSet ?? routineSet));
-    } else {
-      _stopRest(capture: false);
+
+    if (updated.isCompleted) {
       await _showCompletionSheet(updated);
+      return;
     }
+
+    final RoutineExercise? nextExercise = updated.currentExercise;
+    final RoutineSet? nextSet = updated.currentSet;
+    if (nextExercise == null || nextSet == null) {
+      return;
+    }
+
+    final RestTimerRequest nextRequest = RestTimerRequest(
+      routineId: updated.routine.id,
+      exerciseId: nextExercise.exerciseId,
+      setIndex: nextSet.setNumber,
+      config: RestTimerConfig(target: _defaultRestFor(nextSet)),
+      sessionId: updated.savedSession?.id,
+    );
+
+    await ref
+        .read(restTimerControllerProvider(nextRequest).notifier)
+        .start(config: nextRequest.config);
   }
 
   Future<void> _finishSession(RoutineSessionState state) async {
@@ -202,9 +200,7 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
               ),
               const SizedBox(height: 12),
               FilledButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
+                onPressed: () => Navigator.of(context).pop(),
                 icon: const Icon(Icons.check_circle_outline),
                 label: const Text('Continuar'),
               ),
@@ -288,26 +284,59 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
             _notesController.text = state.notes;
             _notesInitialized = true;
           }
-          if (state.errorMessage != null && state.errorMessage!.isNotEmpty) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
-              ref
-                  .read(
-                    routineSessionControllerProvider(widget.routineId).notifier,
-                  )
-                  .clearError();
-            });
-          }
           _ensureSessionTimer(state.startedAt);
+
           final RoutineExercise? exercise = state.currentExercise;
           final RoutineSet? routineSet = state.currentSet;
+
+          final RestTimerRequest? restRequest = _restRequestForState(state);
+          final RestTimerSnapshot? restSnapshot = restRequest == null
+              ? null
+              : ref.watch(restTimerControllerProvider(restRequest));
+          final restNotifier = restRequest == null
+              ? null
+              : ref.read(restTimerControllerProvider(restRequest).notifier);
+          final RestTimerStatus restStatus =
+              restSnapshot?.status ?? RestTimerStatus.idle;
+          final Duration restElapsed = restSnapshot?.elapsed ?? Duration.zero;
+          final Duration restTarget =
+              restSnapshot?.config.target ??
+              restRequest?.config.target ??
+              const Duration(seconds: 90);
+
           final int totalSets = max(state.totalSets, 1);
           final int completedSets = state.completedSets;
           final double progress = completedSets / totalSets;
-          final Duration recommendedRest = _defaultRestFor(routineSet);
+          final Duration recommendedRest = _defaultRestFor(
+            routineSet ?? exercise?.sets.first,
+          );
+
+          Future<void> Function()? restPrimaryAction;
+          IconData restPrimaryIcon = Icons.play_circle_outline;
+          String restPrimaryLabel = 'Iniciar';
+
+          if (restNotifier != null) {
+            switch (restStatus) {
+              case RestTimerStatus.running:
+                restPrimaryAction = () => restNotifier.pause();
+                restPrimaryIcon = Icons.pause_circle_outline;
+                restPrimaryLabel = 'Pausar';
+                break;
+              case RestTimerStatus.paused:
+                restPrimaryAction = () => restNotifier.resume();
+                restPrimaryIcon = Icons.play_circle_outline;
+                restPrimaryLabel = 'Reanudar';
+                break;
+              case RestTimerStatus.completed:
+              case RestTimerStatus.cancelled:
+              case RestTimerStatus.idle:
+                restPrimaryAction = () =>
+                    restNotifier.start(config: restRequest!.config);
+                restPrimaryIcon = Icons.play_circle_outline;
+                restPrimaryLabel = 'Iniciar';
+                break;
+            }
+          }
 
           return Scaffold(
             appBar: AppBar(
@@ -320,6 +349,8 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
                           final bool leave = await _confirmExit(state);
                           if (!context.mounted) return;
                           if (leave) {
+                            await _cancelRestTimer(restRequest);
+                            if (!context.mounted) return;
                             Navigator.of(context).pop();
                           }
                         },
@@ -331,7 +362,7 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
             body: SafeArea(
               child: RefreshIndicator(
                 onRefresh: () async {
-                  _resetRest();
+                  await _cancelRestTimer(restRequest);
                 },
                 child: ListView(
                   padding: const EdgeInsets.all(16),
@@ -361,68 +392,78 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
-                                Text(
-                                  'Cronómetro de descanso',
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(fontWeight: FontWeight.w600),
-                                ),
-                                if (_restTarget != null)
+                    if (restRequest != null) ...<Widget>[
+                      const SizedBox(height: 16),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
                                   Text(
-                                    'Objetivo: ${_formatDuration(_restTarget!)}',
+                                    'Cronómetro de descanso',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.w600),
                                   ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              _formatDuration(_restElapsed),
-                              style: Theme.of(context).textTheme.displaySmall
-                                  ?.copyWith(fontWeight: FontWeight.w700),
-                            ),
-                            const SizedBox(height: 12),
-                            Wrap(
-                              spacing: 12,
-                              children: <Widget>[
-                                FilledButton.icon(
-                                  onPressed: _restRunning
-                                      ? () => _stopRest()
-                                      : () => _startRest(recommendedRest),
-                                  icon: Icon(
-                                    _restRunning
-                                        ? Icons.stop_circle_outlined
-                                        : Icons.play_circle_outline,
+                                  Text(
+                                    'Objetivo: ${_formatDuration(restTarget)}',
                                   ),
-                                  label: Text(
-                                    _restRunning ? 'Detener' : 'Iniciar',
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: _restRunning ? _resetRest : null,
-                                  child: const Text('Reiniciar'),
-                                ),
-                              ],
-                            ),
-                            if (_lastCapturedRest != null)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Text(
-                                  'Último descanso registrado: ${_formatDuration(_lastCapturedRest!)}',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
+                                ],
                               ),
-                          ],
+                              const SizedBox(height: 12),
+                              Text(
+                                _formatDuration(restElapsed),
+                                style: Theme.of(context).textTheme.displaySmall
+                                    ?.copyWith(fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(height: 12),
+                              Wrap(
+                                spacing: 12,
+                                children: <Widget>[
+                                  FilledButton.icon(
+                                    onPressed: restPrimaryAction == null
+                                        ? null
+                                        : () => restPrimaryAction!(),
+                                    icon: Icon(restPrimaryIcon),
+                                    label: Text(restPrimaryLabel),
+                                  ),
+                                  TextButton(
+                                    onPressed: restNotifier == null
+                                        ? null
+                                        : () async {
+                                            await restNotifier.cancel();
+                                            await restNotifier.start(
+                                              config: restRequest.config,
+                                            );
+                                          },
+                                    child: const Text('Reiniciar'),
+                                  ),
+                                ],
+                              ),
+                              if (restStatus == RestTimerStatus.completed)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Text(
+                                    'Descanso completado',
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
+                                        ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                     const SizedBox(height: 16),
                     if (exercise != null && routineSet != null)
                       Card(
@@ -444,10 +485,9 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
                                 'Objetivo: ${routineSet.repetitions} reps · '
                                 '${routineSet.targetWeight != null ? '${routineSet.targetWeight!.toStringAsFixed(1)} kg' : 'Peso libre'}',
                               ),
-                              if (routineSet.restInterval != null)
-                                Text(
-                                  'Descanso sugerido: ${_formatDuration(routineSet.restInterval!)}',
-                                ),
+                              Text(
+                                'Descanso sugerido: ${_formatDuration(recommendedRest)}',
+                              ),
                               const SizedBox(height: 12),
                               FilledButton.icon(
                                 onPressed: state.isCompleted
@@ -596,6 +636,17 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
       ),
     );
   }
+
+  String _formatDuration(Duration duration) {
+    final int totalSeconds = duration.inSeconds;
+    final int hours = totalSeconds ~/ 3600;
+    final int minutes = (totalSeconds % 3600) ~/ 60;
+    final int seconds = totalSeconds % 60;
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    }
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
 }
 
 class _LogSetSheet extends StatefulWidget {
@@ -643,7 +694,7 @@ class _LogSetSheetState extends State<_LogSetSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final bottom = MediaQuery.of(context).viewInsets.bottom;
+    final double bottom = MediaQuery.of(context).viewInsets.bottom;
     return Padding(
       padding: EdgeInsets.only(bottom: bottom),
       child: SingleChildScrollView(
@@ -740,15 +791,4 @@ class _LogSetResult {
   final int repetitions;
   final double weight;
   final int restSeconds;
-}
-
-String _formatDuration(Duration duration) {
-  final int totalSeconds = duration.inSeconds;
-  final int hours = totalSeconds ~/ 3600;
-  final int minutes = (totalSeconds % 3600) ~/ 60;
-  final int seconds = totalSeconds % 60;
-  if (hours > 0) {
-    return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-  }
-  return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
 }

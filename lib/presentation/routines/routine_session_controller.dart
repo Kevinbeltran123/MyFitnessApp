@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_fitness_tracker/application/routines/routine_service.dart';
+import 'package:my_fitness_tracker/domain/metrics/metrics_entities.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
 import 'package:my_fitness_tracker/presentation/home/home_providers.dart';
 import 'package:uuid/uuid.dart';
@@ -25,6 +26,7 @@ class RoutineSessionState {
     this.completedAt,
     this.savedSession,
     this.errorMessage,
+    this.bodyMetric,
   }) : logs = Map<String, List<SetLog>>.unmodifiable(
          logs.map(
            (String key, List<SetLog> value) => MapEntry<String, List<SetLog>>(
@@ -62,6 +64,7 @@ class RoutineSessionState {
   final DateTime? completedAt;
   final RoutineSession? savedSession;
   final String? errorMessage;
+  final BodyMetric? bodyMetric;
 
   int get totalSets => routine.exercises.fold(
     0,
@@ -100,6 +103,7 @@ class RoutineSessionState {
     DateTime? completedAt,
     RoutineSession? savedSession,
     String? errorMessage,
+    BodyMetric? bodyMetric,
   }) {
     return RoutineSessionState(
       routine: routine ?? this.routine,
@@ -114,6 +118,7 @@ class RoutineSessionState {
       completedAt: completedAt ?? this.completedAt,
       savedSession: savedSession ?? this.savedSession,
       errorMessage: errorMessage,
+      bodyMetric: bodyMetric ?? this.bodyMetric,
     );
   }
 }
@@ -148,6 +153,23 @@ class RoutineSessionNotifier
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
     }
+  }
+
+  Future<void> attachBodyMetric(BodyMetric metric) async {
+    final RoutineSessionState? value = state.value;
+    if (value == null) {
+      return;
+    }
+    state = AsyncValue.data(value.copyWith(bodyMetric: metric));
+  }
+
+  Future<void> attachLatestBodyMetric() async {
+    final MetricsRepository repository = ref.read(metricsRepositoryProvider);
+    final BodyMetric? latest = await repository.latestMetric();
+    if (latest == null) {
+      return;
+    }
+    await attachBodyMetric(latest);
   }
 
   Future<void> recordSet({

@@ -7,11 +7,31 @@ import 'package:my_fitness_tracker/infrastructure/isar/isar_providers.dart';
 import 'package:my_fitness_tracker/infrastructure/routines/routine_repository_isar.dart';
 import 'package:my_fitness_tracker/services/api_client.dart';
 import 'package:my_fitness_tracker/services/workout_service.dart';
+import 'package:my_fitness_tracker/application/timers/rest_timer_service.dart';
+import 'package:my_fitness_tracker/domain/metrics/metrics_entities.dart';
+import 'package:my_fitness_tracker/infrastructure/metrics/in_memory_metrics_repository.dart';
 
 final apiClientProvider = Provider<ApiClient>((Ref ref) {
   final client = ApiClient();
   ref.onDispose(client.close);
   return client;
+});
+
+final metricsRepositoryProvider = Provider<MetricsRepository>((Ref ref) {
+  final repository = InMemoryMetricsRepository();
+  ref.onDispose(repository.dispose);
+  return repository;
+});
+
+final restTimerEngineProvider = Provider<RestTimerEngine>((Ref ref) {
+  final engine = InMemoryRestTimerEngine();
+  ref.onDispose(engine.dispose);
+  return engine;
+});
+
+final restTimerManagerProvider = Provider<RestTimerManager>((Ref ref) {
+  final engine = ref.watch(restTimerEngineProvider);
+  return RestTimerManager(engine: engine);
 });
 
 final workoutServiceProvider = Provider<WorkoutService>((Ref ref) {
