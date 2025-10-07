@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-import '../utils/app_exceptions.dart';
-import '../utils/constants.dart';
+import 'package:my_fitness_tracker/utils/app_exceptions.dart';
+import 'package:my_fitness_tracker/utils/constants.dart';
 
 class ApiClient {
   ApiClient({http.Client? httpClient, this.defaultHeaders})

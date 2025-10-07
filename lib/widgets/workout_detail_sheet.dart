@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/workout_plan.dart';
+import 'package:my_fitness_tracker/models/workout_plan.dart';
 
 class WorkoutDetailSheet extends StatelessWidget {
   const WorkoutDetailSheet({super.key, required this.plan});

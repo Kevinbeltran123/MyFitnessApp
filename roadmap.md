@@ -13,16 +13,16 @@
 ### 🔥 Sprint 1: Depuración & Arquitectura (1 semana)
 
 #### 🧹 Eliminación de Nutrición (Dependencia: ninguna)
-- [ ] (4 h) Revisar `lib/models`, `lib/services`, `lib/screens` y eliminar clases/funciones de nutrición (p.ej. `NutritionEntry`, `nutrition_service.dart`)
-- [ ] (2 h) Actualizar `AppConstants` retirando `nutritionBaseUrl` y cabeceras asociadas
-- [ ] (4 h) Ajustar `_HomeSummary` y widgets ligados para remover campos de nutrición, confirmar compilación limpia (`flutter analyze`)
-- [ ] (2 h) Eliminar activos/strings asociados en `lib/utils/constants.dart`, `l10n`, assets
+- [x] (4 h) Revisar `lib/models`, `lib/services`, `lib/screens` y eliminar clases/funciones de nutrición (p.ej. `NutritionEntry`, `nutrition_service.dart`)
+- [x] (2 h) Actualizar `AppConstants` retirando `nutritionBaseUrl` y cabeceras asociadas
+- [x] (4 h) Ajustar `_HomeSummary` y widgets ligados para remover campos de nutrición, confirmar compilación limpia (`flutter analyze`)
+- [x] (2 h) Eliminar activos/strings asociados en `lib/utils/constants.dart`, `l10n`, assets
 
 #### 🧱 Arquitectura Base (Dependencia: limpieza nutrición)
-- [ ] (1 d) **Plan**: definir árbol de carpetas final (`lib/presentation`, `lib/domain`, `lib/infrastructure`) y documentarlo en `ARCHITECTURE.md`
-- [ ] (6 h) Seleccionar y configurar estado global (`riverpod: ^3.0.0-dev` o estable más reciente)
-- [ ] (4 h) Configurar motor de persistencia local (`isar: ^4.0.0` o `drift: ^2.18.0`); preparar decisión con pros/contras
-- [ ] (4 h) Añadir análisis estático reforzado (`flutter_lints` personalizado) y scripts `flutter analyze`, `dart format`
+- [x] (1 d) **Plan**: definir árbol de carpetas final (`lib/presentation`, `lib/domain`, `lib/infrastructure`) y documentarlo en `ARCHITECTURE.md`
+- [x] (6 h) Seleccionar y configurar estado global (`riverpod: ^3.0.0-dev` o estable más reciente)
+- [x] (4 h) Configurar motor de persistencia local (`isar: ^4.0.0` o `drift: ^2.18.0`); preparar decisión con pros/contras
+- [x] (4 h) Añadir análisis estático reforzado (`flutter_lints` personalizado) y scripts `flutter analyze`, `dart format`
 
 ### 💾 Sprint 2: Persistencia y Rutinas (2.5 semanas)
 
@@ -275,4 +275,3 @@
 ---
 
 💡 **Siguiente paso recomendado:** iniciar Sprint 1 con reunión de arranque para alinear arquitectura, confirmar elección de base de datos local y crear historias de usuario en el sistema de gestión (Jira/Linear).
-

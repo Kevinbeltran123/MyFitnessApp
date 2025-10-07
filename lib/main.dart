@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/home_screen.dart';
+import 'package:my_fitness_tracker/screens/home_screen.dart';
 
 void main() {
   runApp(const MyFitnessTrackerApp());

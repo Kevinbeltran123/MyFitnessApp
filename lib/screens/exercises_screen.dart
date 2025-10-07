@@ -2,14 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../models/workout_plan.dart';
-import '../services/api_client.dart';
-import '../services/workout_service.dart';
-import '../widgets/empty_exercises_state.dart';
-import '../widgets/exercise_grid_item.dart';
-import '../widgets/exercise_search_bar.dart';
-import '../widgets/filter_chips_row.dart';
-import '../widgets/workout_detail_sheet.dart';
+import 'package:my_fitness_tracker/models/workout_plan.dart';
+import 'package:my_fitness_tracker/services/api_client.dart';
+import 'package:my_fitness_tracker/services/workout_service.dart';
+import 'package:my_fitness_tracker/widgets/empty_exercises_state.dart';
+import 'package:my_fitness_tracker/widgets/exercise_grid_item.dart';
+import 'package:my_fitness_tracker/widgets/exercise_search_bar.dart';
+import 'package:my_fitness_tracker/widgets/filter_chips_row.dart';
+import 'package:my_fitness_tracker/widgets/workout_detail_sheet.dart';
 
 class ExercisesScreen extends StatefulWidget {
   const ExercisesScreen({super.key});

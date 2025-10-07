@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../models/nutrition_entry.dart';
-import '../models/workout_plan.dart';
-import '../services/api_client.dart';
-// import '../services/nutrition_service.dart';
-import '../services/workout_service.dart';
-import 'exercises_screen.dart';
+import 'package:my_fitness_tracker/models/workout_plan.dart';
+import 'package:my_fitness_tracker/screens/exercises_screen.dart';
+import 'package:my_fitness_tracker/services/api_client.dart';
+import 'package:my_fitness_tracker/services/workout_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -40,14 +38,12 @@ class _HomeScreenState extends State<HomeScreen> {
       final workoutsResponse = await _workoutService.fetchExercises(limit: 6);
       return _HomeSummary(
         date: today,
-        nutrition: const <NutritionEntry>[],
         workouts: workoutsResponse.plans,
       );
     } catch (error, stackTrace) {
       debugPrint('Error loading workouts: $error\n$stackTrace');
       return _HomeSummary(
         date: today,
-        nutrition: const <NutritionEntry>[],
         workouts: const <WorkoutPlan>[],
       );
     }
@@ -97,12 +93,8 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             final summary = snapshot.data!;
-            final totalCalories = summary.nutrition.fold<int>(
-              0,
-              (int sum, NutritionEntry item) => sum + item.calories,
-            );
             final exercisesExplored = summary.workouts.length;
-            final activityMoments = summary.nutrition.length + exercisesExplored + _searchInteractions;
+            final activityMoments = exercisesExplored + _searchInteractions;
 
             return Column(
               children: <Widget>[
@@ -118,7 +110,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           _HeaderCard(date: summary.date),
                           const SizedBox(height: 24),
                           _ProgressCard(
-                            calories: totalCalories,
                             exercises: exercisesExplored,
                             searches: _searchInteractions,
                             activityMoments: activityMoments,
@@ -146,12 +137,10 @@ class _HomeScreenState extends State<HomeScreen> {
 class _HomeSummary {
   const _HomeSummary({
     required this.date,
-    required this.nutrition,
     required this.workouts,
   });
 
   final DateTime date;
-  final List<NutritionEntry> nutrition;
   final List<WorkoutPlan> workouts;
 }
 
@@ -219,13 +208,11 @@ class _HeaderCard extends StatelessWidget {
 
 class _ProgressCard extends StatelessWidget {
   const _ProgressCard({
-    required this.calories,
     required this.exercises,
     required this.searches,
     required this.activityMoments,
   });
 
-  final int calories;
   final int exercises;
   final int searches;
   final int activityMoments;
@@ -265,27 +252,21 @@ class _ProgressCard extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           _ProgressBullet(
-            icon: Icons.local_fire_department,
-            label: '$calories kcal consumidas',
-            color: colorScheme.primary,
-          ),
-          const SizedBox(height: 12),
-          _ProgressBullet(
             icon: Icons.fitness_center,
-            label: '$exercises ejercicios vistos',
-            color: colorScheme.secondary,
+            label: '$exercises entrenamientos explorados',
+            color: colorScheme.primary,
           ),
           const SizedBox(height: 12),
           _ProgressBullet(
             icon: Icons.travel_explore,
             label: '$searches búsquedas realizadas',
-            color: colorScheme.tertiary,
+            color: colorScheme.secondary,
           ),
           const SizedBox(height: 12),
           _ProgressBullet(
             icon: Icons.bolt,
-            label: '$activityMoments momentos de actividad',
-            color: colorScheme.primaryContainer,
+            label: '$activityMoments interacciones totales',
+            color: colorScheme.tertiary,
           ),
         ],
       ),

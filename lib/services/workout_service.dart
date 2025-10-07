@@ -1,7 +1,7 @@
-import '../models/workout_plan.dart';
-import '../utils/app_exceptions.dart';
-import '../utils/constants.dart';
-import 'api_client.dart';
+import 'package:my_fitness_tracker/models/workout_plan.dart';
+import 'package:my_fitness_tracker/services/api_client.dart';
+import 'package:my_fitness_tracker/utils/app_exceptions.dart';
+import 'package:my_fitness_tracker/utils/constants.dart';
 
 class WorkoutService {
   WorkoutService(this._client);

@@ -3,8 +3,8 @@
 ## 1. ESTADO ACTUAL
 - 🧭 **Funcionalidades vigentes**: inicio en `lib/main.dart` con theming Material 3, `HomeScreen` con resumen diario (ejercicios destacados y contador de interacciones), explorador de ejercicios con búsqueda, filtros y paginación en `ExercisesScreen`, componentes reutilizables (`SummaryCard`, `ExerciseGridItem`, `WorkoutDetailSheet`) y capa de red tipada (`ApiClient`, `WorkoutService`).
 - 🏗️ **Arquitectura**: estructura modular por carpetas (`lib/screens`, `lib/models`, `lib/services`, `lib/widgets`, `lib/utils`); patrón de servicio + modelos inmutables; gestión de estado local por `StatefulWidget`; caché en memoria para resultados de búsqueda en `ExercisesScreen`; manejo de excepciones con utilitarios en `lib/utils`.
-- 🌐 **APIs integradas**: ExerciseDB (`AppConstants.workoutsBaseUrl`) activo para catálogos de ejercicios; restan referencias a TheMealDB (`nutritionBaseUrl`) que ya no deben usarse.
-- ⚠️ **Elementos de nutrición a remover**: archivos `lib/models/nutrition_entry.dart` y `lib/services/nutrition_service.dart`; campos `nutrition` y lógica relacionada en `_HomeSummary` (HomeScreen) y en cualquier widget; constante `nutritionBaseUrl` y headers asociados en `AppConstants`.
+- 🌐 **APIs integradas**: ExerciseDB (`AppConstants.workoutsBaseUrl`) activo para catálogos de ejercicios; no existen dependencias vigentes hacia servicios de nutrición.
+- ✅ **Depuración completada**: se eliminaron `lib/models/nutrition_entry.dart`, `lib/services/nutrition_service.dart`, los campos de nutrición en `HomeScreen` y `AppConstants`, dejando la app enfocada exclusivamente en entrenamiento.
 
 ## 2. PENDIENTES IDENTIFICADOS
 - 💾 Persistencia fuera de memoria para búsquedas y filtros frecuentes (hoy solo hay caché volátil en `_cache`).
@@ -65,4 +65,3 @@
 - 🧠 **Patrones propuestos**: usar Riverpod/Bloc para estado global (especialmente Modo Live y timers); aplicar Clean Architecture ligera (presentation → application → domain → infrastructure) para aislar cálculos de interfaz.
 - ⚙️ **Escalabilidad y rendimiento**: cálculos intensivos en isolates; memoización de gráficos; sincronización futura con backend mediante repositorios; manejo de grandes historiales con paginación y agregaciones precalculadas.
 - ⏱️ **Modo entrenamiento en vivo**: estado compartido para timers y sets; notificaciones locales y hápticas; integración con `wakelock_plus` y `audio_session`; fallback cuando el SO limite tareas en background.
-
