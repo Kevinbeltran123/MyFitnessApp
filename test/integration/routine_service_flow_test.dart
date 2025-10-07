@@ -83,6 +83,7 @@ void main() {
     await container.read(routineListControllerProvider.notifier).refresh();
     final List<Routine> afterArchive =
         await container.read(routineListControllerProvider.future);
-    expect(afterArchive.any((Routine r) => r.id == 'created'), isFalse);
+    final Routine archived = afterArchive.firstWhere((Routine r) => r.id == 'created');
+    expect(archived.isArchived, isTrue);
   });
 }

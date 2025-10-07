@@ -77,7 +77,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final theme = Theme.of(context);
     final routinesAsync = ref.watch(routineListControllerProvider);
     final routineCount = routinesAsync.maybeWhen(
-      data: (List<Routine> routines) => routines.length,
+      data: (List<Routine> routines) => routines.where((Routine r) => !r.isArchived).length,
       orElse: () => 0,
     );
 
@@ -125,7 +125,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               routinesAsync.when(
                                 data: (List<Routine> routines) => GestureDetector(
                                   onTap: _openRoutines,
-                                  child: _RoutineGlance(routines: routines),
+                                  child: _RoutineGlance(routines: routines, onCreateRoutine: _openRoutines),
                                 ),
                                 loading: () => const _RoutineGlance.loading(),
                                 error: (_, __) => const SizedBox.shrink(),
@@ -421,15 +421,17 @@ class _SpotlightSection extends StatelessWidget {
 }
 
 class _RoutineGlance extends StatelessWidget {
-  const _RoutineGlance({required this.routines});
-  const _RoutineGlance.loading() : routines = const <Routine>[];
+  const _RoutineGlance({required this.routines, this.onCreateRoutine});
+  const _RoutineGlance.loading() : routines = const <Routine>[], onCreateRoutine = null;
 
   final List<Routine> routines;
+  final VoidCallback? onCreateRoutine;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    if (routines.isEmpty) {
+    final active = routines.where((Routine routine) => !routine.isArchived).toList();
+    if (active.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -446,12 +448,17 @@ class _RoutineGlance extends StatelessWidget {
                 style: theme.textTheme.bodyMedium,
               ),
             ),
+            if (onCreateRoutine != null)
+              IconButton(
+                icon: const Icon(Icons.add_circle_outline),
+                onPressed: onCreateRoutine,
+              ),
           ],
         ),
       );
     }
 
-    final preview = routines.take(3).map((Routine routine) => routine.name).join(' • ');
+    final preview = active.take(3).map((Routine routine) => routine.name).join(' • ');
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

@@ -4,6 +4,7 @@ import 'package:my_fitness_tracker/application/routines/routine_service.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
 import 'package:my_fitness_tracker/presentation/home/home_providers.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_builder_screen.dart';
+import 'package:my_fitness_tracker/presentation/routines/routine_detail_screen.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_list_controller.dart';
 
 class RoutineListScreen extends ConsumerWidget {
@@ -36,25 +37,54 @@ class RoutineListScreen extends ConsumerWidget {
       ),
       body: routinesAsync.when(
         data: (List<Routine> routines) {
-          if (routines.isEmpty) {
-            return const _EmptyRoutineView();
+          final active = routines.where((Routine routine) => !routine.isArchived).toList();
+          final archived = routines.where((Routine routine) => routine.isArchived).toList();
+          if (active.isEmpty && archived.isEmpty) {
+            return _EmptyRoutineView(onCreate: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) => const RoutineBuilderScreen(),
+                  ),
+                ));
           }
-          return ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            itemCount: routines.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (BuildContext context, int index) {
-              final routine = routines[index];
-              return _RoutineTile(
+
+          final widgets = <Widget>[
+            for (final Routine routine in active)
+              _RoutineTile(
                 routine: routine,
+                onTap: () => _openDetail(context, routine.id),
                 onArchive: () => _handleArchive(context, ref, serviceAsync, routine),
                 onDuplicate: () => _handleDuplicate(context, ref, serviceAsync, routine),
-              );
-            },
+              ),
+            if (archived.isNotEmpty) ...<Widget>[
+              const _SectionLabel(label: 'Archivadas'),
+              for (final Routine routine in archived)
+                _RoutineTile(
+                  routine: routine,
+                  onTap: () => _openDetail(context, routine.id),
+                  onRestore: () => _handleRestore(context, ref, serviceAsync, routine),
+                ),
+            ],
+          ];
+
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            itemCount: widgets.length,
+            itemBuilder: (BuildContext context, int index) => widgets[index],
           );
         },
-        error: (Object error, StackTrace stackTrace) => _ErrorState(error: error, onRetry: () => ref.read(routineListControllerProvider.notifier).refresh()),
+        error: (Object error, StackTrace stackTrace) => _ErrorState(
+          error: error,
+          onRetry: () => ref.read(routineListControllerProvider.notifier).refresh(),
+        ),
         loading: () => const Center(child: CircularProgressIndicator()),
+      ),
+    );
+  }
+
+  void _openDetail(BuildContext context, String routineId) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => RoutineDetailScreen(routineId: routineId),
       ),
     );
   }
@@ -77,6 +107,22 @@ class RoutineListScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Rutina "${routine.name}" archivada.')),
     );
+  }
+
+  Future<void> _handleRestore(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<RoutineService> serviceAsync,
+    Routine routine,
+  ) async {
+    final service = serviceAsync.value;
+    if (service == null) {
+      _showServiceError(context);
+      return;
+    }
+    await service.restore(routine.id);
+    if (!context.mounted) return;
+    await ref.read(routineListControllerProvider.notifier).refresh();
   }
 
   Future<void> _handleDuplicate(
@@ -109,85 +155,130 @@ class RoutineListScreen extends ConsumerWidget {
 class _RoutineTile extends StatelessWidget {
   const _RoutineTile({
     required this.routine,
-    required this.onArchive,
-    required this.onDuplicate,
+    this.onTap,
+    this.onArchive,
+    this.onRestore,
+    this.onDuplicate,
   });
 
   final Routine routine;
-  final VoidCallback onArchive;
-  final VoidCallback onDuplicate;
+  final VoidCallback? onTap;
+  final VoidCallback? onArchive;
+  final VoidCallback? onRestore;
+  final VoidCallback? onDuplicate;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final focusLabel = routine.focus.name.toUpperCase();
     final chips = routine.daysOfWeek.map((RoutineDay day) => day.shortLabel).join(' · ');
+    final bool archived = routine.isArchived;
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        routine.name,
-                        style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        focusLabel,
-                        style: theme.textTheme.labelLarge?.copyWith(letterSpacing: 1.2),
-                      ),
-                    ],
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          routine.name,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: archived ? theme.colorScheme.outline : null,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          archived ? 'ARCHIVADA' : focusLabel,
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            letterSpacing: 1.2,
+                            color: archived
+                                ? theme.colorScheme.outline
+                                : theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.copy_rounded),
-                  onPressed: onDuplicate,
-                  tooltip: 'Duplicar',
-                ),
-                IconButton(
-                  icon: const Icon(Icons.archive_outlined),
-                  onPressed: onArchive,
-                  tooltip: 'Archivar',
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: <Widget>[
-                Chip(label: Text(chips)),
-                Chip(label: Text('${routine.exercises.length} ejercicios')),
-              ],
-            ),
-            if (routine.description.isNotEmpty) ...<Widget>[
-              const SizedBox(height: 12),
-              Text(
-                routine.description,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium,
+                  if (onDuplicate != null)
+                    IconButton(
+                      icon: const Icon(Icons.copy_rounded),
+                      onPressed: onDuplicate,
+                      tooltip: 'Duplicar',
+                    ),
+                  if (!archived && onArchive != null)
+                    IconButton(
+                      icon: const Icon(Icons.archive_outlined),
+                      onPressed: onArchive,
+                      tooltip: 'Archivar',
+                    )
+                  else if (archived && onRestore != null)
+                    IconButton(
+                      icon: const Icon(Icons.unarchive_outlined),
+                      onPressed: onRestore,
+                      tooltip: 'Restaurar',
+                    ),
+                ],
               ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: <Widget>[
+                  Chip(label: Text(chips)),
+                  Chip(label: Text('${routine.exercises.length} ejercicios')),
+                ],
+              ),
+              if (routine.description.isNotEmpty) ...<Widget>[
+                const SizedBox(height: 12),
+                Text(
+                  routine.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: Text(
+        label,
+        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+}
+
 class _EmptyRoutineView extends StatelessWidget {
-  const _EmptyRoutineView();
+  const _EmptyRoutineView({required this.onCreate});
+
+  final VoidCallback onCreate;
 
   @override
   Widget build(BuildContext context) {
@@ -209,6 +300,12 @@ class _EmptyRoutineView extends StatelessWidget {
               'Genera tu primera rutina para comenzar a registrar tus sesiones y analizar tu progreso.',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: onCreate,
+              icon: const Icon(Icons.add),
+              label: const Text('Crear rutina'),
             ),
           ],
         ),

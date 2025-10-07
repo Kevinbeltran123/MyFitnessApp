@@ -15,12 +15,12 @@ class RoutineListController extends AutoDisposeAsyncNotifier<List<Routine>> {
     if (repo == null) {
       return const <Routine>[];
     }
-    // Listen to repository stream and keep state updated.
-    final sub = repo.watchAll().listen((List<Routine> value) {
+    final stream = repo.watchAll(includeArchived: true);
+    final sub = stream.listen((List<Routine> value) {
       state = AsyncData(List<Routine>.from(value));
     });
     ref.onDispose(sub.cancel);
-    final initial = await repo.watchAll().first;
+    final initial = await stream.first;
     return initial;
   }
 
@@ -32,7 +32,7 @@ class RoutineListController extends AutoDisposeAsyncNotifier<List<Routine>> {
       state = const AsyncData(<Routine>[]);
       return;
     }
-    final data = await repo.watchAll().first;
+    final data = await repo.watchAll(includeArchived: true).first;
     state = AsyncData(List<Routine>.from(data));
   }
 }

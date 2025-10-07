@@ -49,3 +49,12 @@ final routineServiceProvider = Provider<AsyncValue<RoutineService>>((Ref ref) {
   final repoAsync = ref.watch(routineRepositoryProvider);
   return repoAsync.whenData((RoutineRepository repo) => RoutineService(repository: repo));
 });
+
+final routineByIdProvider = FutureProvider.autoDispose.family<Routine?, String>((Ref ref, String id) async {
+  final repoAsync = ref.watch(routineRepositoryProvider);
+  final repo = repoAsync.value;
+  if (repo == null) {
+    return null;
+  }
+  return repo.getById(id);
+});

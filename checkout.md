@@ -9,6 +9,8 @@
 - 🗂️ **Diseño de UI**: wireframes y flujos documentados en `docs/routines_wireframes.md` para RoutineList/Builder/Detail.
 
 ## 2. PENDIENTES IDENTIFICADOS
+- ✅ **Pruebas**: Tests unitarios/presentación y flujo integrado (`test/application/routines/routine_service_test.dart`, `test/presentation/routines/...`, `test/integration/routine_service_flow_test.dart`).
+
 - 💾 Persistencia fuera de memoria para búsquedas y filtros frecuentes (hoy solo hay caché volátil en `_cache`).
 - 🧪 Cobertura de pruebas unitaria/widget para servicios, transformación de modelos y UI crítica.
 - ☁️ Sincronización y resiliencia offline (no hay estrategia para reconexión o almacenamiento diferido).
