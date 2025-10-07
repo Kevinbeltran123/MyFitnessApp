@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
 import 'package:my_fitness_tracker/presentation/home/home_providers.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_list_controller.dart';
+import 'package:my_fitness_tracker/presentation/routines/routine_builder_screen.dart';
+import 'package:my_fitness_tracker/presentation/routines/routine_session_screen.dart';
 
 class RoutineDetailScreen extends ConsumerWidget {
   const RoutineDetailScreen({super.key, required this.routineId});
@@ -12,7 +14,6 @@ class RoutineDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final routineAsync = ref.watch(routineByIdProvider(routineId));
-    final serviceAsync = ref.watch(routineServiceProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -24,35 +25,86 @@ class RoutineDetailScreen extends ConsumerWidget {
             }
             return <Widget>[
               IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                tooltip: 'Editar',
+                onPressed: () async {
+                  final updated = await Navigator.of(context).push<Routine>(
+                    MaterialPageRoute<Routine>(
+                      fullscreenDialog: true,
+                      builder: (BuildContext context) =>
+                          RoutineBuilderScreen(initialRoutine: routine),
+                    ),
+                  );
+                  if (updated != null) {
+                    ref.invalidate(routineByIdProvider(routineId));
+                    ref.invalidate(routineListControllerProvider);
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Rutina "${updated.name}" actualizada.'),
+                      ),
+                    );
+                  }
+                },
+              ),
+              IconButton(
                 icon: const Icon(Icons.copy_rounded),
                 tooltip: 'Duplicar',
                 onPressed: () async {
-                  final service = serviceAsync.value;
-                  if (service == null) return;
-                  final duplicated = await service.duplicate(routine.id);
-                  ref.invalidate(routineByIdProvider(routineId));
-                  ref.invalidate(routineListControllerProvider);
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Rutina duplicada como "${duplicated.name}".')),
-                  );
+                  try {
+                    final service = await ref.read(
+                      routineServiceProvider.future,
+                    );
+                    final duplicated = await service.duplicate(routine.id);
+                    ref.invalidate(routineByIdProvider(routineId));
+                    ref.invalidate(routineListControllerProvider);
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Rutina duplicada como "${duplicated.name}".',
+                        ),
+                      ),
+                    );
+                  } catch (_) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('No se pudo duplicar la rutina.'),
+                      ),
+                    );
+                  }
                 },
               ),
               IconButton(
                 icon: Icon(
-                  routine.isArchived ? Icons.unarchive_outlined : Icons.archive_outlined,
+                  routine.isArchived
+                      ? Icons.unarchive_outlined
+                      : Icons.archive_outlined,
                 ),
                 tooltip: routine.isArchived ? 'Restaurar' : 'Archivar',
                 onPressed: () async {
-                  final service = serviceAsync.value;
-                  if (service == null) return;
-                  if (routine.isArchived) {
-                    await service.restore(routine.id);
-                  } else {
-                    await service.archive(routine.id);
+                  try {
+                    final service = await ref.read(
+                      routineServiceProvider.future,
+                    );
+                    if (routine.isArchived) {
+                      await service.restore(routine.id);
+                    } else {
+                      await service.archive(routine.id);
+                    }
+                    ref.invalidate(routineByIdProvider(routineId));
+                    ref.invalidate(routineListControllerProvider);
+                  } catch (_) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'No se pudo actualizar el estado de la rutina.',
+                        ),
+                      ),
+                    );
                   }
-                  ref.invalidate(routineByIdProvider(routineId));
-                  ref.invalidate(routineListControllerProvider);
                 },
               ),
             ];
@@ -66,8 +118,12 @@ class RoutineDetailScreen extends ConsumerWidget {
             return const _EmptyRoutineDetail();
           }
           final theme = Theme.of(context);
-          final activeDays = routine.daysOfWeek.map((RoutineDay day) => day.shortLabel).join(' · ');
-          final totalSets = routine.exercises.expand((RoutineExercise e) => e.sets).length;
+          final activeDays = routine.daysOfWeek
+              .map((RoutineDay day) => day.shortLabel)
+              .join(' · ');
+          final totalSets = routine.exercises
+              .expand((RoutineExercise e) => e.sets)
+              .length;
           return SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -82,11 +138,15 @@ class RoutineDetailScreen extends ConsumerWidget {
                         children: <Widget>[
                           Text(
                             routine.name,
-                            style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            routine.isArchived ? 'Archivada' : routine.focus.name.toUpperCase(),
+                            routine.isArchived
+                                ? 'Archivada'
+                                : routine.focus.name.toUpperCase(),
                             style: theme.textTheme.labelLarge?.copyWith(
                               letterSpacing: 1.1,
                               color: routine.isArchived
@@ -97,12 +157,18 @@ class RoutineDetailScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    Icon(Icons.calendar_month, color: theme.colorScheme.primary),
+                    Icon(
+                      Icons.calendar_month,
+                      color: theme.colorScheme.primary,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text('Días: $activeDays', style: theme.textTheme.bodyLarge),
-                Text('Series totales: $totalSets', style: theme.textTheme.bodyMedium),
+                Text(
+                  'Series totales: $totalSets',
+                  style: theme.textTheme.bodyMedium,
+                ),
                 if (routine.description.isNotEmpty) ...<Widget>[
                   const SizedBox(height: 16),
                   Text(routine.description, style: theme.textTheme.bodyMedium),
@@ -120,14 +186,21 @@ class RoutineDetailScreen extends ConsumerWidget {
                         children: <Widget>[
                           Text(
                             exercise.name,
-                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           Wrap(
                             spacing: 8,
                             children: <Widget>[
-                              Chip(label: Text(exercise.targetMuscles.take(2).join(' · '))),
-                              if (exercise.equipment != null) Chip(label: Text(exercise.equipment!)),
+                              Chip(
+                                label: Text(
+                                  exercise.targetMuscles.take(2).join(' · '),
+                                ),
+                              ),
+                              if (exercise.equipment != null)
+                                Chip(label: Text(exercise.equipment!)),
                             ],
                           ),
                           const SizedBox(height: 12),
@@ -148,8 +221,11 @@ class RoutineDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
                 FilledButton.icon(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Modo live estará disponible pronto.')),
+                    Navigator.of(context).push<void>(
+                      MaterialPageRoute<void>(
+                        builder: (_) =>
+                            RoutineSessionScreen(routineId: routine.id),
+                      ),
                     );
                   },
                   icon: const Icon(Icons.play_arrow_rounded),
@@ -159,7 +235,8 @@ class RoutineDetailScreen extends ConsumerWidget {
             ),
           );
         },
-        error: (_, __) => const Center(child: Text('No se pudo cargar la rutina.')),
+        error: (_, __) =>
+            const Center(child: Text('No se pudo cargar la rutina.')),
         loading: () => const Center(child: CircularProgressIndicator()),
       ),
     );

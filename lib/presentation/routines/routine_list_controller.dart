@@ -10,11 +10,7 @@ final routineListControllerProvider = AutoDisposeAsyncNotifierProvider<
 class RoutineListController extends AutoDisposeAsyncNotifier<List<Routine>> {
   @override
   Future<List<Routine>> build() async {
-    final repoAsync = ref.watch(routineRepositoryProvider);
-    final repo = repoAsync.value;
-    if (repo == null) {
-      return const <Routine>[];
-    }
+    final repo = await ref.watch(routineRepositoryProvider.future);
     final stream = repo.watchAll(includeArchived: true);
     final sub = stream.listen((List<Routine> value) {
       state = AsyncData(List<Routine>.from(value));
@@ -26,12 +22,7 @@ class RoutineListController extends AutoDisposeAsyncNotifier<List<Routine>> {
 
   Future<void> refresh() async {
     state = const AsyncLoading();
-    final repoAsync = ref.read(routineRepositoryProvider);
-    final repo = repoAsync.value;
-    if (repo == null) {
-      state = const AsyncData(<Routine>[]);
-      return;
-    }
+    final repo = await ref.read(routineRepositoryProvider.future);
     final data = await repo.watchAll(includeArchived: true).first;
     state = AsyncData(List<Routine>.from(data));
   }

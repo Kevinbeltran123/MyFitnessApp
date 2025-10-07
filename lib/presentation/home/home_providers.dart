@@ -19,42 +19,35 @@ final workoutServiceProvider = Provider<WorkoutService>((Ref ref) {
   return WorkoutService(client);
 });
 
-final routineRepositoryProvider = Provider<AsyncValue<RoutineRepository>>((
+final routineRepositoryProvider = FutureProvider<RoutineRepository>((
   Ref ref,
-) {
-  final isarAsync = ref.watch(isarProvider);
-  return isarAsync.whenData(RoutineRepositoryIsar.new);
+) async {
+  final isar = await ref.watch(isarProvider.future);
+  return RoutineRepositoryIsar(isar);
 });
 
 final watchAllRoutinesProvider = StreamProvider<List<Routine>>((
   Ref ref,
 ) async* {
-  final repoAsync = ref.watch(routineRepositoryProvider);
-  final repo = repoAsync.value;
-  if (repo == null) {
-    yield const <Routine>[];
-    return;
-  }
+  final repo = await ref.watch(routineRepositoryProvider.future);
   yield* repo.watchAll();
 });
 
-final createRoutineUseCaseProvider = Provider<AsyncValue<CreateRoutine>>((
+final createRoutineUseCaseProvider = FutureProvider<CreateRoutine>((
   Ref ref,
-) {
-  final repoAsync = ref.watch(routineRepositoryProvider);
-  return repoAsync.whenData(CreateRoutine.new);
+) async {
+  final repo = await ref.watch(routineRepositoryProvider.future);
+  return CreateRoutine(repo);
 });
 
-final routineServiceProvider = Provider<AsyncValue<RoutineService>>((Ref ref) {
-  final repoAsync = ref.watch(routineRepositoryProvider);
-  return repoAsync.whenData((RoutineRepository repo) => RoutineService(repository: repo));
+final routineServiceProvider = FutureProvider<RoutineService>((Ref ref) async {
+  final repo = await ref.watch(routineRepositoryProvider.future);
+  return RoutineService(repository: repo);
 });
 
-final routineByIdProvider = FutureProvider.autoDispose.family<Routine?, String>((Ref ref, String id) async {
-  final repoAsync = ref.watch(routineRepositoryProvider);
-  final repo = repoAsync.value;
-  if (repo == null) {
-    return null;
-  }
-  return repo.getById(id);
-});
+final routineByIdProvider = FutureProvider.autoDispose.family<Routine?, String>(
+  (Ref ref, String id) async {
+    final repo = await ref.watch(routineRepositoryProvider.future);
+    return repo.getById(id);
+  },
+);

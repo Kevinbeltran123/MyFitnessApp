@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
+import 'package:my_fitness_tracker/application/routines/routine_service.dart';
 import 'package:my_fitness_tracker/models/workout_plan.dart';
 import 'package:my_fitness_tracker/presentation/home/home_providers.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_list_controller.dart';
@@ -9,26 +10,66 @@ import 'package:my_fitness_tracker/presentation/routines/widgets/routine_set_edi
 import 'package:my_fitness_tracker/services/workout_service.dart';
 
 class RoutineBuilderScreen extends ConsumerStatefulWidget {
-  const RoutineBuilderScreen({super.key});
+  const RoutineBuilderScreen({super.key, this.initialRoutine});
+
+  final Routine? initialRoutine;
+
+  bool get isEditing => initialRoutine != null;
 
   @override
-  ConsumerState<RoutineBuilderScreen> createState() => _RoutineBuilderScreenState();
+  ConsumerState<RoutineBuilderScreen> createState() =>
+      _RoutineBuilderScreenState();
 }
 
 class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final Set<RoutineDay> _selectedDays = <RoutineDay>{const RoutineDay(DateTime.monday)};
+  final Set<RoutineDay> _selectedDays = <RoutineDay>{
+    const RoutineDay(DateTime.monday),
+  };
   final List<_RoutineExerciseDraft> _exercises = <_RoutineExerciseDraft>[];
 
   bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final Routine? routine = widget.initialRoutine;
+    if (routine != null) {
+      _applyRoutine(routine);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant RoutineBuilderScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final Routine? routine = widget.initialRoutine;
+    if (routine != null && routine != oldWidget.initialRoutine) {
+      setState(() {
+        _applyRoutine(routine);
+      });
+    }
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  void _applyRoutine(Routine routine) {
+    _nameController.text = routine.name;
+    _descriptionController.text = routine.description;
+    _selectedDays
+      ..clear()
+      ..addAll(routine.daysOfWeek);
+    _exercises
+      ..clear()
+      ..addAll(
+        routine.exercises.map(_RoutineExerciseDraft.fromRoutineExercise),
+      );
   }
 
   void _toggleDay(int weekday) {
@@ -44,12 +85,7 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
 
   void _addExercise(WorkoutPlan plan) {
     setState(() {
-      _exercises.add(
-        _RoutineExerciseDraft(
-          plan: plan,
-          sets: const <RoutineSet>[RoutineSet(setNumber: 1, repetitions: 12)],
-        ),
-      );
+      _exercises.add(_RoutineExerciseDraft.fromWorkoutPlan(plan));
     });
     Navigator.of(context).pop();
   }
@@ -65,54 +101,70 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
       return;
     }
     setState(() => _isSaving = true);
-    final routineServiceAsync = ref.read(routineServiceProvider);
-    final routineService = routineServiceAsync.value;
-    if (routineService == null) {
+    late final RoutineService routineService;
+    try {
+      routineService = await ref.read(routineServiceProvider.future);
+    } catch (error) {
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Servicio no disponible.')), 
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Servicio no disponible.')),
+        );
+      }
       return;
     }
 
     final DateTime now = DateTime.now();
+    final Routine? initial = widget.initialRoutine;
     final routine = Routine(
-      id: now.microsecondsSinceEpoch.toString(),
+      id: initial?.id ?? now.microsecondsSinceEpoch.toString(),
       name: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
-      focus: RoutineFocus.fullBody,
+      focus: initial?.focus ?? RoutineFocus.fullBody,
       daysOfWeek: _selectedDays.toList(),
-      exercises: _exercises
-          .asMap()
-          .entries
-          .map(
-            (MapEntry<int, _RoutineExerciseDraft> entry) => RoutineExercise(
-              exerciseId: entry.value.plan.exerciseId,
-              name: entry.value.plan.name,
-              order: entry.key,
-              sets: entry.value.sets,
-              targetMuscles: entry.value.plan.targetMuscles,
-              notes: null,
-              equipment: entry.value.plan.equipments.isNotEmpty
-                  ? entry.value.plan.equipments.first
-                  : null,
-              gifUrl: entry.value.plan.gifUrl,
-            ),
-          )
-          .toList(),
-      createdAt: now,
+      exercises: _exercises.asMap().entries.map((
+        MapEntry<int, _RoutineExerciseDraft> entry,
+      ) {
+        final draft = entry.value;
+        return RoutineExercise(
+          exerciseId: draft.plan.exerciseId,
+          name: draft.plan.name,
+          order: entry.key,
+          sets: List<RoutineSet>.from(draft.sets),
+          targetMuscles: draft.plan.targetMuscles,
+          notes: draft.notes,
+          equipment:
+              draft.equipment ??
+              (draft.plan.equipments.isNotEmpty
+                  ? draft.plan.equipments.first
+                  : null),
+          gifUrl: draft.plan.gifUrl,
+        );
+      }).toList(),
+      createdAt: initial?.createdAt ?? now,
       updatedAt: now,
-      notes: null,
-      isArchived: false,
+      notes: initial?.notes,
+      isArchived: initial?.isArchived ?? false,
     );
 
-    await routineService.create(routine);
+    if (initial == null) {
+      await routineService.create(routine);
+    } else {
+      await routineService.update(routine);
+    }
     await ref.read(routineListControllerProvider.notifier).refresh();
     if (!mounted) return;
     setState(() => _isSaving = false);
-    Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Rutina "${routine.name}" creada.')),
+    final messenger = ScaffoldMessenger.of(context);
+    Navigator.of(context).pop(routine);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          initial == null
+              ? 'Rutina "${routine.name}" creada.'
+              : 'Rutina "${routine.name}" actualizada.',
+        ),
+      ),
     );
   }
 
@@ -123,7 +175,7 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nueva rutina'),
+        title: Text(widget.isEditing ? 'Editar rutina' : 'Nueva rutina'),
         actions: <Widget>[
           TextButton(
             onPressed: _isSaving ? null : _saveRoutine,
@@ -173,7 +225,9 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                     .map(
                       (MapEntry<int, String> entry) => FilterChip(
                         label: Text(entry.value),
-                        selected: _selectedDays.contains(RoutineDay(entry.key + 1)),
+                        selected: _selectedDays.contains(
+                          RoutineDay(entry.key + 1),
+                        ),
                         onSelected: (_) => _toggleDay(entry.key + 1),
                       ),
                     )
@@ -182,10 +236,14 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
               const SizedBox(height: 24),
               Row(
                 children: <Widget>[
-                  Text('Ejercicios (${_exercises.length})', style: theme.textTheme.titleMedium),
+                  Text(
+                    'Ejercicios (${_exercises.length})',
+                    style: theme.textTheme.titleMedium,
+                  ),
                   const Spacer(),
                   TextButton.icon(
-                    onPressed: () => _openExercisePicker(context, workoutService),
+                    onPressed: () =>
+                        _openExercisePicker(context, workoutService),
                     icon: const Icon(Icons.add),
                     label: const Text('Agregar ejercicio'),
                   ),
@@ -204,53 +262,51 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                 )
               else
                 Column(
-                  children: _exercises
-                      .asMap()
-                      .entries
-                      .map(
-                        (MapEntry<int, _RoutineExerciseDraft> entry) {
-                          final draft = entry.value;
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Row(
-                                    children: <Widget>[
-                                      Expanded(
-                                        child: Text(
-                                          draft.plan.name,
-                                          style: theme.textTheme.titleMedium,
-                                        ),
-                                      ),
-                                      IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _exercises.removeAt(entry.key);
-                                          });
-                                        },
-                                        icon: const Icon(Icons.delete_outline),
-                                      ),
-                                    ],
+                  children: _exercises.asMap().entries.map((
+                    MapEntry<int, _RoutineExerciseDraft> entry,
+                  ) {
+                    final draft = entry.value;
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                Expanded(
+                                  child: Text(
+                                    draft.plan.name,
+                                    style: theme.textTheme.titleMedium,
                                   ),
-                                  const SizedBox(height: 12),
-                                  RoutineSetEditor(
-                                    initialSets: draft.sets,
-                                    onChanged: (List<RoutineSet> sets) {
-                                      setState(() {
-                                        _exercises[entry.key] = draft.copyWith(sets: sets);
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _exercises.removeAt(entry.key);
+                                    });
+                                  },
+                                  icon: const Icon(Icons.delete_outline),
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                      )
-                      .toList(),
+                            const SizedBox(height: 12),
+                            RoutineSetEditor(
+                              initialSets: draft.sets,
+                              onChanged: (List<RoutineSet> sets) {
+                                setState(() {
+                                  _exercises[entry.key] = draft.copyWith(
+                                    sets: sets,
+                                  );
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
             ],
           ),
@@ -259,7 +315,10 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
     );
   }
 
-  Future<void> _openExercisePicker(BuildContext context, WorkoutService service) async {
+  Future<void> _openExercisePicker(
+    BuildContext context,
+    WorkoutService service,
+  ) async {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -267,7 +326,9 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
         return FractionallySizedBox(
           heightFactor: 0.9,
           child: Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
             child: RoutineExercisePicker(
               workoutService: service,
               onExerciseSelected: _addExercise,
@@ -280,12 +341,52 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
 }
 
 class _RoutineExerciseDraft {
-  const _RoutineExerciseDraft({required this.plan, required this.sets});
+  const _RoutineExerciseDraft({
+    required this.plan,
+    required this.sets,
+    this.notes,
+    this.equipment,
+  });
 
   final WorkoutPlan plan;
   final List<RoutineSet> sets;
+  final String? notes;
+  final String? equipment;
+
+  factory _RoutineExerciseDraft.fromWorkoutPlan(WorkoutPlan plan) {
+    return _RoutineExerciseDraft(
+      plan: plan,
+      sets: const <RoutineSet>[RoutineSet(setNumber: 1, repetitions: 12)],
+      equipment: plan.equipments.isNotEmpty ? plan.equipments.first : null,
+    );
+  }
+
+  factory _RoutineExerciseDraft.fromRoutineExercise(RoutineExercise exercise) {
+    return _RoutineExerciseDraft(
+      plan: WorkoutPlan(
+        exerciseId: exercise.exerciseId,
+        name: exercise.name,
+        gifUrl: exercise.gifUrl ?? '',
+        targetMuscles: exercise.targetMuscles,
+        bodyParts: const <String>[],
+        equipments: exercise.equipment != null
+            ? <String>[exercise.equipment!]
+            : const <String>[],
+        secondaryMuscles: const <String>[],
+        instructions: const <String>[],
+      ),
+      sets: List<RoutineSet>.from(exercise.sets),
+      notes: exercise.notes,
+      equipment: exercise.equipment,
+    );
+  }
 
   _RoutineExerciseDraft copyWith({List<RoutineSet>? sets}) {
-    return _RoutineExerciseDraft(plan: plan, sets: sets ?? this.sets);
+    return _RoutineExerciseDraft(
+      plan: plan,
+      sets: sets ?? this.sets,
+      notes: notes,
+      equipment: equipment,
+    );
   }
 }

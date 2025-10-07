@@ -35,12 +35,14 @@ void main() {
     final repository = InMemoryRoutineRepository(<Routine>[_routine('base')]);
     final container = ProviderContainer(
       overrides: <Override>[
-        routineRepositoryProvider.overrideWithValue(AsyncValue.data(repository)),
+        routineRepositoryProvider.overrideWith((Ref ref) async => repository),
       ],
     );
     addTearDown(container.dispose);
 
-    final RoutineService service = container.read(routineServiceProvider).value!;
+    final RoutineService service = await container.read(
+      routineServiceProvider.future,
+    );
 
     // Create new routine
     final DateTime now = DateTime.now();
@@ -67,23 +69,31 @@ void main() {
 
     await service.create(routine);
     await container.read(routineListControllerProvider.notifier).refresh();
-    final List<Routine> afterCreate =
-        await container.read(routineListControllerProvider.future);
+    final List<Routine> afterCreate = await container.read(
+      routineListControllerProvider.future,
+    );
     expect(afterCreate.any((Routine r) => r.id == 'created'), isTrue);
 
     // Duplicate
-    final Routine duplicated = await service.duplicate('created', newName: 'Duplicada');
+    final Routine duplicated = await service.duplicate(
+      'created',
+      newName: 'Duplicada',
+    );
     await container.read(routineListControllerProvider.notifier).refresh();
-    final List<Routine> afterDuplicate =
-        await container.read(routineListControllerProvider.future);
+    final List<Routine> afterDuplicate = await container.read(
+      routineListControllerProvider.future,
+    );
     expect(afterDuplicate.any((Routine r) => r.id == duplicated.id), isTrue);
 
     // Archive
     await service.archive('created');
     await container.read(routineListControllerProvider.notifier).refresh();
-    final List<Routine> afterArchive =
-        await container.read(routineListControllerProvider.future);
-    final Routine archived = afterArchive.firstWhere((Routine r) => r.id == 'created');
+    final List<Routine> afterArchive = await container.read(
+      routineListControllerProvider.future,
+    );
+    final Routine archived = afterArchive.firstWhere(
+      (Routine r) => r.id == 'created',
+    );
     expect(archived.isArchived, isTrue);
   });
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:my_fitness_tracker/application/routines/routine_service.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
 import 'package:my_fitness_tracker/presentation/home/home_providers.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_builder_screen.dart';
@@ -13,15 +12,14 @@ class RoutineListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final routinesAsync = ref.watch(routineListControllerProvider);
-    final serviceAsync = ref.watch(routineServiceProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mis Rutinas'),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => ref.read(routineListControllerProvider.notifier).refresh(),
+            onPressed: () =>
+                ref.read(routineListControllerProvider.notifier).refresh(),
             tooltip: 'Actualizar',
           ),
         ],
@@ -37,14 +35,21 @@ class RoutineListScreen extends ConsumerWidget {
       ),
       body: routinesAsync.when(
         data: (List<Routine> routines) {
-          final active = routines.where((Routine routine) => !routine.isArchived).toList();
-          final archived = routines.where((Routine routine) => routine.isArchived).toList();
+          final active = routines
+              .where((Routine routine) => !routine.isArchived)
+              .toList();
+          final archived = routines
+              .where((Routine routine) => routine.isArchived)
+              .toList();
           if (active.isEmpty && archived.isEmpty) {
-            return _EmptyRoutineView(onCreate: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) => const RoutineBuilderScreen(),
-                  ),
-                ));
+            return _EmptyRoutineView(
+              onCreate: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (BuildContext context) =>
+                      const RoutineBuilderScreen(),
+                ),
+              ),
+            );
           }
 
           final widgets = <Widget>[
@@ -52,8 +57,8 @@ class RoutineListScreen extends ConsumerWidget {
               _RoutineTile(
                 routine: routine,
                 onTap: () => _openDetail(context, routine.id),
-                onArchive: () => _handleArchive(context, ref, serviceAsync, routine),
-                onDuplicate: () => _handleDuplicate(context, ref, serviceAsync, routine),
+                onArchive: () => _handleArchive(context, ref, routine),
+                onDuplicate: () => _handleDuplicate(context, ref, routine),
               ),
             if (archived.isNotEmpty) ...<Widget>[
               const _SectionLabel(label: 'Archivadas'),
@@ -61,7 +66,7 @@ class RoutineListScreen extends ConsumerWidget {
                 _RoutineTile(
                   routine: routine,
                   onTap: () => _openDetail(context, routine.id),
-                  onRestore: () => _handleRestore(context, ref, serviceAsync, routine),
+                  onRestore: () => _handleRestore(context, ref, routine),
                 ),
             ],
           ];
@@ -74,7 +79,8 @@ class RoutineListScreen extends ConsumerWidget {
         },
         error: (Object error, StackTrace stackTrace) => _ErrorState(
           error: error,
-          onRetry: () => ref.read(routineListControllerProvider.notifier).refresh(),
+          onRetry: () =>
+              ref.read(routineListControllerProvider.notifier).refresh(),
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
       ),
@@ -84,7 +90,8 @@ class RoutineListScreen extends ConsumerWidget {
   void _openDetail(BuildContext context, String routineId) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (BuildContext context) => RoutineDetailScreen(routineId: routineId),
+        builder: (BuildContext context) =>
+            RoutineDetailScreen(routineId: routineId),
       ),
     );
   }
@@ -92,62 +99,64 @@ class RoutineListScreen extends ConsumerWidget {
   Future<void> _handleArchive(
     BuildContext context,
     WidgetRef ref,
-    AsyncValue<RoutineService> serviceAsync,
     Routine routine,
   ) async {
-    final service = serviceAsync.value;
-    if (service == null) {
+    try {
+      final service = await ref.read(routineServiceProvider.future);
+      await service.archive(routine.id);
+      if (!context.mounted) return;
+      await ref.read(routineListControllerProvider.notifier).refresh();
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Rutina "${routine.name}" archivada.')),
+      );
+    } catch (_) {
+      if (!context.mounted) return;
       _showServiceError(context);
-      return;
     }
-    await service.archive(routine.id);
-    if (!context.mounted) return;
-    await ref.read(routineListControllerProvider.notifier).refresh();
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Rutina "${routine.name}" archivada.')),
-    );
   }
 
   Future<void> _handleRestore(
     BuildContext context,
     WidgetRef ref,
-    AsyncValue<RoutineService> serviceAsync,
     Routine routine,
   ) async {
-    final service = serviceAsync.value;
-    if (service == null) {
+    try {
+      final service = await ref.read(routineServiceProvider.future);
+      await service.restore(routine.id);
+      if (!context.mounted) return;
+      await ref.read(routineListControllerProvider.notifier).refresh();
+    } catch (_) {
+      if (!context.mounted) return;
       _showServiceError(context);
-      return;
     }
-    await service.restore(routine.id);
-    if (!context.mounted) return;
-    await ref.read(routineListControllerProvider.notifier).refresh();
   }
 
   Future<void> _handleDuplicate(
     BuildContext context,
     WidgetRef ref,
-    AsyncValue<RoutineService> serviceAsync,
     Routine routine,
   ) async {
-    final service = serviceAsync.value;
-    if (service == null) {
+    try {
+      final service = await ref.read(routineServiceProvider.future);
+      final duplicated = await service.duplicate(routine.id);
+      if (!context.mounted) return;
+      await ref.read(routineListControllerProvider.notifier).refresh();
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Rutina duplicada como "${duplicated.name}".')),
+      );
+    } catch (_) {
+      if (!context.mounted) return;
       _showServiceError(context);
-      return;
     }
-    final duplicated = await service.duplicate(routine.id);
-    if (!context.mounted) return;
-    await ref.read(routineListControllerProvider.notifier).refresh();
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Rutina duplicada como "${duplicated.name}".')),
-    );
   }
 
   void _showServiceError(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Servicio no disponible. Intenta nuevamente.')),
+      const SnackBar(
+        content: Text('Servicio no disponible. Intenta nuevamente.'),
+      ),
     );
   }
 }
@@ -171,7 +180,9 @@ class _RoutineTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final focusLabel = routine.focus.name.toUpperCase();
-    final chips = routine.daysOfWeek.map((RoutineDay day) => day.shortLabel).join(' · ');
+    final chips = routine.daysOfWeek
+        .map((RoutineDay day) => day.shortLabel)
+        .join(' · ');
     final bool archived = routine.isArchived;
 
     return Card(
@@ -269,7 +280,9 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Text(
         label,
-        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+        style: theme.textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -289,7 +302,11 @@ class _EmptyRoutineView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(Icons.playlist_add_check_circle_rounded, size: 56, color: theme.colorScheme.primary),
+            Icon(
+              Icons.playlist_add_check_circle_rounded,
+              size: 56,
+              color: theme.colorScheme.primary,
+            ),
             const SizedBox(height: 18),
             Text(
               'Aún no tienes rutinas creadas',

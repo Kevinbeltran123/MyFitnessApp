@@ -32,36 +32,44 @@ Routine _routine(String id, {String name = 'Rutina'}) {
 void main() {
   group('RoutineListController', () {
     test('emits existing routines on first load', () async {
-      final InMemoryRoutineRepository repository =
-          InMemoryRoutineRepository(<Routine>[_routine('r-1', name: 'Fuerza')]);
+      final InMemoryRoutineRepository repository = InMemoryRoutineRepository(
+        <Routine>[_routine('r-1', name: 'Fuerza')],
+      );
 
       final ProviderContainer container = ProviderContainer(
         overrides: <Override>[
-          routineRepositoryProvider.overrideWithValue(AsyncValue.data(repository)),
+          routineRepositoryProvider.overrideWith((Ref ref) async => repository),
         ],
       );
       addTearDown(container.dispose);
 
-      final List<Routine> routines = await container.read(routineListControllerProvider.future);
+      final List<Routine> routines = await container.read(
+        routineListControllerProvider.future,
+      );
       expect(routines, hasLength(1));
       expect(routines.first.name, 'Fuerza');
     });
 
     test('refresh reloads routines after repository updates', () async {
-      final InMemoryRoutineRepository repository =
-          InMemoryRoutineRepository(<Routine>[_routine('r-1')]);
+      final InMemoryRoutineRepository repository = InMemoryRoutineRepository(
+        <Routine>[_routine('r-1')],
+      );
 
       final ProviderContainer container = ProviderContainer(
         overrides: <Override>[
-          routineRepositoryProvider.overrideWithValue(AsyncValue.data(repository)),
+          routineRepositoryProvider.overrideWith((Ref ref) async => repository),
         ],
       );
       addTearDown(container.dispose);
 
       await container.read(routineListControllerProvider.future);
-      await repository.saveRoutine(_routine('r-2', name: 'Nueva')); // emit change
+      await repository.saveRoutine(
+        _routine('r-2', name: 'Nueva'),
+      ); // emit change
       await container.read(routineListControllerProvider.notifier).refresh();
-      final AsyncValue<List<Routine>> state = container.read(routineListControllerProvider);
+      final AsyncValue<List<Routine>> state = container.read(
+        routineListControllerProvider,
+      );
       expect(state.value, isNotNull);
       expect(state.value, hasLength(2));
     });

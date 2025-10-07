@@ -5,13 +5,19 @@ import 'package:my_fitness_tracker/application/routines/routine_service.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
 import 'package:my_fitness_tracker/presentation/home/home_providers.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_detail_screen.dart';
+import 'package:my_fitness_tracker/presentation/routines/routine_session_screen.dart';
 
+import '../../support/fake_workout_service.dart';
 import '../../support/in_memory_routine_repository.dart';
 
-Routine _routine(String id, {bool archived = false}) {
+Routine _routine(
+  String id, {
+  bool archived = false,
+  String name = 'Rutina base',
+}) {
   return Routine(
     id: id,
-    name: 'Rutina $id',
+    name: name,
     description: 'Demo',
     focus: RoutineFocus.fullBody,
     daysOfWeek: const <RoutineDay>[RoutineDay(DateTime.monday)],
@@ -34,19 +40,20 @@ Routine _routine(String id, {bool archived = false}) {
 }
 
 void main() {
-  testWidgets('RoutineDetailScreen shows routine data and archives/restores', (WidgetTester tester) async {
+  testWidgets('RoutineDetailScreen shows routine data and archives/restores', (
+    WidgetTester tester,
+  ) async {
     final repository = InMemoryRoutineRepository(<Routine>[_routine('base')]);
     final service = RoutineService(repository: repository);
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: <Override>[
-          routineRepositoryProvider.overrideWithValue(AsyncValue.data(repository)),
-          routineServiceProvider.overrideWithValue(AsyncValue.data(service)),
+          routineRepositoryProvider.overrideWith((Ref ref) async => repository),
+          routineServiceProvider.overrideWith((Ref ref) async => service),
+          workoutServiceProvider.overrideWithValue(FakeWorkoutService()),
         ],
-        child: const MaterialApp(
-          home: RoutineDetailScreen(routineId: 'base'),
-        ),
+        child: const MaterialApp(home: RoutineDetailScreen(routineId: 'base')),
       ),
     );
     await tester.pumpAndSettle();
@@ -59,4 +66,48 @@ void main() {
     final archived = await repository.getById('base');
     expect(archived?.isArchived, isTrue);
   });
+
+  testWidgets(
+    'RoutineDetailScreen allows quick edit and live mode navigation',
+    (WidgetTester tester) async {
+      final repository = InMemoryRoutineRepository(<Routine>[_routine('base')]);
+      final service = RoutineService(repository: repository);
+      final fakeWorkoutService = FakeWorkoutService();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: <Override>[
+            routineRepositoryProvider.overrideWith(
+              (Ref ref) async => repository,
+            ),
+            routineServiceProvider.overrideWith((Ref ref) async => service),
+            workoutServiceProvider.overrideWithValue(fakeWorkoutService),
+          ],
+          child: const MaterialApp(
+            home: RoutineDetailScreen(routineId: 'base'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.edit_outlined));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Editar rutina'), findsOneWidget);
+
+      await tester.enterText(
+        find.bySemanticsLabel('Nombre de la rutina'),
+        'Rutina base editada',
+      );
+      await tester.tap(find.text('Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Rutina base editada'), findsOneWidget);
+
+      await tester.tap(find.text('Iniciar entrenamiento'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(RoutineSessionScreen), findsOneWidget);
+    },
+  );
 }
