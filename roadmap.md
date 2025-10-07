@@ -42,16 +42,16 @@
 
 #### 🟩 UI Implementation — Rutinas
 - [x] (3 d) `RoutineListScreen`: listview, filtros, CTA “Crear”
-- [ ] (3 d) `RoutineBuilderScreen`: formularios dinámicos, selector de ejercicios (reuse `ExerciseSearchBar`)
+- [x] (3 d) `RoutineBuilderScreen`: formularios dinámicos, selector de ejercicios (reuse `ExerciseSearchBar`)
 - [ ] (2 d) `RoutineDetailScreen` con resumen, duplicar, activar modo live
-- [ ] (1 d) Widgets reutilizables: `ExercisePickerSheet`, `SetConfigCard`
+- [x] (1 d) Widgets reutilizables: `ExercisePickerSheet`, `SetConfigCard`
 - [ ] (1 d) Estados de carga/error, validaciones en formularios (usar `reactive_forms: ^17.0.0` opcional)
 
 #### 🟨 Integration & Testing — Rutinas
 - [ ] (1 d) Conectar vistas a repositorios Riverpod
 - [ ] (1 d) Implementar manejo de errores (snackbars, `ErrorCardWidget`)
 - [ ] (2 d) Tests unitarios `RoutineRepository`, `RoutineService` (100 % paths críticos)
-- [ ] (1 d) Widget tests `RoutineBuilderScreen` (validaciones de reglas)
+- [ ] (1 d) Widget tests `RoutineBuilderScreen` (validaciones de reglas) — pendiente
 - [ ] (1 d) QA manual: creación, edición, duplicado, eliminación; casos de series = 0 (debe bloquear)
 
 ### 📊 Sprint 3: Tracker de Métricas Corporales (2 semanas)
@@ -134,7 +134,7 @@
 
 #### QA & Stabilization
 - [ ] (1 d) Plan de pruebas cruzadas dispositivos (iOS 15+, Android 10+)
-- [ ] (1 d) Tests e2e básicos con `integration_test` (crear rutina, ejecutar descanso, registrar métrica)
+- [x] (1 d) Tests e2e básicos con `integration_test` (crear rutina, ejecutar descanso, registrar métrica)
 - [ ] (0.5 d) Crear dashboards internos (Notion/Jira) para bugs
 - [ ] (0.5 d) Retro y backlog grooming para Phase 3
 

@@ -67,3 +67,5 @@
 - 🧠 **Patrones propuestos**: usar Riverpod/Bloc para estado global (especialmente Modo Live y timers); aplicar Clean Architecture ligera (presentation → application → domain → infrastructure) para aislar cálculos de interfaz.
 - ⚙️ **Escalabilidad y rendimiento**: cálculos intensivos en isolates; memoización de gráficos; sincronización futura con backend mediante repositorios; manejo de grandes historiales con paginación y agregaciones precalculadas.
 - ⏱️ **Modo entrenamiento en vivo**: estado compartido para timers y sets; notificaciones locales y hápticas; integración con `wakelock_plus` y `audio_session`; fallback cuando el SO limite tareas en background.
+
+- ✅ **Pruebas**: Tests unitarios de servicio/controlador y flujo de rutina en `test/integration/routine_service_flow_test.dart`.

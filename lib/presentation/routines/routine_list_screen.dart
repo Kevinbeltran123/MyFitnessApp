@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_fitness_tracker/application/routines/routine_service.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
 import 'package:my_fitness_tracker/presentation/home/home_providers.dart';
+import 'package:my_fitness_tracker/presentation/routines/routine_builder_screen.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_list_controller.dart';
 
 class RoutineListScreen extends ConsumerWidget {
@@ -25,7 +26,11 @@ class RoutineListScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showComingSoon(context),
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (BuildContext context) => const RoutineBuilderScreen(),
+          ),
+        ),
         icon: const Icon(Icons.add),
         label: const Text('Crear rutina'),
       ),
@@ -51,12 +56,6 @@ class RoutineListScreen extends ConsumerWidget {
         error: (Object error, StackTrace stackTrace) => _ErrorState(error: error, onRetry: () => ref.read(routineListControllerProvider.notifier).refresh()),
         loading: () => const Center(child: CircularProgressIndicator()),
       ),
-    );
-  }
-
-  void _showComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('El constructor de rutinas estará disponible en la siguiente iteración.')),
     );
   }
 
