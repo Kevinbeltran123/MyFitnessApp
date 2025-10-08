@@ -11,24 +11,26 @@ You are working on a Flutter fitness tracking app. The app has a solid foundatio
 - Clean architecture with Riverpod state management
 - Existing exercise search and display functionality
 - **Advanced RoutineListScreen** with search, filtering, and metadata
-- **NEW: Complete RoutineBuilderScreen** with form validation and exercise picker
+- **Complete RoutineBuilderScreen** with form validation and exercise picker
+- **NEW: Complete RoutineDetailScreen** with full CRUD operations and rich presentation
 - Enhanced exercise picker with debounced search and UX improvements
 - Last-used routine tracking and session history integration
+- Full routine management flow (create, list, view, edit, delete, duplicate)
 
 ❌ **Missing Critical Features:**
-- ⭐ **No UI to VIEW/EDIT existing routines** (users can create and list, but can't edit)
+- ⭐ **No persistent storage** (data lost on app restart - need Isar database integration)
 - No way to log body weight or measurements
-- No persistent storage (data lost on app restart)
-- No routine detail/editor screens
+- No metrics entry UI or dashboard
+- No offline data survival between app sessions
 
 ## Your Mission
 Complete the **Phase 1 fundamentals** outlined in `llm_roadmap.md`. Focus on practical, user-facing features that provide immediate value.
 
 ## Key Priorities (Updated - in order):
-1. ⭐ **RoutineDetailScreen** - Users can create and list routines but can't view/edit existing ones
-2. **Persistent Storage** - Connect to Isar database so data survives app restarts  
-3. **Metrics Tracking** - Simple weight logging and BMR display
-4. **Database Persistence** - Complete the persistence layer for routines
+1. ⭐ **Database Persistence** - Connect to Isar database so data survives app restarts
+2. **Metrics Tracking** - Simple weight logging and BMR display
+3. **Metrics Dashboard** - Basic charts and progress visualization
+4. **Testing & Polish** - Ensure stability and user experience
 
 ## What NOT to Build:
 - ❌ Advanced analytics or performance charts
@@ -58,19 +60,18 @@ A user should be able to:
 - **Technical Specs:** `roadmap.md` (use for architecture reference only)
 - **Architecture:** `ARCHITECTURE.md`
 
-**Current Priority:** RoutineDetailScreen implementation - users can now create and list routines but need to view/edit existing ones.
+**Current Priority:** Database persistence implementation - users have complete routine management but data is lost on app restart.
 
-**Just Completed:** Complete RoutineBuilderScreen with focus selection, enhanced exercise picker, robust validation, and error handling (December 2024).
+**Just Completed:** Complete RoutineDetailScreen with stateful flow, full CRUD operations, rich presentation, and seamless list integration (December 2024).
 
-## 🎯 **Next Task: RoutineDetailScreen**
+## 🎯 **Next Task: Database Persistence**
 
-Create `lib/presentation/routines/routine_detail_screen.dart` with:
-1. View routine details (name, description, exercises, sets/reps)
-2. Edit routine functionality (reuse RoutineBuilderScreen components)
-3. Delete routine with confirmation
-4. Duplicate routine option
-5. "Start Workout" button (connects to existing session screen)
-6. Navigation from RoutineListScreen taps
+Complete the Isar database integration for routine persistence:
+1. Ensure routines survive app restarts
+2. Connect existing repositories to actual Isar database
+3. Test data persistence across app sessions
+4. Verify all CRUD operations work with persistent storage
+5. Handle database migrations and schema updates
 
 **Expected Duration:** 2-3 days
-**Key Navigation:** Connect from RoutineListScreen item taps
+**Key Focus:** Move from in-memory to persistent storage

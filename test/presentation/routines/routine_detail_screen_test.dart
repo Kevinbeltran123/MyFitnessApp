@@ -39,24 +39,32 @@ Routine _routine(
   );
 }
 
+Future<void> _openDetail(
+  WidgetTester tester,
+  InMemoryRoutineRepository repository,
+) async {
+  final service = RoutineService(repository: repository);
+  final fakeWorkoutService = FakeWorkoutService();
+
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: <Override>[
+        routineRepositoryProvider.overrideWith((Ref ref) async => repository),
+        routineServiceProvider.overrideWith((Ref ref) async => service),
+        workoutServiceProvider.overrideWithValue(fakeWorkoutService),
+      ],
+      child: const MaterialApp(home: RoutineDetailScreen(routineId: 'base')),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('RoutineDetailScreen shows routine data and archives/restores', (
     WidgetTester tester,
   ) async {
     final repository = InMemoryRoutineRepository(<Routine>[_routine('base')]);
-    final service = RoutineService(repository: repository);
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: <Override>[
-          routineRepositoryProvider.overrideWith((Ref ref) async => repository),
-          routineServiceProvider.overrideWith((Ref ref) async => service),
-          workoutServiceProvider.overrideWithValue(FakeWorkoutService()),
-        ],
-        child: const MaterialApp(home: RoutineDetailScreen(routineId: 'base')),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await _openDetail(tester, repository);
 
     expect(find.text('Rutina base'), findsOneWidget);
 
@@ -71,24 +79,7 @@ void main() {
     'RoutineDetailScreen allows quick edit and live mode navigation',
     (WidgetTester tester) async {
       final repository = InMemoryRoutineRepository(<Routine>[_routine('base')]);
-      final service = RoutineService(repository: repository);
-      final fakeWorkoutService = FakeWorkoutService();
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: <Override>[
-            routineRepositoryProvider.overrideWith(
-              (Ref ref) async => repository,
-            ),
-            routineServiceProvider.overrideWith((Ref ref) async => service),
-            workoutServiceProvider.overrideWithValue(fakeWorkoutService),
-          ],
-          child: const MaterialApp(
-            home: RoutineDetailScreen(routineId: 'base'),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
+      await _openDetail(tester, repository);
 
       await tester.tap(find.byIcon(Icons.edit_outlined));
       await tester.pumpAndSettle();
@@ -104,7 +95,12 @@ void main() {
 
       expect(find.text('Rutina base editada'), findsOneWidget);
 
-      await tester.tap(find.text('Iniciar entrenamiento'));
+      final Finder ctaButton = find.byKey(
+        const ValueKey<String>('routine-detail-start'),
+      );
+      expect(ctaButton, findsOneWidget);
+
+      await tester.tap(ctaButton);
       await tester.pumpAndSettle();
 
       expect(find.byType(RoutineSessionScreen), findsOneWidget);

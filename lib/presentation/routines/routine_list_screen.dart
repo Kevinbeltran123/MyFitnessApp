@@ -248,13 +248,28 @@ class _RoutineListScreenState extends ConsumerState<RoutineListScreen> {
     );
   }
 
-  void _openDetail(String routineId) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) =>
-            RoutineDetailScreen(routineId: routineId),
-      ),
-    );
+  Future<void> _openDetail(String routineId) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final RoutineDetailResult? result = await Navigator.of(context)
+        .push<RoutineDetailResult>(
+          MaterialPageRoute<RoutineDetailResult>(
+            builder: (BuildContext context) =>
+                RoutineDetailScreen(routineId: routineId),
+          ),
+        );
+    if (!mounted || result == null) {
+      return;
+    }
+
+    switch (result.action) {
+      case RoutineDetailAction.deleted:
+        final String routineName = result.routineName ?? 'Rutina';
+        await ref.read(routineListControllerProvider.notifier).refresh();
+        messenger.showSnackBar(
+          SnackBar(content: Text('Rutina "$routineName" eliminada.')),
+        );
+        break;
+    }
   }
 
   Future<void> _handleArchive(
