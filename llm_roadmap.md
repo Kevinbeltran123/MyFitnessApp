@@ -6,30 +6,35 @@
 
 ---
 
-## 🎉 **Recent Progress Update (December 2024)**
+## 🎉 **Recent Progress Update (Octubre 2024)**
 
-### ✅ **Latest Completed: Routine Detail Implementation**
-The LLM successfully implemented a comprehensive RoutineDetailScreen with:
+### 🔧 **Latest Work: Database Testing and Widget Test Fixes**
+Recent development focused on database persistence validation and test infrastructure:
+
+**Database Testing Efforts:**
+- **Isar Integration Testing:** Attempted unit tests for `RoutineRepositoryIsar` but encountered IsarCore library download failures in test environment
+- **Integration Test Development:** Created `routine_service_flow_test.dart` to validate business logic flow with in-memory providers
+- **Test Infrastructure:** Fixed widget test scrolling issues in `RoutineDetailScreen` tests (ListView vs Scrollable type casting)
+
+**Key Issues Identified:**
+- Isar unit tests fail due to TestWidgetsFlutterBinding HTTP mocking preventing IsarCore library downloads
+- Database persistence needs manual validation rather than automated unit testing
+- Widget tests required fixing scrollUntilVisible scrollable parameter
+
+**Files Modified:**
+- `test/integration/routine_service_flow_test.dart` - Integration test for service layer
+- `test/presentation/routines/routine_detail_screen_test.dart` - Fixed scrollable widget targeting
+- `test/infrastructure/routines/routine_repository_isar_test.dart` - Database testing attempt
+
+### ✅ **Previously Completed: Full Routine Management UI**
 - **Stateful Flow Management:** Async actions with progress indicators and confirmation dialogs
 - **Rich Presentation:** Focus/days/sets chips, last-used metadata, per-exercise cards
 - **Full CRUD Operations:** Duplicate, archive/restore, delete, edit functionality
-- **Seamless Integration:** List screen refresh and snackbar feedback
-- **Robust Testing:** Updated widget tests with helper functions and keyed CTAs
-- **UX Polish:** Consistent snackbars and proper context handling
+- **Advanced filtering, search functionality, rich metadata display**
+- **Last-used timestamps and session history integration**
 
-**Files Modified:**
-- `lib/presentation/routines/routine_detail_screen.dart` - Complete stateful implementation
-- `lib/presentation/routines/routine_list_screen.dart` - Enhanced integration and feedback
-- `test/presentation/routines/routine_detail_screen_test.dart` - Updated testing approach
-- Provider tests continue to verify recency logic
-
-### ✅ **Previously Completed: Routine List Enhancement**
-- Advanced filtering, search functionality, rich metadata display
-- Last-used timestamps and session history integration
-- Enhanced domain models with proper value semantics
-
-### 🎯 **Next Immediate Priority: Database Persistence**
-Focus shifts to ensuring data survives app restarts with proper Isar database integration.
+### 🎯 **Next Immediate Priority: Database Persistence Validation**
+Focus on manual testing of data persistence and resolving Isar integration challenges.
 
 ---
 
@@ -91,22 +96,23 @@ Goal: Users can create, edit, and manage their workout routines
   - ✅ Confirmation dialogs and consistent snackbar feedback
   - ✅ Integration with RoutineListScreen for seamless navigation
 
-### B. Routine Persistence - **CRITICAL**
+### B. Routine Persistence - **CRITICAL** 🚧
 ```
-Current State: In-memory only, data lost on app restart
-Goal: Persistent storage using SQLite/Isar
+Current State: Isar repository implemented but database persistence needs validation
+Goal: Verify data survives app restarts and resolve testing challenges
 ```
 
 **Tasks to Complete:**
-- [ ] **Database Setup** (2 days)
-  - Configure Isar database
-  - Create routine collections and schemas
-  - Implement migration scripts
-
-- [ ] **Repository Implementation** (2 days)  
-  - Connect `RoutineRepositoryIsar` to database
-  - Implement CRUD operations
-  - Add data validation and error handling
+- [x] **Database Setup** - Isar database configured with routine collections ✅
+- [x] **Repository Implementation** - `RoutineRepositoryIsar` with CRUD operations ✅
+- [ ] **Persistence Validation** (1 day) - **URGENT**
+  - Manual testing: verify routines survive app restart
+  - Resolve Isar testing infrastructure issues
+  - Consider alternative testing strategies for database layer
+- [ ] **Integration Testing** (1 day)
+  - Complete `routine_service_flow_test.dart` validation
+  - Ensure business logic works with real persistence
+  - Test error handling and edge cases
 
 ---
 

@@ -34,10 +34,17 @@ class RoutineRepositoryIsar implements RoutineRepository {
 
   @override
   Future<void> saveRoutine(Routine routine) async {
-    final model = RoutineModel.fromDomain(
-      routine.copyWith(updatedAt: DateTime.now()),
-    );
+    final Routine updated = routine.copyWith(updatedAt: DateTime.now());
+    final RoutineModel model = RoutineModel.fromDomain(updated);
+
     await _isar.writeTxn(() async {
+      final RoutineModel? existing = await _isar.routineModels
+          .filter()
+          .routineIdEqualTo(updated.id)
+          .findFirst();
+      if (existing != null) {
+        model.id = existing.id;
+      }
       await _isar.routineModels.put(model);
     });
   }

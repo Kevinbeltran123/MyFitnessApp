@@ -12,25 +12,33 @@ You are working on a Flutter fitness tracking app. The app has a solid foundatio
 - Existing exercise search and display functionality
 - **Advanced RoutineListScreen** with search, filtering, and metadata
 - **Complete RoutineBuilderScreen** with form validation and exercise picker
-- **NEW: Complete RoutineDetailScreen** with full CRUD operations and rich presentation
+- **Complete RoutineDetailScreen** with full CRUD operations and rich presentation
 - Enhanced exercise picker with debounced search and UX improvements
 - Last-used routine tracking and session history integration
 - Full routine management flow (create, list, view, edit, delete, duplicate)
+- **Isar database setup** with routine repositories configured
+- **Integration testing infrastructure** with service flow validation
+
+🔧 **Recent Testing Work:**
+- Widget test fixes (scrollUntilVisible scrollable parameter)
+- Integration test for routine service business logic flow
+- Database persistence validation attempts (blocked by Isar test environment issues)
 
 ❌ **Missing Critical Features:**
-- ⭐ **No persistent storage** (data lost on app restart - need Isar database integration)
-- No way to log body weight or measurements
+- ⭐ **Database persistence validation** - Need manual testing to confirm data survives app restarts
+- No way to log body weight or measurements  
 - No metrics entry UI or dashboard
-- No offline data survival between app sessions
+- No offline data survival verification
 
 ## Your Mission
 Complete the **Phase 1 fundamentals** outlined in `llm_roadmap.md`. Focus on practical, user-facing features that provide immediate value.
 
 ## Key Priorities (Updated - in order):
-1. ⭐ **Database Persistence** - Connect to Isar database so data survives app restarts
-2. **Metrics Tracking** - Simple weight logging and BMR display
-3. **Metrics Dashboard** - Basic charts and progress visualization
-4. **Testing & Polish** - Ensure stability and user experience
+1. ⭐ **Database Persistence Validation** - Manually test that routines survive app restarts (Isar configured but needs verification)
+2. **Integration Test Completion** - Run and validate service flow tests work correctly
+3. **Metrics Tracking** - Simple weight logging and BMR display  
+4. **Metrics Dashboard** - Basic charts and progress visualization
+5. **Testing & Polish** - Ensure stability and user experience
 
 ## What NOT to Build:
 - ❌ Advanced analytics or performance charts
@@ -46,6 +54,12 @@ Complete the **Phase 1 fundamentals** outlined in `llm_roadmap.md`. Focus on pra
 - Add basic form validation
 - Include error handling for database operations
 - Write unit tests for business logic
+
+## Next Steps (Immediate):
+1. **Run Integration Test**: Execute `flutter test test/integration/routine_service_flow_test.dart` to validate business logic
+2. **Manual Persistence Test**: Create a routine, close app, reopen - verify routine persists
+3. **Address Isar Testing Issues**: Consider alternative testing approaches for database layer
+4. **Move to Metrics**: Once persistence confirmed, implement weight tracking UI
 
 ## Success Metrics:
 A user should be able to:

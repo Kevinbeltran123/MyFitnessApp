@@ -401,7 +401,7 @@ class _RoutineDetailContent extends StatelessWidget {
         _ExercisesSection(exercises: routine.exercises),
         const SizedBox(height: 24),
         FilledButton.icon(
-          key: const ValueKey('routine-detail-start'),
+          key: const ValueKey<String>('routine-detail-start'),
           onPressed: onStartPressed,
           icon: const Icon(Icons.play_arrow_rounded),
           label: const Text('Iniciar entrenamiento'),

@@ -1,4 +1,23 @@
-# 🛠️ Implementation Plan — My Fitness Tracker (Fitness-Only)
+# | Phase | Focus | Est. Duration | Curr#### 🟦 Backend/Data Layer — Rutinas
+- [x] (2 d) Implementar colecciones Isar y migraciones (`isar_schema.g.dart`)
+- [x] (1 d) Crear DAO/Repositories (`RoutineRepository`, `RoutineSessionRepository`)
+- [x] (1 d) Servicios `RoutineService` (validaciones, duplicado, archivado)
+- [x] (6 h) Cacheo en memoria + invalidación con Riverpod
+- [🔧] (6 h) Implementar sincronización diferida placeholder (preparar backend futuro)
+- [🚧] **Persistence Testing**: Manual validation needed for database persistence (Isar unit tests blocked by TestWidgetsFlutterBinding)
+
+#### 🟩 UI Implementation — Rutinas
+- [x] (3 d) `RoutineListScreen`: listview, filtros, CTA "Crear"
+- [x] (3 d) `RoutineBuilderScreen`: formularios dinámicos, selector de ejercicios reutilizando catálogo
+- [x] (2 d) `RoutineDetailScreen` con resumen, duplicado, quick-edit y puente a modo live
+- [x] (1 d) Widgets reutilizables: `ExercisePickerSheet`, `SetConfigCard`
+- [x] (1 d) Estados avanzados de carga/error y validaciones con `reactive_forms`
+- [x] **Widget Test Fixes**: Fixed scrollUntilVisible scrollable parameter issues in detail screen tests
+- [x] **Integration Testing**: Created service flow tests for business logic validation|
+| --- | --- | --- | --- |
+| � Phase 1 | Foundation & Core Data Layers | 6 semanas | 95 % |
+| 🏗️ Phase 2 | Experiencia de Usuario Intermedia | 5 semanas | 45 % |
+| ⚡ Phase 3 | Analítica Avanzada & Modo Live | 6 semanas | 30 % |mplementation Plan — My Fitness Tracker (Fitness-Only)
 
 | Phase | Focus | Est. Duration | Current Progress |
 | --- | --- | --- | --- |

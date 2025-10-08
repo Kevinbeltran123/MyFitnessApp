@@ -95,12 +95,13 @@ void main() {
 
       expect(find.text('Rutina base editada'), findsOneWidget);
 
-      final Finder ctaButton = find.byKey(
-        const ValueKey<String>('routine-detail-start'),
+      final Finder ctaLabel = find.text('Iniciar entrenamiento');
+      await tester.scrollUntilVisible(
+        ctaLabel,
+        200,
+        scrollable: find.byType(Scrollable),
       );
-      expect(ctaButton, findsOneWidget);
-
-      await tester.tap(ctaButton);
+      await tester.tap(ctaLabel);
       await tester.pumpAndSettle();
 
       expect(find.byType(RoutineSessionScreen), findsOneWidget);
