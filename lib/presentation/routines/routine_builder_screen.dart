@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
@@ -25,10 +27,11 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final Set<RoutineDay> _selectedDays = <RoutineDay>{
-    const RoutineDay(DateTime.monday),
-  };
+  final SplayTreeSet<RoutineDay> _selectedDays = SplayTreeSet<RoutineDay>(
+    (RoutineDay a, RoutineDay b) => a.weekday.compareTo(b.weekday),
+  )..add(const RoutineDay(DateTime.monday));
   final List<_RoutineExerciseDraft> _exercises = <_RoutineExerciseDraft>[];
+  RoutineFocus _selectedFocus = RoutineFocus.fullBody;
 
   bool _isSaving = false;
 
@@ -62,6 +65,7 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
   void _applyRoutine(Routine routine) {
     _nameController.text = routine.name;
     _descriptionController.text = routine.description;
+    _selectedFocus = routine.focus;
     _selectedDays
       ..clear()
       ..addAll(routine.daysOfWeek);
@@ -74,13 +78,44 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
 
   void _toggleDay(int weekday) {
     final RoutineDay day = RoutineDay(weekday);
+    final bool alreadySelected = _selectedDays.contains(day);
+    if (alreadySelected && _selectedDays.length == 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('La rutina debe tener al menos un día asignado.'),
+        ),
+      );
+      return;
+    }
+
     setState(() {
-      if (_selectedDays.contains(day)) {
+      if (alreadySelected) {
         _selectedDays.remove(day);
       } else {
         _selectedDays.add(day);
       }
     });
+  }
+
+  String _focusLabel(RoutineFocus focus) {
+    switch (focus) {
+      case RoutineFocus.fullBody:
+        return 'Cuerpo completo';
+      case RoutineFocus.upperBody:
+        return 'Tren superior';
+      case RoutineFocus.lowerBody:
+        return 'Tren inferior';
+      case RoutineFocus.push:
+        return 'Push';
+      case RoutineFocus.pull:
+        return 'Pull';
+      case RoutineFocus.core:
+        return 'Core';
+      case RoutineFocus.mobility:
+        return 'Movilidad';
+      case RoutineFocus.custom:
+        return 'Personalizada';
+    }
   }
 
   void _addExercise(WorkoutPlan plan) {
@@ -94,6 +129,14 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+    if (_selectedDays.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecciona al menos un día para la rutina.'),
+        ),
+      );
+      return;
+    }
     if (_exercises.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Agrega al menos un ejercicio.')),
@@ -101,68 +144,88 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
       return;
     }
     setState(() => _isSaving = true);
-    late final RoutineService routineService;
+    final Routine? initial = widget.initialRoutine;
+    Routine? savedRoutine;
+
     try {
-      routineService = await ref.read(routineServiceProvider.future);
-    } catch (error) {
-      setState(() => _isSaving = false);
+      final RoutineService routineService = await ref.read(
+        routineServiceProvider.future,
+      );
+
+      final DateTime now = DateTime.now();
+      final Routine routine = Routine(
+        id: initial?.id ?? now.microsecondsSinceEpoch.toString(),
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim(),
+        focus: _selectedFocus,
+        daysOfWeek: List<RoutineDay>.from(_selectedDays),
+        exercises: _exercises
+            .asMap()
+            .entries
+            .map((MapEntry<int, _RoutineExerciseDraft> entry) {
+              final _RoutineExerciseDraft draft = entry.value;
+              return RoutineExercise(
+                exerciseId: draft.plan.exerciseId,
+                name: draft.plan.name,
+                order: entry.key,
+                sets: List<RoutineSet>.from(draft.sets),
+                targetMuscles: draft.plan.targetMuscles,
+                notes: draft.notes,
+                equipment:
+                    draft.equipment ??
+                    (draft.plan.equipments.isNotEmpty
+                        ? draft.plan.equipments.first
+                        : null),
+                gifUrl: draft.plan.gifUrl,
+              );
+            })
+            .toList(growable: false),
+        createdAt: initial?.createdAt ?? now,
+        updatedAt: now,
+        notes: initial?.notes,
+        isArchived: initial?.isArchived ?? false,
+      );
+
+      if (initial == null) {
+        await routineService.create(routine);
+      } else {
+        await routineService.update(routine);
+      }
+
+      await ref.read(routineListControllerProvider.notifier).refresh();
+      savedRoutine = routine;
+    } on FormatException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Servicio no disponible.')),
+          const SnackBar(
+            content: Text('No pudimos guardar la rutina. Intenta nuevamente.'),
+          ),
         );
       }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+
+    if (!mounted || savedRoutine == null) {
       return;
     }
 
-    final DateTime now = DateTime.now();
-    final Routine? initial = widget.initialRoutine;
-    final routine = Routine(
-      id: initial?.id ?? now.microsecondsSinceEpoch.toString(),
-      name: _nameController.text.trim(),
-      description: _descriptionController.text.trim(),
-      focus: initial?.focus ?? RoutineFocus.fullBody,
-      daysOfWeek: _selectedDays.toList(),
-      exercises: _exercises.asMap().entries.map((
-        MapEntry<int, _RoutineExerciseDraft> entry,
-      ) {
-        final draft = entry.value;
-        return RoutineExercise(
-          exerciseId: draft.plan.exerciseId,
-          name: draft.plan.name,
-          order: entry.key,
-          sets: List<RoutineSet>.from(draft.sets),
-          targetMuscles: draft.plan.targetMuscles,
-          notes: draft.notes,
-          equipment:
-              draft.equipment ??
-              (draft.plan.equipments.isNotEmpty
-                  ? draft.plan.equipments.first
-                  : null),
-          gifUrl: draft.plan.gifUrl,
-        );
-      }).toList(),
-      createdAt: initial?.createdAt ?? now,
-      updatedAt: now,
-      notes: initial?.notes,
-      isArchived: initial?.isArchived ?? false,
-    );
-
-    if (initial == null) {
-      await routineService.create(routine);
-    } else {
-      await routineService.update(routine);
-    }
-    await ref.read(routineListControllerProvider.notifier).refresh();
-    if (!mounted) return;
-    setState(() => _isSaving = false);
-    final messenger = ScaffoldMessenger.of(context);
-    Navigator.of(context).pop(routine);
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    Navigator.of(context).pop(savedRoutine);
     messenger.showSnackBar(
       SnackBar(
         content: Text(
           initial == null
-              ? 'Rutina "${routine.name}" creada.'
-              : 'Rutina "${routine.name}" actualizada.',
+              ? 'Rutina "${savedRoutine.name}" creada.'
+              : 'Rutina "${savedRoutine.name}" actualizada.',
         ),
       ),
     );
@@ -214,6 +277,26 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                   labelText: 'Descripción (opcional)',
                 ),
                 maxLines: 2,
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<RoutineFocus>(
+                key: ValueKey<RoutineFocus>(_selectedFocus),
+                initialValue: _selectedFocus,
+                decoration: const InputDecoration(labelText: 'Enfoque'),
+                items: RoutineFocus.values
+                    .map(
+                      (RoutineFocus focus) => DropdownMenuItem<RoutineFocus>(
+                        value: focus,
+                        child: Text(_focusLabel(focus)),
+                      ),
+                    )
+                    .toList(growable: false),
+                onChanged: (RoutineFocus? focus) {
+                  if (focus == null) {
+                    return;
+                  }
+                  setState(() => _selectedFocus = focus);
+                },
               ),
               const SizedBox(height: 16),
               Text('Días de entrenamiento', style: theme.textTheme.titleMedium),
