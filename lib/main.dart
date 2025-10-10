@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:my_fitness_tracker/screens/home_screen.dart';
+import 'package:my_fitness_tracker/presentation/navigation/main_navigation.dart';
+import 'package:my_fitness_tracker/shared/theme/app_theme.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyFitnessTrackerApp()));
@@ -15,13 +16,8 @@ class MyFitnessTrackerApp extends StatelessWidget {
     return MaterialApp(
       title: 'My Fitness Tracker',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.greenAccent.shade400,
-        ),
-        useMaterial3: true,
-      ),
-      home: const HomeScreen(),
+      theme: AppTheme.lightTheme,
+      home: const MainNavigation(),
     );
   }
 }

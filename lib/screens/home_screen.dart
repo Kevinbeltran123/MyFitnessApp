@@ -100,46 +100,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 final exercisesExplored = summary.workouts.length;
                 final activityMoments = exercisesExplored + _searchInteractions + routineCount;
 
-                return Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: RefreshIndicator(
-                        onRefresh: _refresh,
-                        child: SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: <Widget>[
-                              _HeaderCard(date: summary.date),
-                              const SizedBox(height: 24),
-                              _ProgressCard(
-                                exercises: exercisesExplored,
-                                searches: _searchInteractions,
-                                activityMoments: activityMoments,
-                                routines: routineCount,
-                              ),
-                              const SizedBox(height: 24),
-                              _SpotlightSection(workouts: summary.workouts),
-                              const SizedBox(height: 24),
-                              routinesAsync.when(
-                                data: (List<Routine> routines) => GestureDetector(
-                                  onTap: _openRoutines,
-                                  child: _RoutineGlance(routines: routines, onCreateRoutine: _openRoutines),
-                                ),
-                                loading: () => const _RoutineGlance.loading(),
-                                error: (_, __) => const SizedBox.shrink(),
-                              ),
-                            ],
-                          ),
+                return RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        _HeaderCard(date: summary.date),
+                        const SizedBox(height: 24),
+                        _ProgressCard(
+                          exercises: exercisesExplored,
+                          searches: _searchInteractions,
+                          activityMoments: activityMoments,
+                          routines: routineCount,
                         ),
-                      ),
+                        const SizedBox(height: 24),
+                        _SpotlightSection(workouts: summary.workouts),
+                        const SizedBox(height: 24),
+                        routinesAsync.when(
+                          data: (List<Routine> routines) => GestureDetector(
+                            onTap: _openRoutines,
+                            child: _RoutineGlance(routines: routines, onCreateRoutine: _openRoutines),
+                          ),
+                          loading: () => const _RoutineGlance.loading(),
+                          error: (_, __) => const SizedBox.shrink(),
+                        ),
+                      ],
                     ),
-                    _FixedActionBar(
-                      onMetricsTap: _openComingSoon,
-                      onExercisesTap: _openExercises,
-                    ),
-                  ],
+                  ),
                 );
               },
         ),

@@ -217,3 +217,30 @@ class SetLog {
   final double weight;
   final Duration restTaken;
 }
+
+/// Repository contract for persisting and querying workout sessions.
+abstract class SessionRepository {
+  /// Saves a completed routine session.
+  Future<void> saveSession(RoutineSession session);
+
+  /// Retrieves all sessions, optionally filtered by date range.
+  Future<List<RoutineSession>> getAllSessions({
+    DateTime? startDate,
+    DateTime? endDate,
+  });
+
+  /// Retrieves sessions for a specific routine.
+  Future<List<RoutineSession>> getSessionsByRoutine(String routineId);
+
+  /// Retrieves the most recent session for any routine.
+  Future<RoutineSession?> getLatestSession();
+
+  /// Deletes a session by ID.
+  Future<void> deleteSession(String sessionId);
+
+  /// Watches all sessions, emitting updates when data changes.
+  Stream<List<RoutineSession>> watchSessions({
+    DateTime? startDate,
+    DateTime? endDate,
+  });
+}
