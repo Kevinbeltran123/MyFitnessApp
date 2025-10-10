@@ -4,6 +4,7 @@ import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
 import 'package:my_fitness_tracker/presentation/workouts/workout_history_controller.dart';
 import 'package:my_fitness_tracker/presentation/workouts/widgets/workout_session_card.dart';
 import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
+import 'package:my_fitness_tracker/shared/widgets/state_widgets.dart';
 
 /// Workout history screen showing all completed training sessions.
 ///
@@ -93,8 +94,12 @@ class _WorkoutHistoryScreenState extends ConsumerState<WorkoutHistoryScreen> {
       ),
       body: SafeArea(
         child: sessionsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => _buildErrorView(error),
+          loading: () => const LoadingStateWidget(),
+          error: (error, stack) => ErrorStateWidget(
+            title: 'Error al cargar entrenamientos',
+            message: error.toString(),
+            onRetry: () => ref.invalidate(workoutHistoryControllerProvider),
+          ),
           data: (sessions) => _buildContent(context, sessions, theme),
         ),
       ),
@@ -278,93 +283,17 @@ class _WorkoutHistoryScreenState extends ConsumerState<WorkoutHistoryScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppColors.lightGray,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.fitness_center_outlined,
-                size: 64,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              _selectedDateRange == null
-                  ? 'Aún no tienes entrenamientos'
-                  : 'No hay entrenamientos en este período',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              _selectedDateRange == null
-                  ? 'Completa tu primera rutina para ver el historial aquí'
-                  : 'Intenta con un rango de fechas diferente',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textTertiary,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            if (_selectedDateRange != null) ...[
-              const SizedBox(height: 20),
-              FilledButton.icon(
-                onPressed: _clearFilter,
-                icon: const Icon(Icons.clear),
-                label: const Text('Mostrar todo'),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorView(Object error) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppColors.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Error al cargar entrenamientos',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              error.toString(),
-              style: Theme.of(context).textTheme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            FilledButton.icon(
-              onPressed: () {
-                ref.invalidate(workoutHistoryControllerProvider);
-              },
-              icon: const Icon(Icons.refresh),
-              label: const Text('Reintentar'),
-            ),
-          ],
-        ),
-      ),
+    final bool hasFilter = _selectedDateRange != null;
+    return EmptyStateWidget(
+      icon: Icons.fitness_center_outlined,
+      title: hasFilter
+          ? 'No hay entrenamientos en este período'
+          : 'Aún no tienes entrenamientos',
+      message: hasFilter
+          ? 'Prueba con un rango de fechas diferente para ver tus sesiones.'
+          : 'Completa tu primera rutina para ver el historial aquí.',
+      primaryLabel: hasFilter ? 'Mostrar todo' : null,
+      onPrimaryTap: hasFilter ? _clearFilter : null,
     );
   }
 

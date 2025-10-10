@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
+import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
 
 /// Settings screen for app configuration.
 class SettingsScreen extends StatefulWidget {
@@ -252,21 +253,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _saveSettings() {
     // TODO: Implement settings persistence
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Configuración guardada'),
-        backgroundColor: AppColors.success,
-      ),
-    );
+    AppSnackBar.showSuccess(context, 'Configuración guardada');
     Navigator.of(context).pop();
   }
 
   void _showComingSoon(String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature estará disponible próximamente'),
-        backgroundColor: AppColors.info,
-      ),
+    AppSnackBar.showInfo(
+      context,
+      '$feature estará disponible próximamente',
     );
   }
 
@@ -286,12 +280,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           FilledButton(
             onPressed: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Caché eliminado'),
-                  backgroundColor: AppColors.success,
-                ),
-              );
+              AppSnackBar.showSuccess(context, 'Caché eliminado');
             },
             child: const Text('Borrar'),
           ),

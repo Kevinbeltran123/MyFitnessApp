@@ -10,6 +10,7 @@ import 'package:my_fitness_tracker/presentation/routines/routine_list_controller
 import 'package:my_fitness_tracker/presentation/routines/widgets/routine_exercise_picker.dart';
 import 'package:my_fitness_tracker/presentation/routines/widgets/routine_set_editor.dart';
 import 'package:my_fitness_tracker/services/workout_service.dart';
+import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
 
 class RoutineBuilderScreen extends ConsumerStatefulWidget {
   const RoutineBuilderScreen({super.key, this.initialRoutine});
@@ -80,10 +81,9 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
     final RoutineDay day = RoutineDay(weekday);
     final bool alreadySelected = _selectedDays.contains(day);
     if (alreadySelected && _selectedDays.length == 1) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('La rutina debe tener al menos un día asignado.'),
-        ),
+      AppSnackBar.showWarning(
+        context,
+        'La rutina debe tener al menos un día asignado.',
       );
       return;
     }
@@ -130,18 +130,60 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
       return;
     }
     if (_selectedDays.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Selecciona al menos un día para la rutina.'),
-        ),
+      AppSnackBar.showWarning(
+        context,
+        'Selecciona al menos un día para la rutina.',
       );
       return;
     }
     if (_exercises.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Agrega al menos un ejercicio.')),
+      AppSnackBar.showWarning(
+        context,
+        'Agrega al menos un ejercicio.',
       );
       return;
+    }
+
+    for (final _RoutineExerciseDraft draft in _exercises) {
+      final String exerciseName = draft.plan.name;
+      if (draft.sets.isEmpty) {
+        AppSnackBar.showWarning(
+          context,
+          '"$exerciseName" debe incluir al menos una serie.',
+        );
+        return;
+      }
+      if (draft.sets.length > 10) {
+        AppSnackBar.showWarning(
+          context,
+          '"$exerciseName" admite máximo 10 series.',
+        );
+        return;
+      }
+      for (final RoutineSet set in draft.sets) {
+        if (set.repetitions < 1 || set.repetitions > 100) {
+          AppSnackBar.showWarning(
+            context,
+            'Las repeticiones de "$exerciseName" deben estar entre 1 y 100.',
+          );
+          return;
+        }
+        if (set.targetWeight != null && set.targetWeight! < 0) {
+          AppSnackBar.showWarning(
+            context,
+            'El peso en "$exerciseName" debe ser positivo.',
+          );
+          return;
+        }
+        final Duration? rest = set.restInterval;
+        if (rest != null && (rest.isNegative || rest > const Duration(minutes: 20))) {
+          AppSnackBar.showWarning(
+            context,
+            'El descanso en "$exerciseName" debe ser entre 0 y 20 minutos.',
+          );
+          return;
+        }
+      }
     }
     setState(() => _isSaving = true);
     final Routine? initial = widget.initialRoutine;
@@ -196,16 +238,13 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
       savedRoutine = routine;
     } on FormatException catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error.message)));
+        AppSnackBar.showError(context, error.message);
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No pudimos guardar la rutina. Intenta nuevamente.'),
-          ),
+        AppSnackBar.showError(
+          context,
+          'No pudimos guardar la rutina. Intenta nuevamente.',
         );
       }
     } finally {
@@ -218,16 +257,12 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
       return;
     }
 
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     Navigator.of(context).pop(savedRoutine);
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          initial == null
-              ? 'Rutina "${savedRoutine.name}" creada.'
-              : 'Rutina "${savedRoutine.name}" actualizada.',
-        ),
-      ),
+    AppSnackBar.showSuccess(
+      context,
+      initial == null
+          ? 'Rutina "${savedRoutine.name}" creada.'
+          : 'Rutina "${savedRoutine.name}" actualizada.',
     );
   }
 
@@ -266,6 +301,9 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                 validator: (String? value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'El nombre es obligatorio';
+                  }
+                  if (value.trim().length < 3) {
+                    return 'Usa al menos 3 caracteres';
                   }
                   return null;
                 },

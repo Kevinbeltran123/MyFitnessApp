@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:my_fitness_tracker/models/workout_plan.dart';
 import 'package:my_fitness_tracker/services/api_client.dart';
 import 'package:my_fitness_tracker/services/workout_service.dart';
-import 'package:my_fitness_tracker/widgets/empty_exercises_state.dart';
+import 'package:my_fitness_tracker/shared/widgets/state_widgets.dart';
 import 'package:my_fitness_tracker/widgets/exercise_grid_item.dart';
 import 'package:my_fitness_tracker/widgets/exercise_search_bar.dart';
 import 'package:my_fitness_tracker/widgets/filter_chips_row.dart';
@@ -306,9 +306,13 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
     }
 
     if (_results.isEmpty) {
-      return EmptyExercisesState(
-        message: 'No encontramos ejercicios con esos criterios.',
-        onReset: _hasActiveFilters ? _clearAll : null,
+      return EmptyStateWidget(
+        icon: Icons.fitness_center_outlined,
+        title: 'No encontramos ejercicios con esos criterios',
+        message:
+            'Ajusta la búsqueda o los filtros para descubrir nuevos ejercicios.',
+        primaryLabel: _hasActiveFilters ? 'Limpiar filtros' : null,
+        onPrimaryTap: _hasActiveFilters ? _clearAll : null,
       );
     }
 
@@ -367,7 +371,9 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
               ),
               const Padding(
                 padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Text('Cargando ejercicios...'),
+                child: const LoadingStateWidget(
+                  message: 'Cargando ejercicios...',
+                ),
               ),
             ],
           ),
@@ -394,32 +400,10 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
   }
 
   Widget _buildErrorState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text(
-              'Ocurrió un problema al cargar los ejercicios.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              _errorMessage ?? '',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () => _loadExercises(reset: true),
-              icon: const Icon(Icons.refresh),
-              label: const Text('Reintentar'),
-            ),
-          ],
-        ),
-      ),
+    return ErrorStateWidget(
+      title: 'Ocurrió un problema al cargar los ejercicios.',
+      message: _errorMessage ?? 'Intenta nuevamente en unos segundos.',
+      onRetry: () => _loadExercises(reset: true),
     );
   }
 

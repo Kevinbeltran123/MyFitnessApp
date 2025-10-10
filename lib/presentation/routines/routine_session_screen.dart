@@ -718,8 +718,11 @@ class _LogSetSheetState extends State<_LogSetSheet> {
                 keyboardType: TextInputType.number,
                 validator: (String? value) {
                   final int? reps = int.tryParse(value ?? '');
-                  if (reps == null || reps <= 0) {
-                    return 'Ingresa repeticiones válidas';
+                  if (reps == null) {
+                    return 'Ingresa un número válido';
+                  }
+                  if (reps < 0 || reps > 100) {
+                    return 'Usa un rango entre 0 y 100';
                   }
                   return null;
                 },
@@ -734,7 +737,7 @@ class _LogSetSheetState extends State<_LogSetSheet> {
                 validator: (String? value) {
                   final double? weight = double.tryParse(value ?? '');
                   if (weight == null || weight < 0) {
-                    return 'Ingresa un peso válido';
+                    return 'Ingresa un peso mayor o igual a 0';
                   }
                   return null;
                 },
@@ -748,8 +751,11 @@ class _LogSetSheetState extends State<_LogSetSheet> {
                 keyboardType: TextInputType.number,
                 validator: (String? value) {
                   final int? seconds = int.tryParse(value ?? '');
-                  if (seconds == null || seconds < 0) {
-                    return 'Ingresa segundos válidos';
+                  if (seconds == null) {
+                    return 'Ingresa un número válido';
+                  }
+                  if (seconds < 0 || seconds > 1200) {
+                    return 'El descanso debe ser entre 0 y 1200 segundos';
                   }
                   return null;
                 },
@@ -760,9 +766,12 @@ class _LogSetSheetState extends State<_LogSetSheet> {
                   if (_formKey.currentState?.validate() != true) {
                     return;
                   }
-                  final int repetitions = int.parse(_repsController.text);
-                  final double weight = double.parse(_weightController.text);
-                  final int restSeconds = int.parse(_restController.text);
+                  final int repetitions =
+                      int.parse(_repsController.text).clamp(0, 100) as int;
+                  final double weight =
+                      double.parse(_weightController.text).clamp(0, double.infinity) as double;
+                  final int restSeconds =
+                      int.parse(_restController.text).clamp(0, 1200) as int;
                   Navigator.of(context).pop(
                     _LogSetResult(
                       repetitions: repetitions,

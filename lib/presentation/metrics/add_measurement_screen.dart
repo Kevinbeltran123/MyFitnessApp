@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_fitness_tracker/domain/metrics/metrics_entities.dart';
 import 'package:my_fitness_tracker/presentation/metrics/metrics_controller.dart';
 import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
+import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
 import 'package:uuid/uuid.dart';
 
 /// Screen for adding a new body measurement.
@@ -43,12 +44,19 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
     super.dispose();
   }
 
+  DateTime get _now => DateTime.now();
+
+  DateTime get _twoYearsAgo {
+    final DateTime now = _now;
+    return DateTime(now.year - 2, now.month, now.day);
+  }
+
   Future<void> _selectDate() async {
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
+      firstDate: _twoYearsAgo,
+      lastDate: _now,
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -71,6 +79,20 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
 
   Future<void> _saveMeasurement() async {
     if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final DateTime now = _now;
+    final DateTime earliest = _twoYearsAgo;
+    if (_selectedDate.isAfter(now)) {
+      AppSnackBar.showError(context, 'La fecha no puede ser futura.');
+      return;
+    }
+    if (_selectedDate.isBefore(earliest)) {
+      AppSnackBar.showError(
+        context,
+        'Solo puedes registrar medidas de los últimos 2 años.',
+      );
       return;
     }
 
@@ -114,23 +136,12 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Medida guardada exitosamente'),
-          backgroundColor: AppColors.success,
-        ),
-      );
-
+      AppSnackBar.showSuccess(context, 'Medida guardada exitosamente');
       Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al guardar: $error'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      AppSnackBar.showError(context, 'Error al guardar: $error');
     } finally {
       if (mounted) {
         setState(() {
@@ -246,9 +257,12 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
                   if (value == null || value.isEmpty) {
                     return 'El peso es requerido';
                   }
-                  final weight = double.tryParse(value);
-                  if (weight == null || weight <= 0) {
-                    return 'Ingresa un peso válido';
+                  final double? weight = double.tryParse(value);
+                  if (weight == null) {
+                    return 'Ingresa un número válido';
+                  }
+                  if (weight < 20 || weight > 300) {
+                    return 'Usa un rango entre 20 y 300 kg';
                   }
                   return null;
                 },
@@ -268,8 +282,11 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
                 validator: (value) {
                   if (value != null && value.isNotEmpty) {
                     final fat = double.tryParse(value);
-                    if (fat == null || fat < 0 || fat > 100) {
-                      return 'Ingresa un porcentaje válido (0-100)';
+                    if (fat == null) {
+                      return 'Ingresa un número válido';
+                    }
+                    if (fat < 1 || fat > 70) {
+                      return 'Ingresa un porcentaje entre 1% y 70%';
                     }
                   }
                   return null;
@@ -290,8 +307,11 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
                 validator: (value) {
                   if (value != null && value.isNotEmpty) {
                     final muscle = double.tryParse(value);
-                    if (muscle == null || muscle <= 0) {
-                      return 'Ingresa una masa válida';
+                    if (muscle == null) {
+                      return 'Ingresa un número válido';
+                    }
+                    if (muscle < 1 || muscle > 150) {
+                      return 'Usa un rango entre 1 y 150 kg';
                     }
                   }
                   return null;

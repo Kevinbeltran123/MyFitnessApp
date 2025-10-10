@@ -6,6 +6,7 @@ import 'package:my_fitness_tracker/presentation/profile/settings_screen.dart';
 import 'package:my_fitness_tracker/presentation/profile/statistics_screen.dart';
 import 'package:my_fitness_tracker/presentation/workouts/workout_history_controller.dart';
 import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
+import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
 
 /// Profile and More screen.
 ///
@@ -286,11 +287,9 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature estará disponible próximamente'),
-        backgroundColor: AppColors.info,
-      ),
+    AppSnackBar.showInfo(
+      context,
+      '$feature estará disponible próximamente',
     );
   }
 

@@ -17,16 +17,16 @@ class MetricChart extends StatelessWidget {
     super.key,
     required this.metrics,
     required this.metricType,
+    this.goalValue,
   });
 
   final List<BodyMetric> metrics;
   final MetricType metricType;
+  final double? goalValue;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    // Filter and extract data points
     final dataPoints = _extractDataPoints();
 
     if (dataPoints.isEmpty) {
@@ -48,13 +48,26 @@ class MetricChart extends StatelessWidget {
       );
     }
 
-    final minValue = dataPoints.map((p) => p.value).reduce((a, b) => a < b ? a : b);
-    final maxValue = dataPoints.map((p) => p.value).reduce((a, b) => a > b ? a : b);
-    final range = maxValue - minValue;
-    final padding = range * 0.1; // 10% padding
+    final _DataPoint minPoint = dataPoints.reduce(
+      (value, element) => element.value < value.value ? element : value,
+    );
+    final _DataPoint maxPoint = dataPoints.reduce(
+      (value, element) => element.value > value.value ? element : value,
+    );
+
+    final double minValue =
+        dataPoints.map((p) => p.value).reduce((a, b) => a < b ? a : b);
+    final double maxValue =
+        dataPoints.map((p) => p.value).reduce((a, b) => a > b ? a : b);
+    final double rawRange = maxValue - minValue;
+    final double padding = (rawRange == 0 ? 1 : rawRange) * 0.1;
+    final double adjustedMin = minValue - padding;
+    final double adjustedMax = maxValue + padding;
+
+    const double chartHeight = 160;
 
     return Container(
-      height: 220,
+      height: 240,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -66,7 +79,6 @@ class MetricChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Chart title and current value
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -78,13 +90,14 @@ class MetricChart extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   gradient: AppColors.chartGradient,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  _formatValue(dataPoints.first.value),
+                  _formatValue(dataPoints.last.value),
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.white,
@@ -94,32 +107,78 @@ class MetricChart extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
+          SizedBox(
+            height: chartHeight,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final Size canvasSize =
+                    Size(constraints.maxWidth, chartHeight);
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    CustomPaint(
+                      size: canvasSize,
+                      painter: _SimpleLinePainter(
+                        dataPoints: dataPoints,
+                        minValue: adjustedMin,
+                        maxValue: adjustedMax,
+                        goalValue: goalValue,
+                      ),
+                    ),
+                    ...dataPoints.map((point) {
+                      final offset = _resolvePointOffset(
+                        point: point,
+                        allPoints: dataPoints,
+                        canvasSize: canvasSize,
+                        minValue: adjustedMin,
+                        maxValue: adjustedMax,
+                      );
+                      final bool isMin = point == minPoint;
+                      final bool isMax = point == maxPoint;
+                      final Color pointColor = isMax
+                          ? AppColors.success
+                          : isMin
+                              ? AppColors.error
+                              : AppColors.chartGradientEnd;
 
-          // Simple line chart
-          Expanded(
-            child: CustomPaint(
-              painter: _SimpleLinePainter(
-                dataPoints: dataPoints,
-                minValue: minValue - padding,
-                maxValue: maxValue + padding,
-              ),
-              child: Container(),
+                      return Positioned(
+                        left: offset.dx - 6,
+                        top: offset.dy - 6,
+                        child: Tooltip(
+                          message:
+                              '${_formatDate(point.date)} · ${_formatValue(point.value)}',
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: pointColor,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.white,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                );
+              },
             ),
           ),
-
-          // Time range indicator
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _formatDate(dataPoints.last.date),
+                _formatDate(dataPoints.first.date),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: AppColors.textTertiary,
                 ),
               ),
               Text(
-                _formatDate(dataPoints.first.date),
+                _formatDate(dataPoints.last.date),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: AppColors.textTertiary,
                 ),
@@ -185,6 +244,26 @@ class MetricChart extends StatelessWidget {
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}';
   }
+
+  Offset _resolvePointOffset({
+    required _DataPoint point,
+    required List<_DataPoint> allPoints,
+    required Size canvasSize,
+    required double minValue,
+    required double maxValue,
+  }) {
+    final int index = allPoints.indexOf(point);
+    final double x = allPoints.length == 1
+        ? canvasSize.width / 2
+        : (index / (allPoints.length - 1)) * canvasSize.width;
+    final double range = (maxValue - minValue).abs() < 1e-6
+        ? 1
+        : (maxValue - minValue);
+    final double normalized =
+        ((point.value - minValue) / range).clamp(0, 1).toDouble();
+    final double y = canvasSize.height - (normalized * canvasSize.height);
+    return Offset(x, y);
+  }
 }
 
 class _DataPoint {
@@ -199,29 +278,32 @@ class _SimpleLinePainter extends CustomPainter {
     required this.dataPoints,
     required this.minValue,
     required this.maxValue,
+    this.goalValue,
   });
 
   final List<_DataPoint> dataPoints;
   final double minValue;
   final double maxValue;
+  final double? goalValue;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (dataPoints.isEmpty) return;
+    if (dataPoints.length < 2) {
+      return;
+    }
 
-    final range = maxValue - minValue;
-    if (range == 0) return;
+    final double range = (maxValue - minValue).abs() < 1e-6
+        ? 1
+        : (maxValue - minValue);
 
-    // Paint for the line
-    final linePaint = Paint()
+    final Paint linePaint = Paint()
       ..color = AppColors.accentBlue
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    // Paint for gradient fill
-    final gradientPaint = Paint()
+    final Paint gradientPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
@@ -232,22 +314,16 @@ class _SimpleLinePainter extends CustomPainter {
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
       ..style = PaintingStyle.fill;
 
-    // Paint for dots
-    final dotPaint = Paint()
-      ..color = AppColors.accentBlue
-      ..style = PaintingStyle.fill;
+    final Path path = Path();
+    final Path fillPath = Path();
 
-    // Calculate points
-    final path = Path();
-    final fillPath = Path();
-    final points = <Offset>[];
-
-    for (int i = 0; i < dataPoints.length; i++) {
-      final x = (i / (dataPoints.length - 1)) * size.width;
-      final normalizedValue = (dataPoints[i].value - minValue) / range;
-      final y = size.height - (normalizedValue * size.height);
-
-      points.add(Offset(x, y));
+    for (int i = 0; i < dataPoints.length; i += 1) {
+      final double x = dataPoints.length == 1
+          ? size.width / 2
+          : (i / (dataPoints.length - 1)) * size.width;
+      final double normalized =
+          ((dataPoints[i].value - minValue) / range).clamp(0, 1).toDouble();
+      final double y = size.height - (normalized * size.height);
 
       if (i == 0) {
         path.moveTo(x, y);
@@ -259,27 +335,23 @@ class _SimpleLinePainter extends CustomPainter {
       }
     }
 
-    // Complete fill path
     fillPath.lineTo(size.width, size.height);
     fillPath.close();
 
-    // Draw gradient fill
     canvas.drawPath(fillPath, gradientPaint);
-
-    // Draw line
     canvas.drawPath(path, linePaint);
 
-    // Draw dots
-    for (final point in points) {
-      canvas.drawCircle(point, 4, dotPaint);
-      canvas.drawCircle(
-        point,
-        6,
-        Paint()
-          ..color = AppColors.white
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2,
-      );
+    if (goalValue != null &&
+        goalValue! >= minValue &&
+        goalValue! <= maxValue) {
+      final double normalizedGoal =
+          ((goalValue! - minValue) / range).clamp(0, 1).toDouble();
+      final double yGoal = size.height - (normalizedGoal * size.height);
+      final Paint goalPaint = Paint()
+        ..color = AppColors.warning.withValues(alpha: 0.7)
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke;
+      canvas.drawLine(Offset(0, yGoal), Offset(size.width, yGoal), goalPaint);
     }
   }
 
@@ -287,6 +359,7 @@ class _SimpleLinePainter extends CustomPainter {
   bool shouldRepaint(_SimpleLinePainter oldDelegate) {
     return oldDelegate.dataPoints != dataPoints ||
         oldDelegate.minValue != minValue ||
-        oldDelegate.maxValue != maxValue;
+        oldDelegate.maxValue != maxValue ||
+        oldDelegate.goalValue != goalValue;
   }
 }

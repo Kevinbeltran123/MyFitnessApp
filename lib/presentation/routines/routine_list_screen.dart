@@ -5,6 +5,8 @@ import 'package:my_fitness_tracker/presentation/home/home_providers.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_builder_screen.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_detail_screen.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_list_controller.dart';
+import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
+import 'package:my_fitness_tracker/shared/widgets/state_widgets.dart';
 
 class RoutineListScreen extends ConsumerStatefulWidget {
   const RoutineListScreen({super.key});
@@ -84,12 +86,25 @@ class _RoutineListScreenState extends ConsumerState<RoutineListScreen> {
           ];
 
           if (!hasAnyRoutines) {
-            children.add(_EmptyRoutineView(onCreate: _openRoutineBuilder));
+            children.add(
+              EmptyStateWidget(
+                icon: Icons.auto_awesome_mosaic_outlined,
+                title: 'Aún no tienes rutinas',
+                message:
+                    'Diseña tu primera rutina para empezar a registrar tus entrenamientos.',
+                primaryLabel: 'Crear rutina',
+                onPrimaryTap: _openRoutineBuilder,
+              ),
+            );
           } else if (!hasFilteredResults) {
             children.add(
-              _NoResultsView(
-                onClearFilters: _clearFilters,
-                isFiltering: _isFiltering,
+              EmptyStateWidget(
+                icon: Icons.filter_alt_off_outlined,
+                title: 'Sin resultados con estos filtros',
+                message:
+                    'Prueba con otra búsqueda o limpia los filtros para ver todas tus rutinas.',
+                primaryLabel: _isFiltering ? 'Limpiar filtros' : null,
+                onPrimaryTap: _isFiltering ? _clearFilters : null,
               ),
             );
           } else {
@@ -134,12 +149,13 @@ class _RoutineListScreenState extends ConsumerState<RoutineListScreen> {
             children: children,
           );
         },
-        error: (Object error, StackTrace stackTrace) => _ErrorState(
-          error: error,
+        error: (Object error, StackTrace stackTrace) => ErrorStateWidget(
+          title: 'Error al cargar rutinas',
+          message: error.toString(),
           onRetry: () =>
               ref.read(routineListControllerProvider.notifier).refresh(),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const LoadingStateWidget(),
       ),
     );
   }
@@ -266,7 +282,7 @@ class _RoutineListScreenState extends ConsumerState<RoutineListScreen> {
         final String routineName = result.routineName ?? 'Rutina';
         await ref.read(routineListControllerProvider.notifier).refresh();
         messenger.showSnackBar(
-          SnackBar(content: Text('Rutina "$routineName" eliminada.')),
+          AppSnackBar.successSnack('Rutina "$routineName" eliminada.'),
         );
         break;
     }
@@ -283,8 +299,9 @@ class _RoutineListScreenState extends ConsumerState<RoutineListScreen> {
       if (!context.mounted) return;
       await ref.read(routineListControllerProvider.notifier).refresh();
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Rutina "${routine.name}" archivada.')),
+      AppSnackBar.showInfo(
+        context,
+        'Rutina "${routine.name}" archivada.',
       );
     } catch (_) {
       if (!context.mounted) return;
@@ -302,6 +319,11 @@ class _RoutineListScreenState extends ConsumerState<RoutineListScreen> {
       await service.restore(routine.id);
       if (!context.mounted) return;
       await ref.read(routineListControllerProvider.notifier).refresh();
+      if (!context.mounted) return;
+      AppSnackBar.showSuccess(
+        context,
+        'Rutina "${routine.name}" restaurada.',
+      );
     } catch (_) {
       if (!context.mounted) return;
       _showServiceError(context);
@@ -319,8 +341,9 @@ class _RoutineListScreenState extends ConsumerState<RoutineListScreen> {
       if (!context.mounted) return;
       await ref.read(routineListControllerProvider.notifier).refresh();
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Rutina duplicada como "${duplicated.name}".')),
+      AppSnackBar.showSuccess(
+        context,
+        'Rutina duplicada como "${duplicated.name}".',
       );
     } catch (_) {
       if (!context.mounted) return;
@@ -329,10 +352,9 @@ class _RoutineListScreenState extends ConsumerState<RoutineListScreen> {
   }
 
   void _showServiceError(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Servicio no disponible. Intenta nuevamente.'),
-      ),
+    AppSnackBar.showError(
+      context,
+      'Servicio no disponible. Intenta nuevamente.',
     );
   }
 }
@@ -489,97 +511,6 @@ class _SectionLabel extends StatelessWidget {
         label,
         style: theme.textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyRoutineView extends StatelessWidget {
-  const _EmptyRoutineView({required this.onCreate});
-
-  final VoidCallback onCreate;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(
-              Icons.playlist_add_check_circle_rounded,
-              size: 56,
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(height: 18),
-            Text(
-              'Aún no tienes rutinas creadas',
-              style: theme.textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Genera tu primera rutina para comenzar a registrar tus sesiones y analizar tu progreso.',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onCreate,
-              icon: const Icon(Icons.add),
-              label: const Text('Crear rutina'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _NoResultsView extends StatelessWidget {
-  const _NoResultsView({
-    required this.onClearFilters,
-    required this.isFiltering,
-  });
-
-  final VoidCallback onClearFilters;
-  final bool isFiltering;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(Icons.search_off, size: 48, color: theme.colorScheme.outline),
-            const SizedBox(height: 16),
-            Text(
-              'No encontramos rutinas con esos criterios.',
-              style: theme.textTheme.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              isFiltering
-                  ? 'Prueba a ajustar la búsqueda o filtros para ver más resultados.'
-                  : 'Crea tu primera rutina para comenzar.',
-              style: theme.textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-            if (isFiltering) ...<Widget>[
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                onPressed: onClearFilters,
-                icon: const Icon(Icons.filter_alt_off),
-                label: const Text('Limpiar filtros'),
-              ),
-            ],
-          ],
         ),
       ),
     );

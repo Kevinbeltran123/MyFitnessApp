@@ -4,8 +4,13 @@ import 'package:my_fitness_tracker/domain/metrics/metrics_entities.dart';
 import 'package:my_fitness_tracker/presentation/metrics/add_measurement_screen.dart';
 import 'package:my_fitness_tracker/presentation/metrics/metrics_controller.dart';
 import 'package:my_fitness_tracker/presentation/metrics/widgets/bmi_calculator.dart';
+import 'package:my_fitness_tracker/presentation/metrics/models/metric_insights.dart';
+import 'package:my_fitness_tracker/presentation/metrics/widgets/comparison_card.dart';
 import 'package:my_fitness_tracker/presentation/metrics/widgets/metric_chart.dart';
+import 'package:my_fitness_tracker/presentation/metrics/widgets/metric_range_selector.dart';
+import 'package:my_fitness_tracker/presentation/metrics/widgets/trend_indicator.dart';
 import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
+import 'package:my_fitness_tracker/shared/widgets/state_widgets.dart';
 
 /// Dashboard screen for body metrics tracking.
 ///
@@ -20,9 +25,10 @@ class MetricsDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final metricsAsync = ref.watch(bodyMetricsProvider);
+    final metricsAsync = ref.watch(filteredMetricsProvider);
     final latestMetricAsync = ref.watch(latestBodyMetricProvider);
     final profileAsync = ref.watch(metabolicProfileProvider);
+    final rangePreset = ref.watch(selectedMetricRangeProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -37,23 +43,96 @@ class MetricsDashboardScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: metricsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => _buildErrorView(context, error),
+          loading: () => const LoadingStateWidget(),
+          error: (error, stack) => ErrorStateWidget(
+            title: 'Error al cargar tus medidas',
+            message: error.toString(),
+            onRetry: () {
+              ref.invalidate(bodyMetricsProvider);
+              ref.invalidate(filteredMetricsProvider);
+              ref.invalidate(latestBodyMetricProvider);
+            },
+          ),
           data: (metrics) {
             if (metrics.isEmpty) {
-              return _buildEmptyState(context);
+              return rangePreset == MetricRangePreset.all
+                  ? _buildEmptyState(context)
+                  : _buildEmptyRangeState(context, rangePreset);
             }
+
+            final sortedMetrics = [...metrics]
+              ..sort((a, b) => a.recordedAt.compareTo(b.recordedAt));
+            final comparisonMetrics =
+                _buildComparisonMetrics(sortedMetrics);
+            final trendInsightsList = _buildTrendInsights(sortedMetrics);
+            final profile = profileAsync.value;
+
+            final analyticsKey = ValueKey(
+              '${rangePreset.name}-${sortedMetrics.length > 1 ? sortedMetrics.last.recordedAt.millisecondsSinceEpoch : sortedMetrics.length}',
+            );
 
             return RefreshIndicator(
               onRefresh: () async {
                 ref.invalidate(bodyMetricsProvider);
                 ref.invalidate(latestBodyMetricProvider);
+                ref.invalidate(filteredMetricsProvider);
               },
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 350),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  transitionBuilder: (child, animation) {
+                    final offsetAnimation = Tween<Offset>(
+                      begin: const Offset(0, 0.05),
+                      end: Offset.zero,
+                    ).animate(animation);
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Column(
+                    key: analyticsKey,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Periodo de análisis',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const MetricRangeSelector(),
+                      const SizedBox(height: 20),
+
+                    if (comparisonMetrics.isNotEmpty) ...[
+                      ComparisonCard(metrics: comparisonMetrics),
+                      const SizedBox(height: 20),
+                    ],
+
+                    if (trendInsightsList.isNotEmpty) ...[
+                      Text(
+                        'Indicadores de tendencia',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ...trendInsightsList.map(
+                        (insight) => Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: TrendIndicator(insights: insight),
+                        ),
+                      ),
+                    ],
+
                     // Latest measurement card
                     latestMetricAsync.when(
                       data: (latest) => latest != null
@@ -94,6 +173,7 @@ class MetricsDashboardScreen extends ConsumerWidget {
                     MetricChart(
                       metrics: metrics,
                       metricType: MetricType.weight,
+                      goalValue: profile?.weightKg,
                     ),
                     const SizedBox(height: 24),
 
@@ -143,9 +223,10 @@ class MetricsDashboardScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
+      ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _navigateToAddMeasurement(context, ref),
@@ -373,79 +454,25 @@ class MetricsDashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(
-                color: AppColors.lightGray,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.monitor_weight_outlined,
-                size: 64,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Aún no tienes medidas',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Agrega tu primera medida para comenzar a rastrear tu progreso',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textTertiary,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: () => _navigateToAddMeasurement(context, null),
-              icon: const Icon(Icons.add),
-              label: const Text('Agregar Primera Medida'),
-            ),
-          ],
-        ),
-      ),
+    return EmptyStateWidget(
+      icon: Icons.monitor_weight_outlined,
+      title: 'Aún no tienes medidas',
+      message:
+          'Agrega tu primera medición para visualizar tus tendencias y estadísticas.',
+      primaryLabel: 'Agregar medida',
+      onPrimaryTap: () => _navigateToAddMeasurement(context, null),
     );
   }
 
-  Widget _buildErrorView(BuildContext context, Object error) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppColors.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Error al cargar medidas',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              error.toString(),
-              style: Theme.of(context).textTheme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+  Widget _buildEmptyRangeState(
+    BuildContext context,
+    MetricRangePreset preset,
+  ) {
+    return EmptyStateWidget(
+      icon: Icons.timeline_outlined,
+      title: 'Sin datos en ${preset.label.toLowerCase()}',
+      message:
+          'Registra nuevas mediciones o selecciona otro periodo para continuar analizando tu progreso.',
     );
   }
 
@@ -459,6 +486,7 @@ class MetricsDashboardScreen extends ConsumerWidget {
       if (ref != null) {
         ref.invalidate(bodyMetricsProvider);
         ref.invalidate(latestBodyMetricProvider);
+        ref.invalidate(filteredMetricsProvider);
       }
     });
   }
@@ -479,5 +507,238 @@ class MetricsDashboardScreen extends ConsumerWidget {
       'Dic'
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+
+  List<ComparisonMetricData> _buildComparisonMetrics(
+    List<BodyMetric> metrics,
+  ) {
+    if (metrics.length < 2) {
+      return const [];
+    }
+    final BodyMetric first = metrics.first;
+    final BodyMetric last = metrics.last;
+
+    final List<ComparisonMetricData> data = [];
+
+    final double weightDelta = last.weightKg - first.weightKg;
+    data.add(
+      ComparisonMetricData(
+        label: 'Peso',
+        unit: 'kg',
+        delta: weightDelta,
+        percentChange:
+            first.weightKg > 0 ? (weightDelta / first.weightKg) * 100 : null,
+        average: _average(metrics.map((m) => m.weightKg).toList()),
+        trend: _trendFromDelta(weightDelta),
+      ),
+    );
+
+    final double? firstBodyFat = _firstNonNull(
+      metrics,
+      (metric) => metric.bodyFatPercentage,
+    );
+    final double? lastBodyFat = _lastNonNull(
+      metrics,
+      (metric) => metric.bodyFatPercentage,
+    );
+    if (firstBodyFat != null && lastBodyFat != null) {
+      final double delta = lastBodyFat - firstBodyFat;
+      data.add(
+        ComparisonMetricData(
+          label: 'Grasa',
+          unit: '%',
+          delta: delta,
+          percentChange:
+              firstBodyFat > 0 ? (delta / firstBodyFat) * 100 : null,
+          average: _average(
+            metrics
+                .where((metric) => metric.bodyFatPercentage != null)
+                .map((metric) => metric.bodyFatPercentage!)
+                .toList(),
+          ),
+          trend: _trendFromDelta(delta),
+        ),
+      );
+    } else {
+      data.add(
+        const ComparisonMetricData(
+          label: 'Grasa',
+          unit: '%',
+          delta: null,
+          percentChange: null,
+          average: null,
+          trend: MetricTrend.stable,
+        ),
+      );
+    }
+
+    final double? firstMuscle = _firstNonNull(
+      metrics,
+      (metric) => metric.muscleMassKg,
+    );
+    final double? lastMuscle = _lastNonNull(
+      metrics,
+      (metric) => metric.muscleMassKg,
+    );
+    if (firstMuscle != null && lastMuscle != null) {
+      final double delta = lastMuscle - firstMuscle;
+      data.add(
+        ComparisonMetricData(
+          label: 'Músculo',
+          unit: 'kg',
+          delta: delta,
+          percentChange:
+              firstMuscle > 0 ? (delta / firstMuscle) * 100 : null,
+          average: _average(
+            metrics
+                .where((metric) => metric.muscleMassKg != null)
+                .map((metric) => metric.muscleMassKg!)
+                .toList(),
+          ),
+          trend: _trendFromDelta(delta),
+        ),
+      );
+    } else {
+      data.add(
+        const ComparisonMetricData(
+          label: 'Músculo',
+          unit: 'kg',
+          delta: null,
+          percentChange: null,
+          average: null,
+          trend: MetricTrend.stable,
+        ),
+      );
+    }
+
+    return data;
+  }
+
+  List<TrendInsights> _buildTrendInsights(List<BodyMetric> metrics) {
+    final List<TrendInsights> insights = [];
+    final List<double> weightPoints =
+        metrics.map((metric) => metric.weightKg).toList();
+    final TrendInsights? weightTrend =
+        _createTrendInsight('Peso', 'kg', weightPoints);
+    if (weightTrend != null) {
+      insights.add(weightTrend);
+    }
+
+    final List<double> bodyFatPoints = metrics
+        .where((metric) => metric.bodyFatPercentage != null)
+        .map((metric) => metric.bodyFatPercentage!)
+        .toList();
+    final TrendInsights? bodyFatTrend =
+        _createTrendInsight('Grasa corporal', '%', bodyFatPoints);
+    if (bodyFatTrend != null) {
+      insights.add(bodyFatTrend);
+    }
+
+    final List<double> musclePoints = metrics
+        .where((metric) => metric.muscleMassKg != null)
+        .map((metric) => metric.muscleMassKg!)
+        .toList();
+    final TrendInsights? muscleTrend =
+        _createTrendInsight('Masa muscular', 'kg', musclePoints);
+    if (muscleTrend != null) {
+      insights.add(muscleTrend);
+    }
+
+    return insights;
+  }
+
+  TrendInsights? _createTrendInsight(
+    String title,
+    String unit,
+    List<double> points,
+  ) {
+    if (points.length < 2) {
+      return null;
+    }
+    final List<double> trimmed =
+        points.length > 12 ? points.sublist(points.length - 12) : points;
+    final double slope = _calculateSlope(trimmed);
+    final MetricTrend trend = _trendFromSlope(slope);
+    final double projected = trimmed.last + slope;
+    return TrendInsights(
+      title: title,
+      points: trimmed,
+      slope: slope,
+      latestValue: trimmed.last,
+      projectedValue: projected,
+      trend: trend,
+      unit: unit,
+    );
+  }
+
+  double _calculateSlope(List<double> values) {
+    final int n = values.length;
+    final List<double> xs =
+        List<double>.generate(n, (index) => index.toDouble());
+    final double meanX =
+        xs.reduce((value, element) => value + element) / n;
+    final double meanY =
+        values.reduce((value, element) => value + element) / n;
+
+    double numerator = 0;
+    double denominator = 0;
+
+    for (int i = 0; i < n; i += 1) {
+      final double dx = xs[i] - meanX;
+      numerator += dx * (values[i] - meanY);
+      denominator += dx * dx;
+    }
+    if (denominator == 0) {
+      return 0;
+    }
+    return numerator / denominator;
+  }
+
+  MetricTrend _trendFromDelta(double delta, {double threshold = 0.05}) {
+    if (delta.abs() <= threshold) {
+      return MetricTrend.stable;
+    }
+    return delta > 0 ? MetricTrend.up : MetricTrend.down;
+  }
+
+  MetricTrend _trendFromSlope(double slope, {double threshold = 0.01}) {
+    if (slope.abs() <= threshold) {
+      return MetricTrend.stable;
+    }
+    return slope > 0 ? MetricTrend.up : MetricTrend.down;
+  }
+
+  double? _average(List<double> values) {
+    if (values.isEmpty) {
+      return null;
+    }
+    final double sum = values.reduce((value, element) => value + element);
+    return sum / values.length;
+  }
+
+  double? _firstNonNull(
+    List<BodyMetric> metrics,
+    double? Function(BodyMetric metric) selector,
+  ) {
+    for (final metric in metrics) {
+      final value = selector(metric);
+      if (value != null) {
+        return value;
+      }
+    }
+    return null;
+  }
+
+  double? _lastNonNull(
+    List<BodyMetric> metrics,
+    double? Function(BodyMetric metric) selector,
+  ) {
+    for (final metric in metrics.reversed) {
+      final value = selector(metric);
+      if (value != null) {
+        return value;
+      }
+    }
+    return null;
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
+import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
 
 class RoutineSetEditor extends StatefulWidget {
   const RoutineSetEditor({
@@ -32,13 +33,26 @@ class _RoutineSetEditorState extends State<RoutineSetEditor> {
   }
 
   void _addSet() {
+    if (_sets.length >= 10) {
+      AppSnackBar.showWarning(
+        context,
+        'Máximo 10 series por ejercicio.',
+      );
+      return;
+    }
     final int nextNumber = (_sets.isNotEmpty ? _sets.last.setNumber : 0) + 1;
     _sets = <RoutineSet>[..._sets, RoutineSet(setNumber: nextNumber, repetitions: 10)];
     _update();
   }
 
   void _removeSet(int index) {
-    if (_sets.length == 1) return;
+    if (_sets.length == 1) {
+      AppSnackBar.showWarning(
+        context,
+        'Debe existir al menos una serie.',
+      );
+      return;
+    }
     _sets = List<RoutineSet>.from(_sets)..removeAt(index);
     _update();
   }
@@ -112,11 +126,51 @@ class _SetRowState extends State<_SetRow> {
   }
 
   void _emitUpdate() {
-    final int reps = int.tryParse(_repsController.text) ?? widget.set.repetitions;
-    final double? weight = double.tryParse(_weightController.text.isEmpty ? '0' : _weightController.text);
-    final Duration? rest = _restController.text.isEmpty
-        ? null
-        : Duration(seconds: int.tryParse(_restController.text) ?? widget.set.restInterval?.inSeconds ?? 0);
+    int reps = int.tryParse(_repsController.text) ?? widget.set.repetitions;
+    reps = reps.clamp(1, 100);
+    if (_repsController.text != reps.toString()) {
+      _repsController.text = reps.toString();
+      _repsController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _repsController.text.length),
+      );
+    }
+
+    double? weight;
+    if (_weightController.text.isEmpty) {
+      weight = null;
+    } else {
+      final double? parsed = double.tryParse(_weightController.text);
+      if (parsed == null) {
+        weight = widget.set.targetWeight ?? 0;
+      } else {
+        weight = parsed < 0 ? 0 : parsed;
+      }
+      if (weight != null) {
+        final String formatted = weight.toStringAsFixed(1);
+        if (_weightController.text != formatted) {
+          _weightController.text = formatted;
+          _weightController.selection = TextSelection.fromPosition(
+            TextPosition(offset: _weightController.text.length),
+          );
+        }
+      }
+    }
+
+    Duration? rest;
+    if (_restController.text.isEmpty) {
+      rest = null;
+    } else {
+      final int? seconds = int.tryParse(_restController.text);
+      int clamped = seconds ?? widget.set.restInterval?.inSeconds ?? 0;
+      clamped = clamped.clamp(0, 1200);
+      rest = Duration(seconds: clamped);
+      if (_restController.text != clamped.toString()) {
+        _restController.text = clamped.toString();
+        _restController.selection = TextSelection.fromPosition(
+          TextPosition(offset: _restController.text.length),
+        );
+      }
+    }
     widget.onChanged(
       RoutineSet(
         setNumber: widget.set.setNumber,

@@ -5,6 +5,8 @@ import 'package:my_fitness_tracker/presentation/home/home_providers.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_builder_screen.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_list_controller.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_session_screen.dart';
+import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
+import 'package:my_fitness_tracker/shared/widgets/state_widgets.dart';
 
 class RoutineDetailScreen extends ConsumerStatefulWidget {
   const RoutineDetailScreen({super.key, required this.routineId});
@@ -45,7 +47,9 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
       ref.invalidate(routineByIdProvider(widget.routineId));
       ref.invalidate(routineListControllerProvider);
       messenger.showSnackBar(
-        SnackBar(content: Text('Rutina "${updated.name}" actualizada.')),
+        AppSnackBar.successSnack(
+          'Rutina "${updated.name}" actualizada.',
+        ),
       );
     }
   }
@@ -62,12 +66,14 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
       }
       ref.invalidate(routineListControllerProvider);
       messenger.showSnackBar(
-        SnackBar(content: Text('Rutina duplicada como "${duplicated.name}".')),
+        AppSnackBar.successSnack(
+          'Rutina duplicada como "${duplicated.name}".',
+        ),
       );
     } catch (_) {
       if (!mounted) return;
       messenger.showSnackBar(
-        const SnackBar(content: Text('No se pudo duplicar la rutina.')),
+        AppSnackBar.errorSnack('No se pudo duplicar la rutina.'),
       );
     }
   }
@@ -90,20 +96,15 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
       if (!mounted) return;
       ref.invalidate(routineByIdProvider(widget.routineId));
       ref.invalidate(routineListControllerProvider);
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            targetArchived
-                ? 'Rutina "${routine.name}" archivada.'
-                : 'Rutina "${routine.name}" restaurada.',
-          ),
-        ),
-      );
+      final String message = targetArchived
+          ? 'Rutina "${routine.name}" archivada.'
+          : 'Rutina "${routine.name}" restaurada.';
+      messenger.showSnackBar(AppSnackBar.infoSnack(message));
     } catch (_) {
       if (!mounted) return;
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo actualizar el estado de la rutina.'),
+        AppSnackBar.errorSnack(
+          'No se pudo actualizar el estado de la rutina.',
         ),
       );
     }
@@ -156,8 +157,8 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
     } catch (_) {
       if (!mounted) return;
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('No pudimos eliminar la rutina. Intenta nuevamente.'),
+        AppSnackBar.errorSnack(
+          'No pudimos eliminar la rutina. Intenta nuevamente.',
         ),
       );
     }
@@ -258,7 +259,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
                 onRetry: () =>
                     ref.refresh(routineByIdProvider(widget.routineId)),
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const LoadingStateWidget(),
             ),
           ),
         ],
@@ -575,34 +576,11 @@ class _LoadErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-            const SizedBox(height: 16),
-            Text(
-              'No se pudo cargar la rutina',
-              style: theme.textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              error.toString(),
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall,
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Intentar nuevamente'),
-            ),
-          ],
-        ),
-      ),
+    return ErrorStateWidget(
+      title: 'No se pudo cargar la rutina',
+      message: error.toString(),
+      onRetry: onRetry,
+      retryLabel: 'Intentar nuevamente',
     );
   }
 }
@@ -612,32 +590,11 @@ class _EmptyRoutineDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(
-              Icons.help_outline,
-              size: 48,
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No encontramos la rutina solicitada.',
-              style: theme.textTheme.titleMedium,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Es posible que haya sido eliminada o que aún no se haya sincronizado correctamente.',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium,
-            ),
-          ],
-        ),
-      ),
+    return EmptyStateWidget(
+      icon: Icons.help_outline,
+      title: 'No encontramos la rutina solicitada.',
+      message:
+          'Es posible que haya sido eliminada o que aún no se haya sincronizado correctamente.',
     );
   }
 }
