@@ -1844,19 +1844,24 @@ const MetabolicProfileModelSchema = CollectionSchema(
       name: r'profileId',
       type: IsarType.string,
     ),
-    r'sex': PropertySchema(
+    r'profileImagePath': PropertySchema(
       id: 4,
+      name: r'profileImagePath',
+      type: IsarType.string,
+    ),
+    r'sex': PropertySchema(
+      id: 5,
       name: r'sex',
       type: IsarType.byte,
       enumMap: _MetabolicProfileModelsexEnumValueMap,
     ),
     r'updatedAt': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'updatedAt',
       type: IsarType.dateTime,
     ),
     r'weightKg': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'weightKg',
       type: IsarType.double,
     )
@@ -1896,6 +1901,12 @@ int _metabolicProfileModelEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.profileId.length * 3;
+  {
+    final value = object.profileImagePath;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -1909,9 +1920,10 @@ void _metabolicProfileModelSerialize(
   writer.writeLong(offsets[1], object.age);
   writer.writeDouble(offsets[2], object.heightCm);
   writer.writeString(offsets[3], object.profileId);
-  writer.writeByte(offsets[4], object.sex.index);
-  writer.writeDateTime(offsets[5], object.updatedAt);
-  writer.writeDouble(offsets[6], object.weightKg);
+  writer.writeString(offsets[4], object.profileImagePath);
+  writer.writeByte(offsets[5], object.sex.index);
+  writer.writeDateTime(offsets[6], object.updatedAt);
+  writer.writeDouble(offsets[7], object.weightKg);
 }
 
 MetabolicProfileModel _metabolicProfileModelDeserialize(
@@ -1926,11 +1938,12 @@ MetabolicProfileModel _metabolicProfileModelDeserialize(
   object.heightCm = reader.readDouble(offsets[2]);
   object.id = id;
   object.profileId = reader.readString(offsets[3]);
+  object.profileImagePath = reader.readStringOrNull(offsets[4]);
   object.sex = _MetabolicProfileModelsexValueEnumMap[
-          reader.readByteOrNull(offsets[4])] ??
+          reader.readByteOrNull(offsets[5])] ??
       BiologicalSex.male;
-  object.updatedAt = reader.readDateTime(offsets[5]);
-  object.weightKg = reader.readDouble(offsets[6]);
+  object.updatedAt = reader.readDateTime(offsets[6]);
+  object.weightKg = reader.readDouble(offsets[7]);
   return object;
 }
 
@@ -1950,12 +1963,14 @@ P _metabolicProfileModelDeserializeProp<P>(
     case 3:
       return (reader.readString(offset)) as P;
     case 4:
+      return (reader.readStringOrNull(offset)) as P;
+    case 5:
       return (_MetabolicProfileModelsexValueEnumMap[
               reader.readByteOrNull(offset)] ??
           BiologicalSex.male) as P;
-    case 5:
-      return (reader.readDateTime(offset)) as P;
     case 6:
+      return (reader.readDateTime(offset)) as P;
+    case 7:
       return (reader.readDouble(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -2556,6 +2571,162 @@ extension MetabolicProfileModelQueryFilter on QueryBuilder<
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
+      QAfterFilterCondition> profileImagePathIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'profileImagePath',
+      ));
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
+      QAfterFilterCondition> profileImagePathIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'profileImagePath',
+      ));
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
+      QAfterFilterCondition> profileImagePathEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'profileImagePath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
+      QAfterFilterCondition> profileImagePathGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'profileImagePath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
+      QAfterFilterCondition> profileImagePathLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'profileImagePath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
+      QAfterFilterCondition> profileImagePathBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'profileImagePath',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
+      QAfterFilterCondition> profileImagePathStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'profileImagePath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
+      QAfterFilterCondition> profileImagePathEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'profileImagePath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
+          QAfterFilterCondition>
+      profileImagePathContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'profileImagePath',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
+          QAfterFilterCondition>
+      profileImagePathMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'profileImagePath',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
+      QAfterFilterCondition> profileImagePathIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'profileImagePath',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
+      QAfterFilterCondition> profileImagePathIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'profileImagePath',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
       QAfterFilterCondition> sexEqualTo(BiologicalSex value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -2799,6 +2970,20 @@ extension MetabolicProfileModelQuerySortBy
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
+      sortByProfileImagePath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'profileImagePath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
+      sortByProfileImagePathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'profileImagePath', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
       sortBySex() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'sex', Sort.asc);
@@ -2914,6 +3099,20 @@ extension MetabolicProfileModelQuerySortThenBy
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
+      thenByProfileImagePath() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'profileImagePath', Sort.asc);
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
+      thenByProfileImagePathDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'profileImagePath', Sort.desc);
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
       thenBySex() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'sex', Sort.asc);
@@ -2987,6 +3186,14 @@ extension MetabolicProfileModelQueryWhereDistinct
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QDistinct>
+      distinctByProfileImagePath({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'profileImagePath',
+          caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QDistinct>
       distinctBySex() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'sex');
@@ -3040,6 +3247,13 @@ extension MetabolicProfileModelQueryProperty on QueryBuilder<
       profileIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'profileId');
+    });
+  }
+
+  QueryBuilder<MetabolicProfileModel, String?, QQueryOperations>
+      profileImagePathProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'profileImagePath');
     });
   }
 

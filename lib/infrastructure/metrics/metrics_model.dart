@@ -83,6 +83,7 @@ class MetabolicProfileModel {
   late BiologicalSex sex;
 
   double activityMultiplier = 1.2;
+  String? profileImagePath;
 
   MetabolicProfile toDomain() {
     return MetabolicProfile(
@@ -93,6 +94,7 @@ class MetabolicProfileModel {
       age: age,
       sex: sex,
       activityMultiplier: activityMultiplier,
+      profileImagePath: profileImagePath,
     );
   }
 
@@ -104,7 +106,8 @@ class MetabolicProfileModel {
       ..weightKg = profile.weightKg
       ..age = profile.age
       ..sex = profile.sex
-      ..activityMultiplier = profile.activityMultiplier;
+      ..activityMultiplier = profile.activityMultiplier
+      ..profileImagePath = profile.profileImagePath;
     return model;
   }
 }

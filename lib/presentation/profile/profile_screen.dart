@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_fitness_tracker/domain/analytics/analytics_entities.dart';
+import 'package:my_fitness_tracker/presentation/analytics/analytics_providers.dart';
+import 'package:my_fitness_tracker/presentation/analytics/personal_records_screen.dart';
 import 'package:my_fitness_tracker/presentation/metrics/metrics_controller.dart';
 import 'package:my_fitness_tracker/presentation/metrics/metrics_dashboard_screen.dart';
+import 'package:my_fitness_tracker/presentation/profile/profile_image_controller.dart';
 import 'package:my_fitness_tracker/presentation/profile/settings_screen.dart';
 import 'package:my_fitness_tracker/presentation/profile/statistics_screen.dart';
+import 'package:my_fitness_tracker/presentation/profile/widgets/profile_image_picker.dart';
 import 'package:my_fitness_tracker/presentation/workouts/workout_history_controller.dart';
 import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
 import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
@@ -24,12 +29,14 @@ class ProfileScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final sessionsAsync = ref.watch(workoutHistoryControllerProvider);
     final metricsAsync = ref.watch(bodyMetricsProvider);
-    final profileAsync = ref.watch(metabolicProfileProvider);
+    final personalRecordsAsync = ref.watch(personalRecordsProvider);
+    final bool hasPersonalRecords = personalRecordsAsync.maybeWhen(
+      data: (records) => records.isNotEmpty,
+      orElse: () => false,
+    );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Más'),
-      ),
+      appBar: AppBar(title: const Text('Más')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -37,7 +44,7 @@ class ProfileScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Profile header
-              _buildProfileHeader(context, theme, profileAsync.value),
+              const _ProfileHeader(),
               const SizedBox(height: 24),
 
               // Quick stats
@@ -48,6 +55,18 @@ class ProfileScreen extends ConsumerWidget {
                 metricsAsync.value?.length ?? 0,
               ),
               const SizedBox(height: 24),
+
+              personalRecordsAsync.when(
+                data: (records) => records.isEmpty
+                    ? const SizedBox.shrink()
+                    : _PersonalRecordsCard(
+                        records: records.take(3).toList(growable: false),
+                        onViewAll: () => _navigateToPersonalRecords(context),
+                      ),
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              ),
+              if (hasPersonalRecords) const SizedBox(height: 24),
 
               // Main actions
               Text(
@@ -162,77 +181,6 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileHeader(
-    BuildContext context,
-    ThemeData theme,
-    dynamic profile,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: AppColors.grayGradient,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.shadowMedium,
-            blurRadius: 16,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Avatar
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.white.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.white.withValues(alpha: 0.3),
-                width: 3,
-              ),
-            ),
-            child: const Icon(
-              Icons.person,
-              size: 40,
-              color: AppColors.white,
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Name
-          Text(
-            'Usuario',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              color: AppColors.white,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-
-          // Quick info
-          if (profile != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '${profile.heightCm.toStringAsFixed(0)} cm • ${profile.age} años',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: AppColors.white.withValues(alpha: 0.9),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildQuickStats(
     BuildContext context,
     ThemeData theme,
@@ -264,33 +212,30 @@ class ProfileScreen extends ConsumerWidget {
 
   void _navigateToMetrics(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const MetricsDashboardScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const MetricsDashboardScreen()),
+    );
+  }
+
+  void _navigateToPersonalRecords(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const PersonalRecordsScreen()),
     );
   }
 
   void _navigateToStatistics(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const StatisticsScreen(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const StatisticsScreen()));
   }
 
   void _navigateToSettings(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const SettingsScreen(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const SettingsScreen()));
   }
 
   void _showComingSoon(BuildContext context, String feature) {
-    AppSnackBar.showInfo(
-      context,
-      '$feature estará disponible próximamente',
-    );
+    AppSnackBar.showInfo(context, '$feature estará disponible próximamente');
   }
 
   void _showAboutDialog(BuildContext context) {
@@ -325,6 +270,72 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
+class _ProfileHeader extends ConsumerWidget {
+  const _ProfileHeader();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final profileAsync = ref.watch(metabolicProfileProvider);
+    final profileImagePath = ref.watch(profileImagePathProvider);
+    final profile = profileAsync.value;
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: AppColors.grayGradient,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.shadowMedium,
+            blurRadius: 16,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Avatar with ProfileImagePicker
+          ProfileImagePicker(
+            imagePath: profileImagePath,
+            onImageSelected: (newPath) => ref
+                .read(profileImagePathProvider.notifier)
+                .updateImage(profile: profile, newPath: newPath),
+          ),
+          const SizedBox(height: 16),
+
+          // Name
+          Text(
+            'Usuario',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: AppColors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Quick info
+          if (profile != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '${profile.heightCm.toStringAsFixed(0)} cm • ${profile.age} años',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: AppColors.white.withValues(alpha: 0.9),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _MenuCard extends StatelessWidget {
   const _MenuCard({
     required this.icon,
@@ -348,9 +359,7 @@ class _MenuCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: AppColors.textTertiary.withValues(alpha: 0.15),
-        ),
+        side: BorderSide(color: AppColors.textTertiary.withValues(alpha: 0.15)),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -365,11 +374,7 @@ class _MenuCard extends StatelessWidget {
                   color: iconColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 24,
-                ),
+                child: Icon(icon, color: iconColor, size: 24),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -392,14 +397,155 @@ class _MenuCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.chevron_right,
-                color: AppColors.textTertiary,
-              ),
+              const Icon(Icons.chevron_right, color: AppColors.textTertiary),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PersonalRecordsCard extends StatelessWidget {
+  const _PersonalRecordsCard({required this.records, required this.onViewAll});
+
+  final List<PersonalRecord> records;
+  final VoidCallback onViewAll;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: AppColors.grayGradient,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.shadowMedium,
+            blurRadius: 20,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Records personales',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: AppColors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              TextButton(
+                onPressed: onViewAll,
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.white,
+                  textStyle: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                child: const Text('Ver todos'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...records.indexed.map(
+            (entry) => Padding(
+              padding: EdgeInsets.only(
+                bottom: entry.$1 == records.length - 1 ? 0 : 12,
+              ),
+              child: _PersonalRecordRow(record: entry.$2),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PersonalRecordRow extends StatelessWidget {
+  const _PersonalRecordRow({required this.record});
+
+  final PersonalRecord record;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final String title = record.exerciseName?.trim().isNotEmpty == true
+        ? record.exerciseName!.trim()
+        : record.exerciseId;
+    final String subtitle =
+        '${record.bestWeight.toStringAsFixed(1)} kg × ${record.repetitions} rep${record.repetitions == 1 ? '' : 's'}';
+    final String dateLabel =
+        '${record.achievedAt.day.toString().padLeft(2, '0')}/${record.achievedAt.month.toString().padLeft(2, '0')}/${record.achievedAt.year}';
+
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: AppColors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: AppColors.white.withValues(alpha: 0.75),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                dateLabel,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: AppColors.white.withValues(alpha: 0.55),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.accentBlue.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.accentBlue.withValues(alpha: 0.5),
+              width: 1.2,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${record.oneRepMax.toStringAsFixed(1)} kg',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: AppColors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                '1RM estimado',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: AppColors.white.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

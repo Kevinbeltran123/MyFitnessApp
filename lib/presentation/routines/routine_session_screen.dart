@@ -3,10 +3,14 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_fitness_tracker/application/analytics/personal_record_service.dart';
+import 'package:my_fitness_tracker/domain/analytics/analytics_entities.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
 import 'package:my_fitness_tracker/domain/timers/rest_timer_entities.dart';
+import 'package:my_fitness_tracker/presentation/analytics/analytics_providers.dart';
 import 'package:my_fitness_tracker/presentation/routines/rest_timer_controller.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_session_controller.dart';
+import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
 
 class RoutineSessionScreen extends ConsumerStatefulWidget {
   const RoutineSessionScreen({super.key, required this.routineId});
@@ -25,6 +29,19 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
 
   final TextEditingController _notesController = TextEditingController();
   bool _notesInitialized = false;
+  PersonalRecordService? _personalRecordService;
+  List<PersonalRecord> _baselinePersonalRecords = const <PersonalRecord>[];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _loadInitialPersonalRecords();
+    });
+  }
 
   @override
   void dispose() {
@@ -81,6 +98,73 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
       return;
     }
     await ref.read(restTimerControllerProvider(request).notifier).cancel();
+  }
+
+  Future<void> _loadInitialPersonalRecords() async {
+    try {
+      final PersonalRecordService service = await ref.read(
+        personalRecordServiceProvider.future,
+      );
+      final List<PersonalRecord> records = await service.loadPersonalRecords();
+      if (!mounted) {
+        return;
+      }
+      _personalRecordService = service;
+      _baselinePersonalRecords = records;
+    } catch (_) {
+      // Ignore errors silently; the screen will continue without PR feedback.
+    }
+  }
+
+  Future<void> _checkForNewPersonalRecords(RoutineSession session) async {
+    try {
+      final PersonalRecordService service =
+          _personalRecordService ??
+          await ref.read(personalRecordServiceProvider.future);
+      final List<PersonalRecord> latest = await service.loadPersonalRecords();
+      if (!mounted) {
+        return;
+      }
+
+      final Map<String, PersonalRecord> previous = <String, PersonalRecord>{
+        for (final PersonalRecord record in _baselinePersonalRecords)
+          record.exerciseId: record,
+      };
+      final Set<String> sessionExerciseIds = session.exerciseLogs
+          .map((RoutineExerciseLog log) => log.exerciseId)
+          .toSet();
+
+      final List<PersonalRecord> newRecords = <PersonalRecord>[];
+      for (final PersonalRecord record in latest) {
+        if (!sessionExerciseIds.contains(record.exerciseId)) {
+          continue;
+        }
+        final PersonalRecord? before = previous[record.exerciseId];
+        if (before == null || record.oneRepMax > before.oneRepMax + 1e-6) {
+          newRecords.add(record);
+        }
+      }
+
+      if (newRecords.isNotEmpty) {
+        final PersonalRecord highlight = newRecords.first;
+        final String name = highlight.exerciseName?.trim().isNotEmpty == true
+            ? highlight.exerciseName!.trim()
+            : highlight.exerciseId;
+        final String message = newRecords.length == 1
+            ? '¡Nuevo PR en $name! 1RM estimado: '
+                  '${highlight.oneRepMax.toStringAsFixed(1)} kg'
+            : '¡Nuevo PR en ${newRecords.length} ejercicios! '
+                  'Último: $name '
+                  '(${highlight.oneRepMax.toStringAsFixed(1)} kg)';
+
+        AppSnackBar.showSuccess(context, message);
+      }
+
+      _baselinePersonalRecords = latest;
+      _personalRecordService = service;
+    } catch (_) {
+      // Ignore failures silently; notifications are a best-effort enhancement.
+    }
   }
 
   Future<void> _logCurrentSet(RoutineSessionState state) async {
@@ -169,6 +253,10 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
       return;
     }
     if (session != null) {
+      await _checkForNewPersonalRecords(session);
+      if (!mounted) {
+        return;
+      }
       Navigator.of(context).pop(session);
     }
   }
@@ -769,7 +857,10 @@ class _LogSetSheetState extends State<_LogSetSheet> {
                   final int repetitions =
                       int.parse(_repsController.text).clamp(0, 100) as int;
                   final double weight =
-                      double.parse(_weightController.text).clamp(0, double.infinity) as double;
+                      double.parse(
+                            _weightController.text,
+                          ).clamp(0, double.infinity)
+                          as double;
                   final int restSeconds =
                       int.parse(_restController.text).clamp(0, 1200) as int;
                   Navigator.of(context).pop(

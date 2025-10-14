@@ -55,6 +55,7 @@ class MetabolicProfile {
     required this.age,
     required this.sex,
     this.activityMultiplier = 1.2,
+    this.profileImagePath,
   });
 
   final String id;
@@ -64,6 +65,7 @@ class MetabolicProfile {
   final int age;
   final BiologicalSex sex;
   final double activityMultiplier;
+  final String? profileImagePath;
 
   // Basal metabolic rate calculated using Mifflin-St Jeor formula.
   double get basalMetabolicRate {
@@ -87,6 +89,8 @@ class MetabolicProfile {
     BiologicalSex? sex,
     double? activityMultiplier,
     DateTime? updatedAt,
+    String? profileImagePath,
+    bool clearProfileImage = false,
   }) {
     return MetabolicProfile(
       id: id,
@@ -96,6 +100,9 @@ class MetabolicProfile {
       age: age ?? this.age,
       sex: sex ?? this.sex,
       activityMultiplier: activityMultiplier ?? this.activityMultiplier,
+      profileImagePath: clearProfileImage
+          ? null
+          : (profileImagePath ?? this.profileImagePath),
     );
   }
 }

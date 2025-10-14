@@ -48,7 +48,7 @@
 
 #### Críticos
 - [ ] **Persistencia Isar no validada** - No se ha verificado que datos sobrevivan reinicios de app
-- [ ] **Tests unitarios bloqueados** - IsarCore download failures en ambiente de testing
+- [ ] **Tests unitarios bloqueados** - IsarCore download failures en ambiente de testing _(mitigado: pruebas Isar se auto-saltan cuando la librería nativa no está disponible, falta solución definitiva sin red)_
 - [ ] **Falta validación de edge cases** - Estados vacíos, errores de red, datos inválidos
 
 #### No Críticos
@@ -284,32 +284,33 @@ lib/presentation/metrics/
 #### Tareas
 
 ##### 2.1.1 Servicio de Analytics
-- [ ] **Crear `AnalyticsService` en `application/analytics/`**
-  - [ ] Método: `calculateWeeklyVolume(DateTime week) → double`
-  - [ ] Método: `calculateMonthlyVolume(DateTime month) → double`
-  - [ ] Método: `getVolumeByMuscleGroup(DateRange) → Map<String, double>`
-  - [ ] Método: `calculateTrainingFrequency(DateRange) → int`
-  - [ ] Método: `calculateConsistency(DateRange) → double` (%)
-  - [ ] Método: `estimateOneRepMax(Exercise, weight, reps) → double`
+- [x] **Crear `AnalyticsService` en `application/analytics/`**
+  - [x] Método: `calculateWeeklyVolume(DateTime week) → double`
+  - [x] Método: `calculateMonthlyVolume(DateTime month) → double`
+  - [x] Método: `getVolumeByMuscleGroup(DateRange) → Map<String, double>`
+  - [x] Método: `calculateTrainingFrequency(DateRange) → int`
+  - [x] Método: `calculateConsistency(DateRange) → double` (%)
+  - [x] Método: `estimateOneRepMax(Exercise, weight, reps) → double`
 
 - [ ] **Implementar entidades de analytics en `domain/analytics/`**
-  - [ ] `WorkoutStats` (volumen, sets, duración, frecuencia)
-  - [ ] `MuscleGroupStats` (volumen por grupo, frecuencia)
-  - [ ] `ExerciseProgress` (histórico de peso/reps, PRs)
-  - [ ] `ConsistencyMetrics` (streaks, días activos, tasa cumplimiento)
+  - [x] `WorkoutStats` (volumen, sets, duración, frecuencia)
+  - [x] `MuscleGroupStats` (volumen por grupo, frecuencia)
+  - [x] `ExerciseProgress` (histórico de peso/reps, PRs)
+  - [x] `ConsistencyMetrics` (streaks, días activos, tasa cumplimiento)
 
 ##### 2.1.2 Cálculos de Fuerza
-- [ ] **Implementar fórmulas de 1RM**
-  - [ ] Fórmula Brzycki: `weight / (1.0278 - 0.0278 * reps)`
-  - [ ] Fórmula Epley: `weight * (1 + 0.0333 * reps)`
-  - [ ] Fórmula promedio de ambas
-  - [ ] Validación: solo para 1-12 reps
+- [x] **Implementar fórmulas de 1RM**
+  - [x] Fórmula Brzycki: `weight / (1.0278 - 0.0278 * reps)`
+  - [x] Fórmula Epley: `weight * (1 + 0.0333 * reps)`
+  - [x] Fórmula promedio de ambas
+  - [x] Validación: solo para 1-12 reps
 
 - [ ] **Tracking de Records Personales (PRs)**
-  - [ ] Detectar nuevo PR por ejercicio
-  - [ ] Guardar histórico de PRs
-  - [ ] Mostrar notificación cuando se rompe PR
-  - [ ] Pantalla de PRs por ejercicio
+  - [x] Detectar nuevo PR por ejercicio
+  - [x] Guardar histórico de PRs
+  - [x] Mostrar notificación cuando se rompe PR
+  - [x] Pantalla de PRs por ejercicio
+  - [x] Sección resumida en `ProfileScreen` con acceso “Ver todos”
 
 ##### 2.1.3 Analytics por Grupo Muscular
 - [ ] **Mapeo ejercicio → grupo muscular**
@@ -325,11 +326,11 @@ lib/presentation/metrics/
 
 ##### 2.1.4 Providers de Riverpod
 - [ ] **Crear providers en `presentation/analytics/`**
-  - [ ] `weeklyVolumeProvider` → FutureProvider
-  - [ ] `muscleGroupStatsProvider` → FutureProvider
-  - [ ] `consistencyMetricsProvider` → FutureProvider
-  - [ ] `personalRecordsProvider` → StreamProvider
-  - [ ] `exerciseProgressProvider(exerciseId)` → FutureProvider
+  - [x] `weeklyVolumeProvider` → FutureProvider
+  - [x] `muscleGroupStatsProvider` → FutureProvider
+  - [x] `consistencyMetricsProvider` → FutureProvider
+  - [x] `personalRecordsProvider` → StreamProvider
+  - [x] `exerciseProgressProvider(exerciseId)` → FutureProvider
 
 #### Estructura de Archivos
 ```
@@ -362,25 +363,25 @@ lib/
 #### Tareas
 
 ##### 2.2.1 Setup de fl_chart
-- [ ] **Instalación**
-  - [ ] Agregar a `pubspec.yaml`: `fl_chart: ^0.69.0`
-  - [ ] Ejecutar `flutter pub get`
-  - [ ] Verificar compatibilidad con Flutter actual
+- [x] **Instalación**
+  - [x] Agregar a `pubspec.yaml`: `fl_chart: ^0.69.0`
+  - [x] Ejecutar `flutter pub get`
+  - [x] Verificar compatibilidad con Flutter actual
 
 ##### 2.2.2 Migración de Gráficos Existentes
 - [ ] **Reemplazar `_SimpleLinePainter` con `LineChart`**
-  - [ ] Migrar `MetricChart` a usar fl_chart
-  - [ ] Mantener mismo diseño visual (azul con gradiente)
-  - [ ] Añadir interactividad (tooltips al tocar)
-  - [ ] Animaciones de entrada
+  - [x] Migrar `MetricChart` a usar fl_chart
+  - [x] Mantener mismo diseño visual (azul con gradiente)
+  - [x] Añadir interactividad (tooltips al tocar)
+  - [x] Animaciones de entrada
   - [ ] Zoom y pan opcionales
 
-- [ ] **Configuración de LineChart**
-  - [ ] `FlSpot` data points desde `BodyMetric`
-  - [ ] `LineTouchData` para interactividad
-  - [ ] `FlGridData` para grid lines sutiles
-  - [ ] `FlBorderData` para bordes
-  - [ ] Colores consistentes con `AppColors`
+- [x] **Configuración de LineChart**
+  - [x] `FlSpot` data points desde `BodyMetric`
+  - [x] `LineTouchData` para interactividad
+  - [x] `FlGridData` para grid lines sutiles
+  - [x] `FlBorderData` para bordes
+  - [x] Colores consistentes con `AppColors`
 
 ##### 2.2.3 Nuevo: Gráfico de Volumen (Barras)
 - [ ] **Crear `VolumeBarChart`**

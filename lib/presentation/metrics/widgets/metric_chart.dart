@@ -1,13 +1,10 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:my_fitness_tracker/domain/metrics/metrics_entities.dart';
 import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
 
 /// Enum for metric types to display in charts
-enum MetricType {
-  weight,
-  bodyFat,
-  muscleMass,
-}
+enum MetricType { weight, bodyFat, muscleMass }
 
 /// Simple line chart widget for displaying metric progress over time.
 ///
@@ -48,23 +45,23 @@ class MetricChart extends StatelessWidget {
       );
     }
 
-    final _DataPoint minPoint = dataPoints.reduce(
+    final minPoint = dataPoints.reduce(
       (value, element) => element.value < value.value ? element : value,
     );
-    final _DataPoint maxPoint = dataPoints.reduce(
+    final maxPoint = dataPoints.reduce(
       (value, element) => element.value > value.value ? element : value,
     );
 
-    final double minValue =
-        dataPoints.map((p) => p.value).reduce((a, b) => a < b ? a : b);
-    final double maxValue =
-        dataPoints.map((p) => p.value).reduce((a, b) => a > b ? a : b);
+    final values = dataPoints.map((e) => e.value).toList();
+    final double minValue = values.reduce((a, b) => a < b ? a : b);
+    final double maxValue = values.reduce((a, b) => a > b ? a : b);
     final double rawRange = maxValue - minValue;
     final double padding = (rawRange == 0 ? 1 : rawRange) * 0.1;
     final double adjustedMin = minValue - padding;
     final double adjustedMax = maxValue + padding;
-
-    const double chartHeight = 160;
+    final spots = dataPoints.indexed
+        .map((entry) => FlSpot(entry.$1.toDouble(), entry.$2.value))
+        .toList(growable: false);
 
     return Container(
       height: 240,
@@ -90,8 +87,10 @@ class MetricChart extends StatelessWidget {
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   gradient: AppColors.chartGradient,
                   borderRadius: BorderRadius.circular(8),
@@ -108,63 +107,18 @@ class MetricChart extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: chartHeight,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final Size canvasSize =
-                    Size(constraints.maxWidth, chartHeight);
-                return Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    CustomPaint(
-                      size: canvasSize,
-                      painter: _SimpleLinePainter(
-                        dataPoints: dataPoints,
-                        minValue: adjustedMin,
-                        maxValue: adjustedMax,
-                        goalValue: goalValue,
-                      ),
-                    ),
-                    ...dataPoints.map((point) {
-                      final offset = _resolvePointOffset(
-                        point: point,
-                        allPoints: dataPoints,
-                        canvasSize: canvasSize,
-                        minValue: adjustedMin,
-                        maxValue: adjustedMax,
-                      );
-                      final bool isMin = point == minPoint;
-                      final bool isMax = point == maxPoint;
-                      final Color pointColor = isMax
-                          ? AppColors.success
-                          : isMin
-                              ? AppColors.error
-                              : AppColors.chartGradientEnd;
-
-                      return Positioned(
-                        left: offset.dx - 6,
-                        top: offset.dy - 6,
-                        child: Tooltip(
-                          message:
-                              '${_formatDate(point.date)} · ${_formatValue(point.value)}',
-                          child: Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: pointColor,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.white,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ],
-                );
-              },
+            height: 160,
+            child: LineChart(
+              _buildChartData(
+                dataPoints: dataPoints,
+                spots: spots,
+                chartMinY: adjustedMin,
+                chartMaxY: adjustedMax,
+                actualMinValue: minValue,
+                actualMaxValue: maxValue,
+                minPoint: minPoint,
+                maxPoint: maxPoint,
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -245,24 +199,172 @@ class MetricChart extends StatelessWidget {
     return '${date.day}/${date.month}';
   }
 
-  Offset _resolvePointOffset({
-    required _DataPoint point,
-    required List<_DataPoint> allPoints,
-    required Size canvasSize,
-    required double minValue,
-    required double maxValue,
+  LineChartData _buildChartData({
+    required List<_DataPoint> dataPoints,
+    required List<FlSpot> spots,
+    required double chartMinY,
+    required double chartMaxY,
+    required double actualMinValue,
+    required double actualMaxValue,
+    required _DataPoint minPoint,
+    required _DataPoint maxPoint,
   }) {
-    final int index = allPoints.indexOf(point);
-    final double x = allPoints.length == 1
-        ? canvasSize.width / 2
-        : (index / (allPoints.length - 1)) * canvasSize.width;
-    final double range = (maxValue - minValue).abs() < 1e-6
-        ? 1
-        : (maxValue - minValue);
-    final double normalized =
-        ((point.value - minValue) / range).clamp(0, 1).toDouble();
-    final double y = canvasSize.height - (normalized * canvasSize.height);
-    return Offset(x, y);
+    final double minX = 0;
+    final double maxX = spots.isEmpty ? 1 : spots.last.x;
+    final gradientColors = <Color>[AppColors.accentBlue, AppColors.lightBlue];
+    final areaColors = <Color>[
+      AppColors.accentBlue.withValues(alpha: 0.25),
+      AppColors.accentBlue.withValues(alpha: 0.05),
+    ];
+
+    final double range = (chartMaxY - chartMinY).abs();
+    final double interval = range < 1e-6 ? 1 : range / 4;
+
+    return LineChartData(
+      minX: minX,
+      maxX: maxX,
+      minY: chartMinY,
+      maxY: chartMaxY,
+      gridData: FlGridData(
+        show: true,
+        drawVerticalLine: false,
+        horizontalInterval: interval,
+        getDrawingHorizontalLine: (value) => FlLine(
+          color: AppColors.textTertiary.withValues(alpha: 0.2),
+          strokeWidth: 1,
+          dashArray: const [6, 6],
+        ),
+      ),
+      borderData: FlBorderData(
+        show: true,
+        border: Border.all(
+          color: AppColors.textTertiary.withValues(alpha: 0.3),
+        ),
+      ),
+      lineBarsData: [
+        LineChartBarData(
+          spots: spots,
+          isCurved: true,
+          barWidth: 3,
+          gradient: LinearGradient(colors: gradientColors),
+          belowBarData: BarAreaData(
+            show: true,
+            gradient: LinearGradient(
+              colors: areaColors,
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          dotData: FlDotData(
+            show: true,
+            getDotPainter: (spot, percent, barData, index) {
+              final point = dataPoints[index];
+              final bool isMin = point == minPoint;
+              final bool isMax = point == maxPoint;
+              final Color color = isMax
+                  ? AppColors.success
+                  : isMin
+                  ? AppColors.error
+                  : AppColors.chartGradientEnd;
+              return FlDotCirclePainter(
+                radius: 5,
+                color: color,
+                strokeColor: AppColors.white,
+                strokeWidth: 2,
+              );
+            },
+          ),
+        ),
+      ],
+      lineTouchData: LineTouchData(
+        touchTooltipData: LineTouchTooltipData(
+          tooltipRoundedRadius: 12,
+          tooltipPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 8,
+          ),
+          getTooltipItems: (touchedSpots) {
+            return touchedSpots.map((spot) {
+              final point = dataPoints[spot.spotIndex];
+              return LineTooltipItem(
+                '${_formatDate(point.date)}\n${_formatValue(point.value)}',
+                const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              );
+            }).toList();
+          },
+        ),
+      ),
+      extraLinesData: ExtraLinesData(
+        horizontalLines: [
+          if (goalValue != null)
+            HorizontalLine(
+              y: goalValue!,
+              dashArray: const [8, 6],
+              color: AppColors.warning.withValues(alpha: 0.9),
+              strokeWidth: 2,
+              label: HorizontalLineLabel(
+                show: true,
+                alignment: Alignment.topRight,
+                padding: const EdgeInsets.only(right: 8),
+                style: const TextStyle(
+                  color: AppColors.warning,
+                  fontWeight: FontWeight.w600,
+                ),
+                labelResolver: (_) => 'Meta',
+              ),
+            ),
+        ],
+      ),
+      titlesData: FlTitlesData(
+        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles: const AxisTitles(
+          sideTitles: SideTitles(showTitles: false),
+        ),
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 32,
+            getTitlesWidget: (value, meta) {
+              final int index = value.round();
+              if (index == 0) {
+                return _TitleLabel(_formatDate(dataPoints.first.date));
+              }
+              if (index == meta.max.round()) {
+                return _TitleLabel(_formatDate(dataPoints.last.date));
+              }
+              if (dataPoints.length > 4 && index == (meta.max / 2).round()) {
+                return _TitleLabel(
+                  _formatDate(dataPoints[dataPoints.length ~/ 2].date),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 48,
+            getTitlesWidget: (value, meta) {
+              const double epsilon = 0.01;
+              if ((value - actualMinValue).abs() < epsilon) {
+                return _TitleLabel(_formatValue(actualMinValue));
+              }
+              if ((value - actualMaxValue).abs() < epsilon) {
+                return _TitleLabel(_formatValue(actualMaxValue));
+              }
+              if (goalValue != null && (value - goalValue!).abs() < epsilon) {
+                return _TitleLabel(_formatValue(goalValue!));
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -273,93 +375,21 @@ class _DataPoint {
   final double value;
 }
 
-class _SimpleLinePainter extends CustomPainter {
-  _SimpleLinePainter({
-    required this.dataPoints,
-    required this.minValue,
-    required this.maxValue,
-    this.goalValue,
-  });
+class _TitleLabel extends StatelessWidget {
+  const _TitleLabel(this.text);
 
-  final List<_DataPoint> dataPoints;
-  final double minValue;
-  final double maxValue;
-  final double? goalValue;
+  final String text;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    if (dataPoints.length < 2) {
-      return;
-    }
-
-    final double range = (maxValue - minValue).abs() < 1e-6
-        ? 1
-        : (maxValue - minValue);
-
-    final Paint linePaint = Paint()
-      ..color = AppColors.accentBlue
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final Paint gradientPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          AppColors.accentBlue.withValues(alpha: 0.3),
-          AppColors.accentBlue.withValues(alpha: 0.05),
-        ],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..style = PaintingStyle.fill;
-
-    final Path path = Path();
-    final Path fillPath = Path();
-
-    for (int i = 0; i < dataPoints.length; i += 1) {
-      final double x = dataPoints.length == 1
-          ? size.width / 2
-          : (i / (dataPoints.length - 1)) * size.width;
-      final double normalized =
-          ((dataPoints[i].value - minValue) / range).clamp(0, 1).toDouble();
-      final double y = size.height - (normalized * size.height);
-
-      if (i == 0) {
-        path.moveTo(x, y);
-        fillPath.moveTo(x, size.height);
-        fillPath.lineTo(x, y);
-      } else {
-        path.lineTo(x, y);
-        fillPath.lineTo(x, y);
-      }
-    }
-
-    fillPath.lineTo(size.width, size.height);
-    fillPath.close();
-
-    canvas.drawPath(fillPath, gradientPaint);
-    canvas.drawPath(path, linePaint);
-
-    if (goalValue != null &&
-        goalValue! >= minValue &&
-        goalValue! <= maxValue) {
-      final double normalizedGoal =
-          ((goalValue! - minValue) / range).clamp(0, 1).toDouble();
-      final double yGoal = size.height - (normalizedGoal * size.height);
-      final Paint goalPaint = Paint()
-        ..color = AppColors.warning.withValues(alpha: 0.7)
-        ..strokeWidth = 2
-        ..style = PaintingStyle.stroke;
-      canvas.drawLine(Offset(0, yGoal), Offset(size.width, yGoal), goalPaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_SimpleLinePainter oldDelegate) {
-    return oldDelegate.dataPoints != dataPoints ||
-        oldDelegate.minValue != minValue ||
-        oldDelegate.maxValue != maxValue ||
-        oldDelegate.goalValue != goalValue;
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Text(
+        text,
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
+      ),
+    );
   }
 }

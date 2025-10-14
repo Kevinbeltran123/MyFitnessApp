@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:my_fitness_tracker/domain/analytics/analytics_entities.dart';
 import 'package:my_fitness_tracker/domain/metrics/metrics_entities.dart';
 import 'package:my_fitness_tracker/presentation/metrics/add_measurement_screen.dart';
 import 'package:my_fitness_tracker/presentation/metrics/metrics_controller.dart';
@@ -9,6 +10,7 @@ import 'package:my_fitness_tracker/presentation/metrics/widgets/comparison_card.
 import 'package:my_fitness_tracker/presentation/metrics/widgets/metric_chart.dart';
 import 'package:my_fitness_tracker/presentation/metrics/widgets/metric_range_selector.dart';
 import 'package:my_fitness_tracker/presentation/metrics/widgets/trend_indicator.dart';
+import 'package:my_fitness_tracker/presentation/analytics/analytics_providers.dart';
 import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
 import 'package:my_fitness_tracker/shared/widgets/state_widgets.dart';
 
@@ -28,6 +30,25 @@ class MetricsDashboardScreen extends ConsumerWidget {
     final metricsAsync = ref.watch(filteredMetricsProvider);
     final latestMetricAsync = ref.watch(latestBodyMetricProvider);
     final profileAsync = ref.watch(metabolicProfileProvider);
+    final MetricDateRange? currentRange = ref
+        .watch(selectedMetricRangeProvider)
+        .toDateRange(DateTime.now());
+    final AsyncValue<WorkoutStats?> workoutStatsAsync = currentRange == null
+        ? const AsyncValue<WorkoutStats?>.data(null)
+        : ref
+              .watch(workoutStatsProvider(currentRange))
+              .whenData((value) => value);
+    final AsyncValue<List<MuscleGroupStat>?> muscleStatsAsync =
+        currentRange == null
+        ? const AsyncValue<List<MuscleGroupStat>?>.data(null)
+        : ref
+              .watch(muscleGroupStatsProvider(currentRange))
+              .whenData((value) => value);
+    final AsyncValue<double?> consistencyAsync = currentRange == null
+        ? const AsyncValue<double?>.data(null)
+        : ref
+              .watch(consistencyMetricsProvider(currentRange))
+              .whenData((value) => value);
     final rangePreset = ref.watch(selectedMetricRangeProvider);
 
     return Scaffold(
@@ -62,8 +83,7 @@ class MetricsDashboardScreen extends ConsumerWidget {
 
             final sortedMetrics = [...metrics]
               ..sort((a, b) => a.recordedAt.compareTo(b.recordedAt));
-            final comparisonMetrics =
-                _buildComparisonMetrics(sortedMetrics);
+            final comparisonMetrics = _buildComparisonMetrics(sortedMetrics);
             final trendInsightsList = _buildTrendInsights(sortedMetrics);
             final profile = profileAsync.value;
 
@@ -111,76 +131,65 @@ class MetricsDashboardScreen extends ConsumerWidget {
                       const MetricRangeSelector(),
                       const SizedBox(height: 20),
 
-                    if (comparisonMetrics.isNotEmpty) ...[
-                      ComparisonCard(metrics: comparisonMetrics),
-                      const SizedBox(height: 20),
-                    ],
+                      if (comparisonMetrics.isNotEmpty) ...[
+                        ComparisonCard(metrics: comparisonMetrics),
+                        const SizedBox(height: 20),
+                      ],
 
-                    if (trendInsightsList.isNotEmpty) ...[
-                      Text(
-                        'Indicadores de tendencia',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary,
+                      ..._buildWorkoutSummarySection(workoutStatsAsync),
+                      ..._buildConsistencySection(consistencyAsync),
+
+                      if (trendInsightsList.isNotEmpty) ...[
+                        Text(
+                          'Indicadores de tendencia',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      ...trendInsightsList.map(
-                        (insight) => Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: TrendIndicator(insights: insight),
+                        const SizedBox(height: 12),
+                        ...trendInsightsList.map(
+                          (insight) => Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: TrendIndicator(insights: insight),
+                          ),
                         ),
+                      ],
+
+                      // Latest measurement card
+                      latestMetricAsync.when(
+                        data: (latest) => latest != null
+                            ? _buildLatestMeasurementCard(
+                                context,
+                                theme,
+                                latest,
+                                profileAsync.value,
+                              )
+                            : const SizedBox.shrink(),
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
                       ),
-                    ],
+                      const SizedBox(height: 16),
 
-                    // Latest measurement card
-                    latestMetricAsync.when(
-                      data: (latest) => latest != null
-                          ? _buildLatestMeasurementCard(
-                              context,
-                              theme,
-                              latest,
-                              profileAsync.value,
-                            )
-                          : const SizedBox.shrink(),
-                      loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // BMI Calculator
-                    profileAsync.when(
-                      data: (profile) => profile != null
-                          ? BMICalculator(
-                              profile: profile,
-                              latestWeight:
-                                  latestMetricAsync.value?.weightKg ?? 0,
-                            )
-                          : const SizedBox.shrink(),
-                      loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Weight chart
-                    Text(
-                      'Progreso de Peso',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
+                      // BMI Calculator
+                      profileAsync.when(
+                        data: (profile) => profile != null
+                            ? BMICalculator(
+                                profile: profile,
+                                latestWeight:
+                                    latestMetricAsync.value?.weightKg ?? 0,
+                              )
+                            : const SizedBox.shrink(),
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    MetricChart(
-                      metrics: metrics,
-                      metricType: MetricType.weight,
-                      goalValue: profile?.weightKg,
-                    ),
-                    const SizedBox(height: 24),
+                      const SizedBox(height: 16),
 
-                    // Body fat chart (if available)
-                    if (metrics.any((m) => m.bodyFatPercentage != null)) ...[
+                      ..._buildMuscleGroupSection(theme, muscleStatsAsync),
+
+                      // Weight chart
                       Text(
-                        'Grasa Corporal',
+                        'Progreso de Peso',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -188,45 +197,64 @@ class MetricsDashboardScreen extends ConsumerWidget {
                       const SizedBox(height: 12),
                       MetricChart(
                         metrics: metrics,
-                        metricType: MetricType.bodyFat,
+                        metricType: MetricType.weight,
+                        goalValue: profile?.weightKg,
                       ),
                       const SizedBox(height: 24),
-                    ],
 
-                    // Muscle mass chart (if available)
-                    if (metrics.any((m) => m.muscleMassKg != null)) ...[
+                      // Body fat chart (if available)
+                      if (metrics.any((m) => m.bodyFatPercentage != null)) ...[
+                        Text(
+                          'Grasa Corporal',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        MetricChart(
+                          metrics: metrics,
+                          metricType: MetricType.bodyFat,
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+
+                      // Muscle mass chart (if available)
+                      if (metrics.any((m) => m.muscleMassKg != null)) ...[
+                        Text(
+                          'Masa Muscular',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        MetricChart(
+                          metrics: metrics,
+                          metricType: MetricType.muscleMass,
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+
+                      // Measurement history
                       Text(
-                        'Masa Muscular',
+                        'Historial',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 12),
-                      MetricChart(
-                        metrics: metrics,
-                        metricType: MetricType.muscleMass,
-                      ),
-                      const SizedBox(height: 24),
+                      ...metrics
+                          .take(10)
+                          .map(
+                            (metric) =>
+                                _buildHistoryItem(context, theme, metric),
+                          ),
                     ],
-
-                    // Measurement history
-                    Text(
-                      'Historial',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ...metrics.take(10).map(
-                          (metric) => _buildHistoryItem(context, theme, metric),
-                        ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
-      ),
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _navigateToAddMeasurement(context, ref),
@@ -243,7 +271,8 @@ class MetricsDashboardScreen extends ConsumerWidget {
     MetabolicProfile? profile,
   ) {
     final bmi = profile != null
-        ? (metric.weightKg / ((profile.heightCm / 100) * (profile.heightCm / 100)))
+        ? (metric.weightKg /
+              ((profile.heightCm / 100) * (profile.heightCm / 100)))
         : null;
 
     return Container(
@@ -349,16 +378,17 @@ class MetricsDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatBadge(ThemeData theme,
-      {required String label, required String value}) {
+  Widget _buildStatBadge(
+    ThemeData theme, {
+    required String label,
+    required String value,
+  }) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.white.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: AppColors.white.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -464,10 +494,7 @@ class MetricsDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyRangeState(
-    BuildContext context,
-    MetricRangePreset preset,
-  ) {
+  Widget _buildEmptyRangeState(BuildContext context, MetricRangePreset preset) {
     return EmptyStateWidget(
       icon: Icons.timeline_outlined,
       title: 'Sin datos en ${preset.label.toLowerCase()}',
@@ -477,18 +504,18 @@ class MetricsDashboardScreen extends ConsumerWidget {
   }
 
   void _navigateToAddMeasurement(BuildContext context, WidgetRef? ref) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const AddMeasurementScreen(),
-      ),
-    ).then((_) {
-      // Refresh data after returning
-      if (ref != null) {
-        ref.invalidate(bodyMetricsProvider);
-        ref.invalidate(latestBodyMetricProvider);
-        ref.invalidate(filteredMetricsProvider);
-      }
-    });
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(builder: (context) => const AddMeasurementScreen()),
+        )
+        .then((_) {
+          // Refresh data after returning
+          if (ref != null) {
+            ref.invalidate(bodyMetricsProvider);
+            ref.invalidate(latestBodyMetricProvider);
+            ref.invalidate(filteredMetricsProvider);
+          }
+        });
   }
 
   String _formatDate(DateTime date) {
@@ -504,14 +531,12 @@ class MetricsDashboardScreen extends ConsumerWidget {
       'Sep',
       'Oct',
       'Nov',
-      'Dic'
+      'Dic',
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
-  List<ComparisonMetricData> _buildComparisonMetrics(
-    List<BodyMetric> metrics,
-  ) {
+  List<ComparisonMetricData> _buildComparisonMetrics(List<BodyMetric> metrics) {
     if (metrics.length < 2) {
       return const [];
     }
@@ -526,8 +551,9 @@ class MetricsDashboardScreen extends ConsumerWidget {
         label: 'Peso',
         unit: 'kg',
         delta: weightDelta,
-        percentChange:
-            first.weightKg > 0 ? (weightDelta / first.weightKg) * 100 : null,
+        percentChange: first.weightKg > 0
+            ? (weightDelta / first.weightKg) * 100
+            : null,
         average: _average(metrics.map((m) => m.weightKg).toList()),
         trend: _trendFromDelta(weightDelta),
       ),
@@ -548,8 +574,7 @@ class MetricsDashboardScreen extends ConsumerWidget {
           label: 'Grasa',
           unit: '%',
           delta: delta,
-          percentChange:
-              firstBodyFat > 0 ? (delta / firstBodyFat) * 100 : null,
+          percentChange: firstBodyFat > 0 ? (delta / firstBodyFat) * 100 : null,
           average: _average(
             metrics
                 .where((metric) => metric.bodyFatPercentage != null)
@@ -587,8 +612,7 @@ class MetricsDashboardScreen extends ConsumerWidget {
           label: 'Músculo',
           unit: 'kg',
           delta: delta,
-          percentChange:
-              firstMuscle > 0 ? (delta / firstMuscle) * 100 : null,
+          percentChange: firstMuscle > 0 ? (delta / firstMuscle) * 100 : null,
           average: _average(
             metrics
                 .where((metric) => metric.muscleMassKg != null)
@@ -616,10 +640,14 @@ class MetricsDashboardScreen extends ConsumerWidget {
 
   List<TrendInsights> _buildTrendInsights(List<BodyMetric> metrics) {
     final List<TrendInsights> insights = [];
-    final List<double> weightPoints =
-        metrics.map((metric) => metric.weightKg).toList();
-    final TrendInsights? weightTrend =
-        _createTrendInsight('Peso', 'kg', weightPoints);
+    final List<double> weightPoints = metrics
+        .map((metric) => metric.weightKg)
+        .toList();
+    final TrendInsights? weightTrend = _createTrendInsight(
+      'Peso',
+      'kg',
+      weightPoints,
+    );
     if (weightTrend != null) {
       insights.add(weightTrend);
     }
@@ -628,8 +656,11 @@ class MetricsDashboardScreen extends ConsumerWidget {
         .where((metric) => metric.bodyFatPercentage != null)
         .map((metric) => metric.bodyFatPercentage!)
         .toList();
-    final TrendInsights? bodyFatTrend =
-        _createTrendInsight('Grasa corporal', '%', bodyFatPoints);
+    final TrendInsights? bodyFatTrend = _createTrendInsight(
+      'Grasa corporal',
+      '%',
+      bodyFatPoints,
+    );
     if (bodyFatTrend != null) {
       insights.add(bodyFatTrend);
     }
@@ -638,8 +669,11 @@ class MetricsDashboardScreen extends ConsumerWidget {
         .where((metric) => metric.muscleMassKg != null)
         .map((metric) => metric.muscleMassKg!)
         .toList();
-    final TrendInsights? muscleTrend =
-        _createTrendInsight('Masa muscular', 'kg', musclePoints);
+    final TrendInsights? muscleTrend = _createTrendInsight(
+      'Masa muscular',
+      'kg',
+      musclePoints,
+    );
     if (muscleTrend != null) {
       insights.add(muscleTrend);
     }
@@ -655,8 +689,9 @@ class MetricsDashboardScreen extends ConsumerWidget {
     if (points.length < 2) {
       return null;
     }
-    final List<double> trimmed =
-        points.length > 12 ? points.sublist(points.length - 12) : points;
+    final List<double> trimmed = points.length > 12
+        ? points.sublist(points.length - 12)
+        : points;
     final double slope = _calculateSlope(trimmed);
     final MetricTrend trend = _trendFromSlope(slope);
     final double projected = trimmed.last + slope;
@@ -673,12 +708,12 @@ class MetricsDashboardScreen extends ConsumerWidget {
 
   double _calculateSlope(List<double> values) {
     final int n = values.length;
-    final List<double> xs =
-        List<double>.generate(n, (index) => index.toDouble());
-    final double meanX =
-        xs.reduce((value, element) => value + element) / n;
-    final double meanY =
-        values.reduce((value, element) => value + element) / n;
+    final List<double> xs = List<double>.generate(
+      n,
+      (index) => index.toDouble(),
+    );
+    final double meanX = xs.reduce((value, element) => value + element) / n;
+    final double meanY = values.reduce((value, element) => value + element) / n;
 
     double numerator = 0;
     double denominator = 0;
@@ -740,5 +775,260 @@ class MetricsDashboardScreen extends ConsumerWidget {
       }
     }
     return null;
+  }
+}
+
+List<Widget> _buildWorkoutSummarySection(AsyncValue<WorkoutStats?> statsAsync) {
+  return statsAsync.when(
+    data: (stats) {
+      if (stats == null) {
+        return const <Widget>[];
+      }
+      return <Widget>[
+        _WorkoutSummaryCard(stats: stats),
+        const SizedBox(height: 20),
+      ];
+    },
+    loading: () => const <Widget>[],
+    error: (_, __) => const <Widget>[],
+  );
+}
+
+List<Widget> _buildConsistencySection(AsyncValue<double?> consistencyAsync) {
+  return consistencyAsync.when(
+    data: (percentage) {
+      if (percentage == null) {
+        return const <Widget>[];
+      }
+      return <Widget>[
+        _ConsistencyBanner(percentage: percentage),
+        const SizedBox(height: 20),
+      ];
+    },
+    loading: () => const <Widget>[],
+    error: (_, __) => const <Widget>[],
+  );
+}
+
+List<Widget> _buildMuscleGroupSection(
+  ThemeData theme,
+  AsyncValue<List<MuscleGroupStat>?> statsAsync,
+) {
+  return statsAsync.when(
+    data: (stats) {
+      if (stats == null || stats.isEmpty) {
+        return const <Widget>[];
+      }
+      return <Widget>[
+        Text(
+          'Volumen por grupo muscular',
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _MuscleGroupBreakdown(stats: stats),
+        const SizedBox(height: 24),
+      ];
+    },
+    loading: () => const <Widget>[],
+    error: (_, __) => const <Widget>[],
+  );
+}
+
+class _WorkoutSummaryCard extends StatelessWidget {
+  const _WorkoutSummaryCard({required this.stats});
+
+  final WorkoutStats stats;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.textTertiary.withValues(alpha: 0.15),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.shadowLight,
+            blurRadius: 12,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Wrap(
+        spacing: 16,
+        runSpacing: 12,
+        children: [
+          _SummaryStat(
+            label: 'Volumen total',
+            value: '${stats.totalVolume.toStringAsFixed(0)} kg·reps',
+          ),
+          _SummaryStat(label: 'Sets', value: stats.totalSets.toString()),
+          _SummaryStat(
+            label: 'Sesiones',
+            value: stats.totalSessions.toString(),
+          ),
+          _SummaryStat(
+            label: 'Volumen promedio',
+            value: stats.averageVolumePerSession.toStringAsFixed(0),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryStat extends StatelessWidget {
+  const _SummaryStat({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SizedBox(
+      width: 140,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConsistencyBanner extends StatelessWidget {
+  const _ConsistencyBanner({required this.percentage});
+
+  final double percentage;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final double normalized = (percentage.clamp(0, 100)) / 100;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.accentBlue.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.accentBlue.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Consistencia',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppColors.accentBlue,
+            ),
+          ),
+          const SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: normalized,
+            minHeight: 8,
+            borderRadius: BorderRadius.circular(8),
+            backgroundColor: AppColors.accentBlue.withValues(alpha: 0.1),
+            valueColor: const AlwaysStoppedAnimation<Color>(
+              AppColors.accentBlue,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${percentage.toStringAsFixed(1)}% de días activos',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MuscleGroupBreakdown extends StatelessWidget {
+  const _MuscleGroupBreakdown({required this.stats});
+
+  final List<MuscleGroupStat> stats;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final double maxVolume = stats.fold<double>(
+      0,
+      (previousValue, element) =>
+          element.volume > previousValue ? element.volume : previousValue,
+    );
+
+    final Iterable<MuscleGroupStat> topStats = stats.take(6);
+
+    return Column(
+      children: topStats
+          .map((stat) {
+            final double progress = maxVolume == 0
+                ? 0
+                : stat.volume / maxVolume;
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          stat.group,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: LinearProgressIndicator(
+                            value: progress.clamp(0, 1),
+                            minHeight: 8,
+                            backgroundColor: AppColors.accentBlue.withValues(
+                              alpha: 0.15,
+                            ),
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              AppColors.accentBlue,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    '${stat.percentage.toStringAsFixed(1)} %',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          })
+          .toList(growable: false),
+    );
   }
 }
