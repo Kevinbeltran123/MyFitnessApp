@@ -41,6 +41,174 @@ class AnalyticsService {
     return _totalVolume(sessions);
   }
 
+  /// Builds a time series of lifted volume for chart visualisations.
+  ///
+  /// By default returns the last 12 periods ending on [anchor] (inclusive).
+  Future<VolumeSeries> buildVolumeSeries({
+    required VolumeAggregation aggregation,
+    DateTime? anchor,
+    int periods = 12,
+  }) async {
+    assert(periods > 0, 'periods must be greater than zero');
+    final DateTime reference = anchor ?? DateTime.now();
+
+    late final DateTime seriesStart;
+    late final DateTime seriesEnd;
+
+    switch (aggregation) {
+      case VolumeAggregation.weekly:
+        final DateTime currentWeekStart = _startOfWeek(reference);
+        seriesEnd = _endOfDay(currentWeekStart.add(const Duration(days: 6)));
+        seriesStart = currentWeekStart.subtract(
+          Duration(days: 7 * (periods - 1)),
+        );
+        break;
+      case VolumeAggregation.monthly:
+        final DateTime currentMonthStart = _startOfMonth(reference);
+        seriesEnd = _endOfMonth(currentMonthStart);
+        seriesStart = _startOfMonth(
+          DateTime(
+            currentMonthStart.year,
+            currentMonthStart.month - (periods - 1),
+            1,
+          ),
+        );
+        break;
+    }
+
+    final List<RoutineSession> sessions = await _sessionRepository
+        .getAllSessions(startDate: seriesStart, endDate: seriesEnd);
+
+    final Map<DateTime, double> bucketVolumes = <DateTime, double>{};
+    for (final RoutineSession session in sessions) {
+      final double sessionVolume = _sessionVolume(session);
+      if (sessionVolume == 0) {
+        continue;
+      }
+
+      final DateTime bucketStart = aggregation == VolumeAggregation.weekly
+          ? _startOfWeek(session.completedAt)
+          : _startOfMonth(session.completedAt);
+
+      bucketVolumes[bucketStart] =
+          (bucketVolumes[bucketStart] ?? 0) + sessionVolume;
+    }
+
+    final List<VolumeDataPoint> points = <VolumeDataPoint>[];
+    for (int index = 0; index < periods; index += 1) {
+      switch (aggregation) {
+        case VolumeAggregation.weekly:
+          final DateTime start = seriesStart.add(Duration(days: 7 * index));
+          final DateTime end = _endOfDay(start.add(const Duration(days: 6)));
+          final double volume = bucketVolumes[start] ?? 0;
+          points.add(VolumeDataPoint(start: start, end: end, volume: volume));
+          break;
+        case VolumeAggregation.monthly:
+          final DateTime start = _startOfMonth(
+            DateTime(seriesStart.year, seriesStart.month + index, 1),
+          );
+          final DateTime end = _endOfMonth(start);
+          final double volume = bucketVolumes[start] ?? 0;
+          points.add(VolumeDataPoint(start: start, end: end, volume: volume));
+          break;
+      }
+    }
+
+    final double total = points.fold<double>(0, (double acc, VolumeDataPoint p) {
+      return acc + p.volume;
+    });
+    final double max = points.fold<double>(0, (double current, VolumeDataPoint p) {
+      return p.volume > current ? p.volume : current;
+    });
+
+    return VolumeSeries(
+      aggregation: aggregation,
+      points: List<VolumeDataPoint>.unmodifiable(points),
+      totalVolume: total,
+      maxVolume: max,
+    );
+  }
+
+  /// Builds heatmap-ready data for the last [days] (default 90).
+  Future<TrainingHeatmapData> buildTrainingHeatmap({
+    DateTime? anchor,
+    int days = 90,
+  }) async {
+    assert(days > 0, 'days must be greater than zero');
+    final DateTime reference = anchor ?? DateTime.now();
+    final DateTime end = _endOfDay(reference);
+    final DateTime start = _startOfDay(end.subtract(Duration(days: days - 1)));
+
+    final List<RoutineSession> sessions = await _sessionRepository
+        .getAllSessions(startDate: start, endDate: end);
+
+    final Map<DateTime, _DailyAggregate> aggregates = <DateTime, _DailyAggregate>{};
+    for (final RoutineSession session in sessions) {
+      final DateTime day = _startOfDay(session.completedAt);
+      final _DailyAggregate aggregate = aggregates.putIfAbsent(
+        day,
+        () => _DailyAggregate.zero(),
+      );
+      final double sessionVolume = _sessionVolume(session);
+      aggregates[day] = aggregate.add(sessionVolume);
+    }
+
+    final List<DailyActivityPoint> points = <DailyActivityPoint>[];
+    DateTime cursor = start;
+    while (!cursor.isAfter(end)) {
+      final _DailyAggregate aggregate =
+          aggregates[cursor] ?? _DailyAggregate.zero();
+      points.add(
+        DailyActivityPoint(
+          date: cursor,
+          sessionCount: aggregate.count,
+          totalVolume: aggregate.volume,
+        ),
+      );
+      cursor = cursor.add(const Duration(days: 1));
+    }
+
+    final List<DateTime> activeDays = aggregates.entries
+        .where((entry) => entry.value.count > 0)
+        .map((entry) => entry.key)
+        .toList()
+      ..sort();
+    final _StreakStats streaks = _calculateStreaks(activeDays, end);
+
+    final DateTime monthStart = _startOfMonth(reference);
+    final DateTime monthEnd = _endOfMonth(monthStart);
+    final Iterable<DailyActivityPoint> monthPoints = points.where(
+      (point) =>
+          !point.date.isBefore(monthStart) && !point.date.isAfter(monthEnd),
+    );
+
+    DailyActivityPoint? mostProductive;
+    for (final DailyActivityPoint point in monthPoints) {
+      if (point.totalVolume <= 0 && point.sessionCount == 0) {
+        continue;
+      }
+      if (mostProductive == null) {
+        mostProductive = point;
+        continue;
+      }
+      final bool higherVolume = point.totalVolume > mostProductive.totalVolume;
+      final bool equalVolume =
+          (point.totalVolume - mostProductive.totalVolume).abs() < 1e-6;
+      final bool higherSessions = point.sessionCount > mostProductive.sessionCount;
+      if (higherVolume || (equalVolume && higherSessions)) {
+        mostProductive = point;
+      }
+    }
+
+    return TrainingHeatmapData(
+      points: List<DailyActivityPoint>.unmodifiable(points),
+      currentStreak: streaks.current,
+      longestStreak: streaks.longest,
+      mostProductiveDay: mostProductive,
+      range: MetricDateRange(start: start, end: end),
+    );
+  }
+
   /// Breaks down volume lifted per muscle group within the given [range].
   Future<List<MuscleGroupStat>> getMuscleGroupStats(
     MetricDateRange range,
@@ -259,23 +427,32 @@ class AnalyticsService {
 
   double _totalVolume(List<RoutineSession> sessions) {
     return sessions.fold<double>(0, (double acc, RoutineSession session) {
-      final double sessionVolume = session.exerciseLogs.fold<double>(
-        0,
-        (double subtotal, RoutineExerciseLog log) =>
-            subtotal +
-            log.setLogs.fold<double>(
-              0,
-              (double setTotal, SetLog set) => setTotal + _setVolume(set),
-            ),
-      );
-      return acc + sessionVolume;
+      return acc + _sessionVolume(session);
     });
+  }
+
+  double _sessionVolume(RoutineSession session) {
+    return session.exerciseLogs.fold<double>(
+      0,
+      (double subtotal, RoutineExerciseLog log) =>
+          subtotal +
+          log.setLogs.fold<double>(
+            0,
+            (double setTotal, SetLog set) => setTotal + _setVolume(set),
+          ),
+    );
   }
 
   double _setVolume(SetLog set) {
     final double weight = set.weight <= 0 ? 0 : set.weight;
     return weight * set.repetitions.toDouble();
   }
+
+  static DateTime _startOfMonth(DateTime date) =>
+      DateTime(date.year, date.month, 1);
+
+  static DateTime _endOfMonth(DateTime date) =>
+      _endOfDay(DateTime(date.year, date.month + 1, 0));
 
   _StreakStats _calculateStreaks(List<DateTime> activeDays, DateTime rangeEnd) {
     if (activeDays.isEmpty) {
@@ -329,4 +506,20 @@ class _StreakStats {
 
   final int current;
   final int longest;
+}
+
+class _DailyAggregate {
+  const _DailyAggregate({required this.count, required this.volume});
+
+  factory _DailyAggregate.zero() => const _DailyAggregate(count: 0, volume: 0);
+
+  final int count;
+  final double volume;
+
+  _DailyAggregate add(double sessionVolume) {
+    return _DailyAggregate(
+      count: count + 1,
+      volume: volume + sessionVolume,
+    );
+  }
 }

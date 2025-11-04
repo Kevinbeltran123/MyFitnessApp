@@ -384,53 +384,57 @@ lib/
   - [x] Colores consistentes con `AppColors`
 
 ##### 2.2.3 Nuevo: Gráfico de Volumen (Barras)
-- [ ] **Crear `VolumeBarChart`**
-  - [ ] Mostrar volumen semanal en últimas 12 semanas
-  - [ ] Barras verticales con gradiente
-  - [ ] Labels en eje X: "Sem 1", "Sem 2"...
-  - [ ] Eje Y: volumen en kg
-  - [ ] Touch para ver datos detallados
+- [x] **Crear `VolumeBarChart`**
+  - [x] Mostrar volumen semanal en últimas 12 semanas
+  - [x] Barras verticales con gradiente
+  - [x] Labels en eje X: "Sem 1", "Sem 2"...
+  - [x] Eje Y: volumen en kg
+  - [x] Touch para ver datos detallados
 
-- [ ] **Integrar en nueva pantalla `AnalyticsScreen`**
-  - [ ] Tab "Volumen"
-  - [ ] Selector: Semanal / Mensual
-  - [ ] Total acumulado debajo del gráfico
+- [x] **Integrar en nueva pantalla `AnalyticsScreen`**
+  - [x] Tab "Volumen"
+  - [x] Selector: Semanal / Mensual
+  - [x] Total acumulado debajo del gráfico
 
 ##### 2.2.4 Nuevo: Distribución Muscular (Pie Chart)
-- [ ] **Crear `MusclePieChart`**
-  - [ ] Mostrar % de volumen por grupo muscular
-  - [ ] Colores distintos por grupo
-  - [ ] Touch para highlight y mostrar %
-  - [ ] Leyenda lateral con nombres
+- [x] **Crear `MusclePieChart`**
+  - [x] Mostrar % de volumen por grupo muscular
+  - [x] Colores distintos por grupo
+  - [x] Touch para highlight y mostrar %
+  - [x] Leyenda lateral con nombres
 
-- [ ] **Integrar en `AnalyticsScreen`**
-  - [ ] Tab "Distribución"
-  - [ ] Mostrar último mes
-  - [ ] Warnings si hay desbalance >30%
+- [x] **Integrar en `AnalyticsScreen`**
+  - [x] Tab "Distribución"
+  - [x] Mostrar último mes
+  - [x] Warnings si hay desbalance >30%
 
 ##### 2.2.5 Nuevo: Heatmap de Frecuencia
-- [ ] **Crear `FrequencyHeatmap`**
-  - [ ] Calendario estilo GitHub contributions
-  - [ ] Cada día coloreado según entrenamientos
-  - [ ] Verde oscuro = día entrenado
-  - [ ] Gris = día sin entrenar
-  - [ ] Touch para ver detalles del día
+- [x] **Crear `FrequencyHeatmap`**
+  - [x] Calendario estilo GitHub contributions
+  - [x] Cada día coloreado según entrenamientos
+  - [x] Verde oscuro = día entrenado
+  - [x] Gris = día sin entrenar
+  - [x] Touch para ver detalles del día
 
-- [ ] **Integrar en `StatisticsScreen`**
-  - [ ] Mostrar últimos 90 días
-  - [ ] Contador de streak actual
-  - [ ] Día más productivo del mes
+- [x] **Integrar en `StatisticsScreen`**
+  - [x] Mostrar últimos 90 días
+  - [x] Contador de streak actual
+  - [x] Día más productivo del mes
 
 #### Estructura de Archivos
 ```
 lib/presentation/analytics/
-├── analytics_screen.dart (NUEVO)
+├── analytics_screen.dart (ACTUALIZADO)
+├── analytics_controller.dart (ACTUALIZADO)
 ├── widgets/
-│   ├── volume_bar_chart.dart (NUEVO)
-│   ├── muscle_pie_chart.dart (NUEVO)
+│   ├── advanced_line_chart.dart (NUEVO - migrado)
 │   ├── frequency_heatmap.dart (NUEVO)
-│   └── advanced_line_chart.dart (NUEVO - migrado)
-└── analytics_controller.dart (NUEVO)
+│   ├── frequency_insights.dart (NUEVO)
+│   ├── muscle_distribution_insights.dart (NUEVO)
+│   ├── muscle_pie_chart.dart (NUEVO)
+│   ├── volume_bar_chart.dart (NUEVO)
+│   └── volume_insights.dart (NUEVO)
+lib/presentation/profile/statistics_screen.dart (REFACTORIZADO)
 ```
 
 #### Criterios de Éxito
@@ -447,23 +451,23 @@ lib/presentation/analytics/
 **Dependencias:** Módulo 2.1, 2.2
 
 #### Tareas
-- [ ] **Refactorizar `StatisticsScreen`**
-  - [ ] Agregar tabs: General / Volumen / Distribución / Frecuencia
-  - [ ] Integrar todos los gráficos nuevos
-  - [ ] Mostrar KPIs destacados arriba
-  - [ ] Selector de periodo global
+- [x] **Refactorizar `StatisticsScreen`**
+  - [x] Agregar tabs: General / Volumen / Distribución / Frecuencia
+  - [x] Integrar todos los gráficos nuevos
+  - [x] Mostrar KPIs destacados arriba
+  - [x] Selector de periodo global
 
-- [ ] **KPIs principales**
-  - [ ] Total entrenamientos (histórico)
-  - [ ] Volumen total levantado
-  - [ ] Streak actual de días
-  - [ ] Promedio sesiones/semana
+- [x] **KPIs principales**
+  - [x] Total entrenamientos (histórico)
+  - [x] Volumen total levantado
+  - [x] Streak actual de días
+  - [x] Promedio sesiones/semana
 
-- [ ] **Insights automáticos**
-  - [ ] "Has mejorado 15% tu volumen este mes"
-  - [ ] "Tu grupo más entrenado: Pecho"
-  - [ ] "Llevas 5 días consecutivos entrenando"
-  - [ ] "Nuevo récord personal en Press Banca"
+- [x] **Insights automáticos**
+  - [x] "Has mejorado 15% tu volumen este mes"
+  - [x] "Tu grupo más entrenado: Pecho"
+  - [x] "Llevas 5 días consecutivos entrenando"
+  - [x] "Nuevo récord personal en Press Banca"
 
 #### Criterios de Éxito
 - ✅ Todo carga en <2 segundos
@@ -487,83 +491,85 @@ lib/presentation/analytics/
 #### Tareas
 
 ##### 3.1.1 Entidades de Logros
-- [ ] **Crear `Achievement` en `domain/gamification/`**
-  - [ ] Propiedades: id, name, description, icon, unlockedAt
-  - [ ] Enum `AchievementType`: ROUTINE, WORKOUT, METRIC, STREAK, PR
-  - [ ] Método: `isUnlocked() → bool`
-  - [ ] Método: `progress() → double` (0.0 - 1.0)
+- [x] **Crear `Achievement` en `domain/gamification/`**
+  - [x] Propiedades: id, name, description, icon, unlockedAt
+  - [x] Enum `AchievementType`: ROUTINE, WORKOUT, METRIC, STREAK, PR
+  - [x] Método: `isUnlocked() → bool`
+  - [x] Método: `progress() → double` (0.0 - 1.0)
 
-- [ ] **Definir catálogo de logros**
-  - [ ] "Primera Rutina" - Crear tu primera rutina
-  - [ ] "Constante" - 7 días consecutivos
-  - [ ] "Guerrero" - 30 días consecutivos
-  - [ ] "Levantador" - 10,000 kg de volumen total
-  - [ ] "Titan" - 100,000 kg de volumen total
-  - [ ] "Dedicado" - 50 entrenamientos completados
-  - [ ] "Centuria" - 100 entrenamientos completados
-  - [ ] "Transformación" - Perder 5kg
-  - [ ] "Ganancia" - Ganar 5kg de músculo
-  - [ ] "Récord" - Romper tu primer PR
+- [x] **Definir catálogo de logros**
+  - [x] "Primera Rutina" - Crear tu primera rutina
+  - [x] "Constante" - 7 días consecutivos
+  - [x] "Guerrero" - 30 días consecutivos
+  - [x] "Levantador" - 10,000 kg de volumen total
+  - [x] "Titan" - 100,000 kg de volumen total
+  - [x] "Dedicado" - 50 entrenamientos completados
+  - [x] "Centuria" - 100 entrenamientos completados
+  - [x] "Transformación" - Perder 5kg
+  - [x] "Ganancia" - Ganar 5kg de músculo
+  - [x] "Récord" - Romper tu primer PR
 
 ##### 3.1.2 Sistema de Streaks
-- [ ] **Crear `StreakTracker` en `application/gamification/`**
-  - [ ] Calcular streak actual desde `RoutineSession`
-  - [ ] Detectar si se rompió el streak
-  - [ ] Calcular streak más largo (histórico)
-  - [ ] Notificar cuando se alcanza milestone
+- [x] **Crear `StreakTracker` en `application/gamification/`**
+  - [x] Calcular streak actual desde `RoutineSession`
+  - [x] Detectar si se rompió el streak
+  - [x] Calcular streak más largo (histórico)
+  - [x] Notificar cuando se alcanza milestone
 
-- [ ] **Widget `StreakCounter`**
-  - [ ] Mostrar número de días en grande
-  - [ ] Icono de fuego animado
-  - [ ] Mini-calendario últimos 7 días
-  - [ ] Mensaje motivacional
+- [x] **Widget `StreakCounter`**
+  - [x] Mostrar número de días en grande
+  - [x] Icono de fuego animado
+  - [x] Mini-calendario últimos 7 días
+  - [x] Mensaje motivacional
 
 ##### 3.1.3 UI de Logros
-- [ ] **Crear `AchievementsScreen`**
-  - [ ] Grid de badges desbloqueados
-  - [ ] Badges bloqueados en gris con candado
-  - [ ] Progress bar para logros en progreso
-  - [ ] Animación de confetti al desbloquear
+- [x] **Crear `AchievementsScreen`**
+  - [x] Grid de badges desbloqueados
+  - [x] Badges bloqueados en gris con candado
+  - [x] Progress bar para logros en progreso
+  - [x] Animación de confetti al desbloquear
 
-- [ ] **Widget `AchievementBadge`**
-  - [ ] Diseño circular con icono
-  - [ ] Estado: locked / unlocked / in_progress
-  - [ ] Tooltip con descripción y progreso
-  - [ ] Shimmer effect en nuevos logros
+- [x] **Widget `AchievementBadge`**
+  - [x] Diseño circular con icono
+  - [x] Estado: locked / unlocked / in_progress
+  - [x] Tooltip con descripción y progreso
+  - [x] Shimmer effect en nuevos logros
 
-- [ ] **Notificaciones de logros**
-  - [ ] Modal bottom sheet al desbloquear
-  - [ ] Animación de celebración
-  - [ ] Share button (compartir en redes)
+- [x] **Notificaciones de logros**
+  - [x] Modal bottom sheet al desbloquear
+  - [x] Animación de celebración
+  - [x] Share button (compartir en redes)
 
 ##### 3.1.4 Integración en App
-- [ ] **Provider de logros**
-  - [ ] `achievementsProvider` → StreamProvider
-  - [ ] `currentStreakProvider` → FutureProvider
-  - [ ] Recalcular logros después de cada sesión
+- [x] **Provider de logros**
+  - [x] `achievementsProvider` → StreamProvider
+  - [x] `currentStreakProvider` → FutureProvider
+  - [x] Recalcular logros después de cada sesión
 
 - [ ] **Agregar a `ProfileScreen`**
-  - [ ] Sección "Logros" con 3 más recientes
-  - [ ] Botón "Ver todos los logros"
-  - [ ] Badge de streak prominente
+  - [x] Sección "Logros" con 3 más recientes
+  - [x] Botón "Ver todos los logros"
+  - [x] Badge de streak prominente
 
 #### Estructura de Archivos
 ```
-lib/
-├── domain/gamification/
-│   ├── achievement_entities.dart (NUEVO)
-│   └── achievement_definitions.dart (NUEVO)
-├── application/gamification/
-│   ├── achievement_service.dart (NUEVO)
-│   └── streak_tracker.dart (NUEVO)
-├── infrastructure/gamification/
-│   └── achievement_repository_isar.dart (NUEVO)
-└── presentation/gamification/
-    ├── achievements_screen.dart (NUEVO)
-    └── widgets/
-        ├── achievement_badge.dart (NUEVO)
-        ├── streak_counter.dart (NUEVO)
-        └── achievement_unlock_modal.dart (NUEVO)
+lib/domain/gamification/
+├── achievement_definitions.dart (NUEVO)
+└── achievement_entities.dart (NUEVO)
+
+lib/application/gamification/
+├── achievement_service.dart (NUEVO)
+└── streak_tracker.dart (NUEVO)
+
+lib/presentation/achievements/
+├── achievements_providers.dart (NUEVO)
+├── achievements_screen.dart (NUEVO)
+└── widgets/
+    ├── achievement_badge.dart (NUEVO)
+    ├── achievement_unlock_modal.dart (NUEVO)
+    └── streak_counter.dart (NUEVO)
+
+lib/presentation/profile/profile_screen.dart (ACTUALIZADO)
 ```
 
 #### Criterios de Éxito
@@ -723,100 +729,6 @@ lib/presentation/onboarding/
 ## 📅 SEMANA 4: Polish y Features Finales
 
 **Objetivo:** Modo oscuro, export, y refinamiento general
-
----
-
-### Módulo 4.1 - Modo Oscuro
-**Prioridad:** 🟢 MEDIA
-**Duración:** 2 días
-**Dependencias:** Ninguna
-
-#### Tareas
-
-##### 4.1.1 Definir Paleta Oscura
-- [ ] **Extender `AppColors`**
-  - [ ] Definir `AppColorsDark` class
-  - [ ] Background oscuro: `#121212`
-  - [ ] Surface oscuro: `#1E1E1E`
-  - [ ] Text primary: `#FFFFFF`
-  - [ ] Text secondary: `#B3B3B3`
-  - [ ] Accent colors sin cambios
-  - [ ] Gradientes ajustados
-
-##### 4.1.2 Implementar ThemeMode
-- [ ] **Crear `ThemeModeProvider` (Riverpod)**
-  - [ ] State: `ThemeMode` (system/light/dark)
-  - [ ] Persistir en Isar (`UserPreferences`)
-  - [ ] Método: `toggleTheme()`
-  - [ ] Método: `setTheme(ThemeMode)`
-
-- [ ] **Configurar en `MaterialApp`**
-  - [ ] `theme: AppTheme.light`
-  - [ ] `darkTheme: AppTheme.dark`
-  - [ ] `themeMode: themeMode` desde provider
-
-##### 4.1.3 Ajustes por Pantalla
-- [ ] **Revisar todas las pantallas**
-  - [ ] Usar `Theme.of(context).colorScheme`
-  - [ ] Reemplazar colores hardcodeados
-  - [ ] Probar en modo oscuro
-  - [ ] Ajustar contrastes si es necesario
-
-##### 4.1.4 UI de Configuración
-- [ ] **Agregar a `SettingsScreen`**
-  - [ ] Sección "Apariencia"
-  - [ ] Radio buttons: Sistema / Claro / Oscuro
-  - [ ] Preview visual inmediato
-
-#### Criterios de Éxito
-- ✅ Cambio de tema sin restart
-- ✅ Contraste WCAG AA en modo oscuro
-- ✅ Todas las pantallas se ven bien
-- ✅ Preferencia persiste entre sesiones
-
----
-
-### Módulo 4.2 - Export y Compartir
-**Prioridad:** 🔵 BAJA
-**Duración:** 1 día
-**Dependencias:** Ninguna
-
-#### Tareas
-
-##### 4.2.1 Export a CSV
-- [ ] **Instalar `csv: ^6.0.0`**
-- [ ] **Crear `ExportService`**
-  - [ ] Método: `exportRoutinesToCsv() → String`
-  - [ ] Método: `exportMetricsToCsv() → String`
-  - [ ] Método: `exportSessionsToCsv() → String`
-  - [ ] Formato: UTF-8 con headers en español
-
-##### 4.2.2 Export a JSON
-- [ ] **Métodos de export JSON**
-  - [ ] `exportAllData() → Map<String, dynamic>`
-  - [ ] Incluir: rutinas, métricas, sesiones, perfil
-  - [ ] Pretty print con indentación
-  - [ ] Agregar metadata: version, export_date
-
-##### 4.2.3 Share Functionality
-- [ ] **Instalar `share_plus: ^10.0.0`**
-- [ ] **Botón de compartir en `StatisticsScreen`**
-  - [ ] Generar imagen de resumen (opcional)
-  - [ ] O compartir CSV/JSON
-  - [ ] Texto: "Mi progreso en fitness..."
-
-##### 4.2.4 UI de Export
-- [ ] **Agregar a `SettingsScreen`**
-  - [ ] Sección "Datos"
-  - [ ] Botón "Exportar Rutinas (CSV)"
-  - [ ] Botón "Exportar Métricas (CSV)"
-  - [ ] Botón "Exportar Todo (JSON)"
-  - [ ] Confirmación antes de exportar
-
-#### Criterios de Éxito
-- ✅ CSV se abre correctamente en Excel
-- ✅ JSON es válido y legible
-- ✅ Share functionality funciona en iOS y Android
 
 ---
 

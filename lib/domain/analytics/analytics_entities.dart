@@ -3,6 +3,8 @@
 // These models remain framework-agnostic so they can be consumed by the
 // application layer, persisted, or exposed to the UI as needed.
 
+import 'package:my_fitness_tracker/domain/metrics/metrics_entities.dart';
+
 /// Represents a calculated one-repetition maximum (1RM) using different
 /// estimation formulas.
 class OneRepMaxEstimate {
@@ -141,4 +143,93 @@ class ConsistencyMetrics {
   final int totalDays;
   final int currentStreak;
   final int longestStreak;
+}
+
+/// Aggregation granularity supported for lifted volume analytics.
+enum VolumeAggregation {
+  /// Groups data by ISO weeks (starting on Monday).
+  weekly,
+
+  /// Groups data by calendar months.
+  monthly,
+}
+
+/// Represents the total lifted volume for a discrete time bucket.
+class VolumeDataPoint {
+  const VolumeDataPoint({
+    required this.start,
+    required this.end,
+    required this.volume,
+  });
+
+  /// Start of the time bucket (inclusive).
+  final DateTime start;
+
+  /// End of the time bucket (inclusive).
+  final DateTime end;
+
+  /// Total lifted volume (kg·reps) within the bucket.
+  final double volume;
+
+  VolumeDataPoint copyWith({DateTime? start, DateTime? end, double? volume}) {
+    return VolumeDataPoint(
+      start: start ?? this.start,
+      end: end ?? this.end,
+      volume: volume ?? this.volume,
+    );
+  }
+}
+
+/// Series of lifted volume buckets for chart visualisations.
+class VolumeSeries {
+  const VolumeSeries({
+    required this.aggregation,
+    required this.points,
+    required this.totalVolume,
+    required this.maxVolume,
+  });
+
+  /// Aggregation granularity used to build this series.
+  final VolumeAggregation aggregation;
+
+  /// Ordered data points, oldest first.
+  final List<VolumeDataPoint> points;
+
+  /// Sum of all bucket volumes.
+  final double totalVolume;
+
+  /// Highest single bucket volume.
+  final double maxVolume;
+
+  bool get isEmpty => points.isEmpty;
+}
+
+/// Represents the aggregate training load for a single calendar day.
+class DailyActivityPoint {
+  const DailyActivityPoint({
+    required this.date,
+    required this.sessionCount,
+    required this.totalVolume,
+  });
+
+  final DateTime date;
+  final int sessionCount;
+  final double totalVolume;
+}
+
+/// Aggregated data for building a training frequency heatmap.
+class TrainingHeatmapData {
+  const TrainingHeatmapData({
+    required this.points,
+    required this.currentStreak,
+    required this.longestStreak,
+    required this.mostProductiveDay,
+    required this.range,
+  });
+
+  final List<DailyActivityPoint> points;
+  final int currentStreak;
+  final int longestStreak;
+  final DailyActivityPoint? mostProductiveDay;
+  final MetricDateRange range;
 }

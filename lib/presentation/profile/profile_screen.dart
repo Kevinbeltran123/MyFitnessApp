@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_fitness_tracker/domain/analytics/analytics_entities.dart';
+import 'package:my_fitness_tracker/application/gamification/streak_tracker.dart';
+import 'package:my_fitness_tracker/domain/gamification/achievement_entities.dart';
+import 'package:my_fitness_tracker/presentation/achievements/achievements_providers.dart';
+import 'package:my_fitness_tracker/presentation/achievements/achievements_screen.dart';
+import 'package:my_fitness_tracker/presentation/achievements/widgets/streak_counter.dart';
+import 'package:my_fitness_tracker/presentation/achievements/widgets/achievement_badge.dart';
 import 'package:my_fitness_tracker/presentation/analytics/analytics_providers.dart';
+import 'package:my_fitness_tracker/presentation/analytics/analytics_screen.dart';
 import 'package:my_fitness_tracker/presentation/analytics/personal_records_screen.dart';
 import 'package:my_fitness_tracker/presentation/metrics/metrics_controller.dart';
 import 'package:my_fitness_tracker/presentation/metrics/metrics_dashboard_screen.dart';
@@ -30,6 +37,8 @@ class ProfileScreen extends ConsumerWidget {
     final sessionsAsync = ref.watch(workoutHistoryControllerProvider);
     final metricsAsync = ref.watch(bodyMetricsProvider);
     final personalRecordsAsync = ref.watch(personalRecordsProvider);
+    final achievementsAsync = ref.watch(achievementsProvider);
+    final streakAsync = ref.watch(currentStreakProvider);
     final bool hasPersonalRecords = personalRecordsAsync.maybeWhen(
       data: (records) => records.isNotEmpty,
       orElse: () => false,
@@ -55,6 +64,32 @@ class ProfileScreen extends ConsumerWidget {
                 metricsAsync.value?.length ?? 0,
               ),
               const SizedBox(height: 24),
+
+              achievementsAsync.when(
+                data: (achievements) => achievements.isEmpty
+                    ? const SizedBox.shrink()
+                    : _AchievementsPreview(
+                        achievements: achievements,
+                        streak: streakAsync.valueOrNull,
+                        onViewAll: () => _navigateToAchievements(context),
+                      ),
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              ),
+              if (achievementsAsync.asData?.value.isNotEmpty == true)
+              const SizedBox(height: 24),
+
+              streakAsync.when(
+                data: (snapshot) => Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: StreakCounter(
+                    snapshot: snapshot,
+                    daysToDisplay: 7,
+                  ),
+                ),
+                loading: () => const SizedBox(height: 24),
+                error: (_, __) => const SizedBox(height: 24),
+              ),
 
               personalRecordsAsync.when(
                 data: (records) => records.isEmpty
@@ -93,6 +128,24 @@ class ProfileScreen extends ConsumerWidget {
                 title: 'Estadísticas',
                 subtitle: 'Progreso y análisis completo',
                 onTap: () => _navigateToStatistics(context),
+              ),
+              const SizedBox(height: 8),
+
+              _MenuCard(
+                icon: Icons.query_stats_outlined,
+                iconColor: AppColors.info,
+                title: 'Analytics',
+                subtitle: 'Volumen, distribuciones y comparativas',
+                onTap: () => _navigateToAnalytics(context),
+              ),
+              const SizedBox(height: 8),
+
+              _MenuCard(
+                icon: Icons.emoji_events_outlined,
+                iconColor: AppColors.warning,
+                title: 'Logros',
+                subtitle: 'Revisa tus badges y rachas',
+                onTap: () => _navigateToAchievements(context),
               ),
               const SizedBox(height: 24),
 
@@ -226,6 +279,18 @@ class ProfileScreen extends ConsumerWidget {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => const StatisticsScreen()));
+  }
+
+  void _navigateToAnalytics(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const AnalyticsScreen()),
+    );
+  }
+
+  void _navigateToAchievements(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const AchievementsScreen()),
+    );
   }
 
   void _navigateToSettings(BuildContext context) {
@@ -403,6 +468,101 @@ class _MenuCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _AchievementsPreview extends StatelessWidget {
+  const _AchievementsPreview({
+    required this.achievements,
+    required this.streak,
+    required this.onViewAll,
+  });
+
+  final List<Achievement> achievements;
+  final StreakSnapshot? streak;
+  final VoidCallback onViewAll;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final List<Achievement> sorted = [...achievements]
+      ..sort((a, b) => b.progress().compareTo(a.progress()));
+    final preview = sorted.take(3).toList(growable: false);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.textTertiary.withValues(alpha: 0.15)),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.shadowLight,
+            blurRadius: 12,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Logros',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: onViewAll,
+                child: const Text('Ver todos'),
+              ),
+            ],
+          ),
+          if (streak != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Racha actual: ${streak!.currentStreak} días',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: preview
+                .map(
+                  (achievement) => AchievementBadge(
+                    achievement: achievement,
+                    showProgress: true,
+                    size: 64,
+                  ),
+                )
+                .toList(growable: false),
+          ),
+          const SizedBox(height: 12),
+          LinearProgressIndicator(
+            value: _globalProgress(preview),
+            minHeight: 6,
+            backgroundColor: AppColors.veryLightGray,
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accentBlue),
+          ),
+        ],
+      ),
+    );
+  }
+
+  double _globalProgress(List<Achievement> preview) {
+    if (preview.isEmpty) {
+      return 0;
+    }
+    final double total = preview.fold<double>(0, (sum, item) => sum + item.progress());
+    return (total / preview.length).clamp(0, 1);
   }
 }
 
