@@ -18,6 +18,7 @@ class AchievementsScreen extends ConsumerWidget {
     final achievementsAsync = ref.watch(achievementsProvider);
     final streakAsync = ref.watch(currentStreakProvider);
     final milestone = ref.watch(streakMilestoneProvider);
+    final highlightId = ref.watch(latestUnlockedAchievementProvider);
 
     ref.listen<AsyncValue<List<Achievement>>>(achievementsProvider,
         (previous, next) {
@@ -41,10 +42,13 @@ class AchievementsScreen extends ConsumerWidget {
 
       if (newId != null) {
         seenNotifier.state = {...seenNotifier.state, newId};
+        ref.read(latestUnlockedAchievementProvider.notifier).state = newId;
         final Achievement achievement =
             achievements.firstWhere((item) => item.id == newId);
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          showAchievementUnlockModal(context, achievement);
+          showAchievementUnlockModal(context, achievement).whenComplete(() {
+            ref.read(latestUnlockedAchievementProvider.notifier).state = null;
+          });
         });
       }
     });
@@ -64,6 +68,7 @@ class AchievementsScreen extends ConsumerWidget {
           achievements: achievements,
           streak: streakAsync.valueOrNull,
           milestone: milestone,
+          highlightedAchievementId: highlightId,
           onDismissMilestone: () =>
               ref.read(streakMilestoneProvider.notifier).state = null,
           onRefresh: () async {
@@ -81,6 +86,7 @@ class _AchievementsContent extends StatelessWidget {
     required this.achievements,
     required this.streak,
     required this.milestone,
+    required this.highlightedAchievementId,
     required this.onDismissMilestone,
     required this.onRefresh,
   });
@@ -88,6 +94,7 @@ class _AchievementsContent extends StatelessWidget {
   final List<Achievement> achievements;
   final StreakSnapshot? streak;
   final int? milestone;
+  final String? highlightedAchievementId;
   final VoidCallback onDismissMilestone;
   final Future<void> Function() onRefresh;
 
@@ -188,6 +195,7 @@ class _AchievementsContent extends StatelessWidget {
                           AchievementBadge(
                             achievement: achievement,
                             showProgress: !unlocked,
+                            highlight: highlightedAchievementId == achievement.id,
                             size: 72,
                           ),
                           Column(

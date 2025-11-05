@@ -11,8 +11,10 @@ import 'package:my_fitness_tracker/presentation/metrics/widgets/metric_chart.dar
 import 'package:my_fitness_tracker/presentation/metrics/widgets/metric_range_selector.dart';
 import 'package:my_fitness_tracker/presentation/metrics/widgets/trend_indicator.dart';
 import 'package:my_fitness_tracker/presentation/analytics/analytics_providers.dart';
+import 'package:my_fitness_tracker/presentation/metrics/widgets/quick_weight_logger_dialog.dart';
 import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
 import 'package:my_fitness_tracker/shared/widgets/state_widgets.dart';
+import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
 
 /// Dashboard screen for body metrics tracking.
 ///
@@ -61,6 +63,22 @@ class MetricsDashboardScreen extends ConsumerWidget {
             tooltip: 'Agregar medida',
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await showQuickWeightLoggerDialog(context, ref);
+          if (result == null) return;
+          if (!context.mounted) return;
+          AppSnackBar.showSuccess(
+            context,
+            'Peso registrado: ${result.toStringAsFixed(1)} kg',
+          );
+          ref.invalidate(bodyMetricsProvider);
+          ref.invalidate(filteredMetricsProvider);
+          ref.invalidate(latestBodyMetricProvider);
+        },
+        icon: const Icon(Icons.monitor_weight_outlined),
+        label: const Text('Peso rápido'),
       ),
       body: SafeArea(
         child: metricsAsync.when(
@@ -255,11 +273,6 @@ class MetricsDashboardScreen extends ConsumerWidget {
             );
           },
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _navigateToAddMeasurement(context, ref),
-        icon: const Icon(Icons.add),
-        label: const Text('Nueva Medida'),
       ),
     );
   }

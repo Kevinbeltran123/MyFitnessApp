@@ -39,6 +39,7 @@ class ProfileScreen extends ConsumerWidget {
     final personalRecordsAsync = ref.watch(personalRecordsProvider);
     final achievementsAsync = ref.watch(achievementsProvider);
     final streakAsync = ref.watch(currentStreakProvider);
+    final highlightId = ref.watch(latestUnlockedAchievementProvider);
     final bool hasPersonalRecords = personalRecordsAsync.maybeWhen(
       data: (records) => records.isNotEmpty,
       orElse: () => false,
@@ -71,6 +72,7 @@ class ProfileScreen extends ConsumerWidget {
                     : _AchievementsPreview(
                         achievements: achievements,
                         streak: streakAsync.valueOrNull,
+                        highlightedId: highlightId,
                         onViewAll: () => _navigateToAchievements(context),
                       ),
                 loading: () => const SizedBox.shrink(),
@@ -475,11 +477,13 @@ class _AchievementsPreview extends StatelessWidget {
   const _AchievementsPreview({
     required this.achievements,
     required this.streak,
+    required this.highlightedId,
     required this.onViewAll,
   });
 
   final List<Achievement> achievements;
   final StreakSnapshot? streak;
+  final String? highlightedId;
   final VoidCallback onViewAll;
 
   @override
@@ -540,6 +544,7 @@ class _AchievementsPreview extends StatelessWidget {
                   (achievement) => AchievementBadge(
                     achievement: achievement,
                     showProgress: true,
+                    highlight: highlightedId == achievement.id,
                     size: 64,
                   ),
                 )

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_fitness_tracker/models/workout_plan.dart';
 import 'package:my_fitness_tracker/presentation/home/home_providers.dart';
+import 'package:my_fitness_tracker/presentation/metrics/widgets/quick_weight_logger_dialog.dart';
 import 'package:my_fitness_tracker/services/workout_service.dart';
+import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -48,6 +50,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await showQuickWeightLoggerDialog(context, ref);
+          if (!mounted || result == null) return;
+          AppSnackBar.showSuccess(
+            context,
+            'Peso registrado: ${result.toStringAsFixed(1)} kg',
+          );
+        },
+        icon: const Icon(Icons.monitor_weight_outlined),
+        label: const Text('Peso rápido'),
+      ),
       body: SafeArea(
         child: FutureBuilder<_HomeSummary>(
           future: _summaryFuture,

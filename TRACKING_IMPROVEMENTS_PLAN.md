@@ -588,68 +588,56 @@ lib/presentation/profile/profile_screen.dart (ACTUALIZADO)
 #### Tareas
 
 ##### 3.2.1 Flujo de Onboarding
-- [ ] **Crear `OnboardingScreen` con PageView**
-  - [ ] Página 1: Bienvenida + logo animado
-  - [ ] Página 2: "Crea rutinas personalizadas"
-  - [ ] Página 3: "Rastrea tu progreso"
-  - [ ] Página 4: "Alcanza tus metas"
-  - [ ] Botones: Skip / Next / Empezar
+- [x] **Crear `OnboardingScreen` con PageView**
+  - [x] Página 1: Bienvenida + logo animado
+  - [x] Página 2: "Crea rutinas personalizadas"
+  - [x] Página 3: "Rastrea tu progreso"
+  - [x] Página 4: "Alcanza tus metas"
+  - [x] Botones: Skip / Next / Empezar
 
-- [ ] **Diseño visual**
-  - [ ] Ilustraciones o íconos grandes
-  - [ ] Texto conciso y motivador
-  - [ ] Indicadores de página (dots)
-  - [ ] Animaciones de transición
+- [x] **Diseño visual**
+  - [x] Ilustraciones o íconos grandes
+  - [x] Texto conciso y motivador
+  - [x] Indicadores de página (dots)
+  - [x] Animaciones de transición
 
 ##### 3.2.2 Configuración Inicial
-- [ ] **Crear `ProfileSetupScreen`**
-  - [ ] Paso 1: Datos básicos (nombre, edad, sexo)
-  - [ ] Paso 2: Medidas (altura, peso actual)
-  - [ ] Paso 3: Objetivo (perder/ganar/mantener)
-  - [ ] Paso 4: Nivel de actividad (sedentario → atleta)
-  - [ ] Progress indicator arriba
+- [x] **Crear `ProfileSetupScreen`**
+  - [x] Paso 1: Datos básicos (nombre, edad, sexo)
+  - [x] Paso 2: Medidas (altura, peso actual)
+  - [x] Paso 3: Objetivo (perder/ganar/mantener)
+  - [x] Paso 4: Nivel de actividad (sedentario → atleta)
+  - [x] Progress indicator arriba
 
-- [ ] **Validaciones**
-  - [ ] Edad: 13-100 años
-  - [ ] Altura: 100-250 cm
-  - [ ] Peso: 20-300 kg
-  - [ ] Todos los campos requeridos
-
-##### 3.2.3 Tutorial Interactivo
-- [ ] **Primer uso de cada sección**
-  - [ ] Overlay con tooltips en `RoutineListScreen`
-  - [ ] Highlight del FAB "Crear rutina"
-  - [ ] Explicación de botones principales
-  - [ ] Dismissible con "Entendido" o X
-
+- [x] **Validaciones**
+  - [x] Edad: 13-100 años
+  - [x] Altura: 100-250 cm
+  - [x] Peso: 20-300 kg
+  - [x] Todos los campos requeridos
 - [ ] **Coachmarks para gestos**
   - [ ] Swipe para ver detalles
   - [ ] Pull to refresh
   - [ ] Long press para opciones
 
-##### 3.2.4 Persistencia de Estado
-- [ ] **Guardar en Isar**
-  - [ ] Flag: `hasCompletedOnboarding`
-  - [ ] Mostrar onboarding solo en primer inicio
-  - [ ] Opción para ver tutorial nuevamente en Settings
+##### 3.2.4 Integración y Persistencia
+- [x] **Persistir estado de onboarding**
+  - [x] Guardar flags en preferencias locales
+  - [x] Mostrar onboarding solo en primer inicio
+  - [x] Recordar progreso de profile setup
 
 #### Estructura de Archivos
 ```
 lib/presentation/onboarding/
+├── onboarding_content.dart (NUEVO)
 ├── onboarding_screen.dart (NUEVO)
-├── profile_setup_screen.dart (NUEVO)
-├── widgets/
-│   ├── onboarding_page.dart (NUEVO)
-│   ├── setup_step.dart (NUEVO)
-│   └── feature_tooltip.dart (NUEVO)
-└── onboarding_controller.dart (NUEVO)
+├── onboarding_state.dart (NUEVO)
+└── profile_setup_screen.dart (NUEVO)
 ```
 
 #### Criterios de Éxito
-- ✅ Onboarding aparece solo en primer inicio
-- ✅ Usuario puede skip y configurar después
-- ✅ Datos de setup se guardan en perfil
-- ✅ Tooltips no son intrusivos
+- ✅ Onboarding aparece solo la primera vez
+- ✅ Usuario puede saltar o completar el setup
+- ✅ Datos se validan antes de continuar
 
 ---
 
@@ -661,16 +649,16 @@ lib/presentation/onboarding/
 #### Tareas
 
 ##### 3.3.1 Quick Weight Logger
-- [ ] **Crear `QuickWeightLoggerDialog`**
-  - [ ] Input numérico grande y visible
-  - [ ] Botones +0.5 / -0.5 kg
-  - [ ] Usar peso anterior como sugerencia
-  - [ ] Guardar con 1 tap
+- [x] **Crear `QuickWeightLoggerDialog`**
+  - [x] Input numérico grande y visible
+  - [x] Botones +0.5 / -0.5 kg
+  - [x] Usar peso anterior como sugerencia
+  - [x] Guardar con 1 tap
   - [ ] Feedback háptico al guardar
 
-- [ ] **Agregar acceso rápido**
-  - [ ] FAB en `HomeScreen`
-  - [ ] Shortcut en `MetricsDashboardScreen`
+- [x] **Agregar acceso rápido**
+  - [x] FAB en `HomeScreen`
+  - [x] Shortcut en `MetricsDashboardScreen`
   - [ ] Quick action desde notification (futuro)
 
 ##### 3.3.2 Teclado Numérico Optimizado
@@ -695,24 +683,12 @@ lib/presentation/onboarding/
   - [ ] Long press en ejercicio → Ver info
   - [ ] Long press en métrica → Editar/eliminar
 
-##### 3.3.4 Feedback Háptico
-- [ ] **Instalar `vibration: ^2.0.0`**
-  - [ ] Vibración al completar set
-  - [ ] Vibración al guardar medida
-  - [ ] Vibración al desbloquear logro
-  - [ ] Vibración al romper PR
 
 - [ ] **Crear `HapticService`**
   - [ ] Método: `light()` - feedback sutil
   - [ ] Método: `medium()` - acciones importantes
   - [ ] Método: `heavy()` - celebraciones
   - [ ] Respeta configuración del sistema
-
-##### 3.3.5 Autocompletado y Sugerencias
-- [ ] **En entrada de peso**
-  - [ ] Sugerir peso de último set
-  - [ ] Sugerir peso + 2.5kg para progresión
-  - [ ] Chips con sugerencias rápidas
 
 - [ ] **En entrada de reps**
   - [ ] Sugerir reps de serie anterior

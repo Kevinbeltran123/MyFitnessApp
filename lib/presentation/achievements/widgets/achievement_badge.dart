@@ -2,48 +2,73 @@ import 'package:flutter/material.dart';
 import 'package:my_fitness_tracker/domain/gamification/achievement_entities.dart';
 import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
 
-enum AchievementBadgeState { locked, inProgress, unlocked }
-
-class AchievementBadge extends StatelessWidget {
+class AchievementBadge extends StatefulWidget {
   const AchievementBadge({
     super.key,
     required this.achievement,
     this.showProgress = false,
     this.showTooltip = true,
+    this.highlight = false,
     this.size = 72,
   });
 
   final Achievement achievement;
   final bool showProgress;
   final bool showTooltip;
+  final bool highlight;
   final double size;
 
-  AchievementBadgeState get _state {
-    if (achievement.isUnlocked()) {
-      return AchievementBadgeState.unlocked;
+  @override
+  State<AchievementBadge> createState() => _AchievementBadgeState();
+}
+
+class _AchievementBadgeState extends State<AchievementBadge>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    if (widget.highlight) {
+      _controller.repeat();
     }
-    if (achievement.progress() > 0) {
-      return AchievementBadgeState.inProgress;
+  }
+
+  @override
+  void didUpdateWidget(covariant AchievementBadge oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.highlight && !_controller.isAnimating) {
+      _controller.repeat();
+    } else if (!widget.highlight && _controller.isAnimating) {
+      _controller.stop();
     }
-    return AchievementBadgeState.locked;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final AchievementBadgeState state = _state;
     final Color accent = _resolveAccent(state);
-    final double progress = achievement.progress();
+    final double progress = widget.achievement.progress();
 
-    final Widget content = Column(
+    Widget badge = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Stack(
           alignment: Alignment.center,
           children: [
             Container(
-              width: size,
-              height: size,
+              width: widget.size,
+              height: widget.size,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: state == AchievementBadgeState.unlocked
@@ -68,13 +93,13 @@ class AchievementBadge extends StatelessWidget {
                 color: state == AchievementBadgeState.locked
                     ? AppColors.textTertiary
                     : accent.darken(0.1),
-                size: size * 0.42,
+                size: widget.size * 0.42,
               ),
             ),
-            if (state == AchievementBadgeState.inProgress && showProgress)
+            if (state == AchievementBadgeState.inProgress && widget.showProgress)
               SizedBox(
-                width: size,
-                height: size,
+                width: widget.size,
+                height: widget.size,
                 child: CircularProgressIndicator(
                   value: progress,
                   strokeWidth: 4,
@@ -87,8 +112,8 @@ class AchievementBadge extends StatelessWidget {
                 bottom: 4,
                 right: 4,
                 child: Container(
-                  width: size * 0.28,
-                  height: size * 0.28,
+                  width: widget.size * 0.28,
+                  height: widget.size * 0.28,
                   decoration: BoxDecoration(
                     color: AppColors.white,
                     shape: BoxShape.circle,
@@ -97,17 +122,41 @@ class AchievementBadge extends StatelessWidget {
                   child: const Icon(Icons.check, size: 14, color: AppColors.success),
                 ),
               ),
+            if (widget.highlight)
+              Positioned.fill(
+                child: AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    final double shimmerPosition = _controller.value * 2 - 1;
+                    return ClipOval(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.transparent,
+                              AppColors.white.withValues(alpha: 0.4),
+                              Colors.transparent,
+                            ],
+                            begin: Alignment(-1 + shimmerPosition, -1),
+                            end: Alignment(shimmerPosition, 1),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
           ],
         ),
         const SizedBox(height: 8),
         SizedBox(
-          width: size + 16,
+          width: widget.size + 16,
           child: Text(
-            achievement.name,
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
+            widget.achievement.name,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -116,19 +165,29 @@ class AchievementBadge extends StatelessWidget {
       ],
     );
 
-    if (!showTooltip) {
-      return content;
+    if (!widget.showTooltip) {
+      return badge;
     }
 
-    final String tooltipMessage = achievement.isUnlocked()
-        ? '${achievement.name}\nDesbloqueado'
-        : '${achievement.name}\n${achievement.description}\nProgreso ${(progress * 100).clamp(0, 100).toStringAsFixed(0)}%';
+    final String tooltipMessage = widget.achievement.isUnlocked()
+        ? '${widget.achievement.name}\nDesbloqueado'
+        : '${widget.achievement.name}\n${widget.achievement.description}\nProgreso ${(progress * 100).clamp(0, 100).toStringAsFixed(0)}%';
 
     return Tooltip(
       message: tooltipMessage,
       waitDuration: const Duration(milliseconds: 400),
-      child: content,
+      child: badge,
     );
+  }
+
+  AchievementBadgeState get _state {
+    if (widget.achievement.isUnlocked()) {
+      return AchievementBadgeState.unlocked;
+    }
+    if (widget.achievement.progress() > 0) {
+      return AchievementBadgeState.inProgress;
+    }
+    return AchievementBadgeState.locked;
   }
 
   IconData _resolveIcon(AchievementBadgeState state) {
@@ -143,7 +202,7 @@ class AchievementBadge extends StatelessWidget {
   }
 
   Color _resolveAccent(AchievementBadgeState state) {
-    final Color base = _colorFromHex(achievement.badgeColor) ?? AppColors.warning;
+    final Color base = _colorFromHex(widget.achievement.badgeColor) ?? AppColors.warning;
     switch (state) {
       case AchievementBadgeState.locked:
         return base.withValues(alpha: 0.5);
@@ -168,6 +227,8 @@ class AchievementBadge extends StatelessWidget {
     return null;
   }
 }
+
+enum AchievementBadgeState { locked, inProgress, unlocked }
 
 extension on Color {
   Color darken(double amount) {

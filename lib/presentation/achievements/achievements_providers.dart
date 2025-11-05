@@ -16,6 +16,7 @@ import 'package:my_fitness_tracker/presentation/workouts/workout_history_control
 
 final streakMilestoneProvider = StateProvider<int?>((ref) => null);
 final seenAchievementsProvider = StateProvider<Set<String>>((ref) => <String>{});
+final latestUnlockedAchievementProvider = StateProvider<String?>((ref) => null);
 
 /// Provides a configured [StreakTracker] instance.
 final streakTrackerProvider = FutureProvider<StreakTracker>((ref) async {
