@@ -11,6 +11,7 @@ import 'package:my_fitness_tracker/presentation/analytics/analytics_providers.da
 import 'package:my_fitness_tracker/presentation/routines/rest_timer_controller.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_session_controller.dart';
 import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
+import 'package:my_fitness_tracker/shared/widgets/numeric_input_field.dart';
 
 class RoutineSessionScreen extends ConsumerStatefulWidget {
   const RoutineSessionScreen({super.key, required this.routineId});
@@ -800,10 +801,13 @@ class _LogSetSheetState extends State<_LogSetSheet> {
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 16),
-              TextFormField(
+              NumericInputField(
                 controller: _repsController,
-                decoration: const InputDecoration(labelText: 'Repeticiones'),
-                keyboardType: TextInputType.number,
+                labelText: 'Repeticiones',
+                initialStep: 1,
+                stepOptions: const <double>[1, 5, 10],
+                min: 0,
+                max: 100,
                 validator: (String? value) {
                   final int? reps = int.tryParse(value ?? '');
                   if (reps == null) {
@@ -816,14 +820,17 @@ class _LogSetSheetState extends State<_LogSetSheet> {
                 },
               ),
               const SizedBox(height: 12),
-              TextFormField(
+              NumericInputField(
                 controller: _weightController,
-                decoration: const InputDecoration(labelText: 'Peso (kg)'),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
+                labelText: 'Peso (kg)',
+                decimal: true,
+                decimalDigits: 1,
+                initialStep: 2.5,
+                stepOptions: const <double>[1, 2.5, 5],
+                min: 0,
                 validator: (String? value) {
-                  final double? weight = double.tryParse(value ?? '');
+                  final double? weight =
+                      double.tryParse((value ?? '').replaceAll(',', '.'));
                   if (weight == null || weight < 0) {
                     return 'Ingresa un peso mayor o igual a 0';
                   }
@@ -831,12 +838,13 @@ class _LogSetSheetState extends State<_LogSetSheet> {
                 },
               ),
               const SizedBox(height: 12),
-              TextFormField(
+              NumericInputField(
                 controller: _restController,
-                decoration: const InputDecoration(
-                  labelText: 'Descanso tomado (segundos)',
-                ),
-                keyboardType: TextInputType.number,
+                labelText: 'Descanso tomado (segundos)',
+                initialStep: 15,
+                stepOptions: const <double>[15, 30, 60],
+                min: 0,
+                max: 1200,
                 validator: (String? value) {
                   final int? seconds = int.tryParse(value ?? '');
                   if (seconds == null) {
@@ -854,15 +862,11 @@ class _LogSetSheetState extends State<_LogSetSheet> {
                   if (_formKey.currentState?.validate() != true) {
                     return;
                   }
-                  final int repetitions =
-                      int.parse(_repsController.text).clamp(0, 100) as int;
-                  final double weight =
-                      double.parse(
-                            _weightController.text,
-                          ).clamp(0, double.infinity)
-                          as double;
-                  final int restSeconds =
-                      int.parse(_restController.text).clamp(0, 1200) as int;
+                  final int repetitions = int.parse(_repsController.text);
+                  final double weight = double.parse(
+                    _weightController.text.replaceAll(',', '.'),
+                  );
+                  final int restSeconds = int.parse(_restController.text);
                   Navigator.of(context).pop(
                     _LogSetResult(
                       repetitions: repetitions,

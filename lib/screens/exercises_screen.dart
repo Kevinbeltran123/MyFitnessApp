@@ -371,7 +371,7 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
               ),
               const Padding(
                 padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: const LoadingStateWidget(
+                child: LoadingStateWidget(
                   message: 'Cargando ejercicios...',
                 ),
               ),

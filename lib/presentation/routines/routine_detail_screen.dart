@@ -590,7 +590,7 @@ class _EmptyRoutineDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EmptyStateWidget(
+    return const EmptyStateWidget(
       icon: Icons.help_outline,
       title: 'No encontramos la rutina solicitada.',
       message:

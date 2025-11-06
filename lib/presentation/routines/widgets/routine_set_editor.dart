@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
 import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
+import 'package:my_fitness_tracker/shared/widgets/numeric_input_field.dart';
 
 class RoutineSetEditor extends StatefulWidget {
   const RoutineSetEditor({
@@ -136,23 +137,21 @@ class _SetRowState extends State<_SetRow> {
     }
 
     double? weight;
-    if (_weightController.text.isEmpty) {
-      weight = null;
-    } else {
-      final double? parsed = double.tryParse(_weightController.text);
+    if (_weightController.text.isNotEmpty) {
+      final double? parsed = double.tryParse(
+        _weightController.text.replaceAll(',', '.'),
+      );
       if (parsed == null) {
         weight = widget.set.targetWeight ?? 0;
       } else {
         weight = parsed < 0 ? 0 : parsed;
       }
-      if (weight != null) {
-        final String formatted = weight.toStringAsFixed(1);
-        if (_weightController.text != formatted) {
-          _weightController.text = formatted;
-          _weightController.selection = TextSelection.fromPosition(
-            TextPosition(offset: _weightController.text.length),
-          );
-        }
+      final String formatted = weight.toStringAsFixed(1);
+      if (_weightController.text != formatted) {
+        _weightController.text = formatted;
+        _weightController.selection = TextSelection.fromPosition(
+          TextPosition(offset: _weightController.text.length),
+        );
       }
     }
 
@@ -187,28 +186,40 @@ class _SetRowState extends State<_SetRow> {
     return Row(
       children: <Widget>[
         Expanded(
-          child: TextField(
+          child: NumericInputField(
             controller: _repsController,
-            decoration: const InputDecoration(labelText: 'Reps'),
-            keyboardType: TextInputType.number,
+            labelText: 'Reps',
+            initialStep: 1,
+            stepOptions: const <double>[1, 5, 10],
+            min: 1,
+            max: 100,
             onChanged: (_) => _emitUpdate(),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: TextField(
+          child: NumericInputField(
             controller: _weightController,
-            decoration: const InputDecoration(labelText: 'Peso (kg)'),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            labelText: 'Peso (kg)',
+            decimal: true,
+            decimalDigits: 1,
+            initialStep: 2.5,
+            stepOptions: const <double>[1, 2.5, 5],
+            min: 0,
+            allowEmpty: true,
             onChanged: (_) => _emitUpdate(),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: TextField(
+          child: NumericInputField(
             controller: _restController,
-            decoration: const InputDecoration(labelText: 'Descanso (s)'),
-            keyboardType: TextInputType.number,
+            labelText: 'Descanso (s)',
+            initialStep: 15,
+            stepOptions: const <double>[15, 30, 60],
+            min: 0,
+            max: 1200,
+            allowEmpty: true,
             onChanged: (_) => _emitUpdate(),
           ),
         ),

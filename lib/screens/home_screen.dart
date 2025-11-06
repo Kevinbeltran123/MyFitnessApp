@@ -53,7 +53,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final result = await showQuickWeightLoggerDialog(context, ref);
-          if (!mounted || result == null) return;
+          if (!context.mounted || result == null) return;
           AppSnackBar.showSuccess(
             context,
             'Peso registrado: ${result.toStringAsFixed(1)} kg',

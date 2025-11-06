@@ -55,7 +55,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     },
                     title: const Text('Activar Notificaciones'),
                     subtitle: const Text('Recibir notificaciones de la app'),
-                    activeColor: AppColors.accentBlue,
                   ),
                   const Divider(height: 1),
                   SwitchListTile(
@@ -69,7 +68,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         : null,
                     title: const Text('Recordatorios de Entrenamiento'),
                     subtitle: const Text('Recordar completar rutinas'),
-                    activeColor: AppColors.accentBlue,
                   ),
                   const Divider(height: 1),
                   SwitchListTile(
@@ -83,7 +81,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         : null,
                     title: const Text('Actualizaciones de Progreso'),
                     subtitle: const Text('Resumen semanal de logros'),
-                    activeColor: AppColors.accentBlue,
                   ),
                 ],
               ),

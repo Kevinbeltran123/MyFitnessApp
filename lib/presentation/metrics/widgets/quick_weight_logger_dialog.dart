@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_fitness_tracker/domain/metrics/metrics_entities.dart';
 import 'package:my_fitness_tracker/presentation/metrics/metrics_controller.dart';
+import 'package:my_fitness_tracker/shared/services/haptic_service.dart';
 import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
 import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
 import 'package:uuid/uuid.dart';
@@ -70,6 +73,7 @@ class _QuickWeightLoggerSheetState extends ConsumerState<_QuickWeightLoggerSheet
         measurements: const <String, double>{},
       );
       await repository.upsertMetric(metric);
+      await widget.ref.read(hapticServiceProvider).medium();
       if (!mounted) return;
       Navigator.of(context).pop(weight);
     } catch (error) {
@@ -88,6 +92,7 @@ class _QuickWeightLoggerSheetState extends ConsumerState<_QuickWeightLoggerSheet
     setState(() {
       _weightController.text = next.toStringAsFixed(1);
     });
+    unawaited(widget.ref.read(hapticServiceProvider).light());
   }
 
   @override

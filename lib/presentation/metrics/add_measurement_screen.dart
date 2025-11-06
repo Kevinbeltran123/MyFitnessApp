@@ -4,6 +4,7 @@ import 'package:my_fitness_tracker/domain/metrics/metrics_entities.dart';
 import 'package:my_fitness_tracker/presentation/metrics/metrics_controller.dart';
 import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
 import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
+import 'package:my_fitness_tracker/shared/widgets/numeric_input_field.dart';
 import 'package:uuid/uuid.dart';
 
 /// Screen for adding a new body measurement.
@@ -50,6 +51,9 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
     final DateTime now = _now;
     return DateTime(now.year - 2, now.month, now.day);
   }
+
+  double _parseNumber(String value) =>
+      double.parse(value.replaceAll(',', '.'));
 
   Future<void> _selectDate() async {
     final picked = await showDatePicker(
@@ -106,27 +110,27 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
       // Build measurements map
       final measurements = <String, double>{};
       if (_waistController.text.isNotEmpty) {
-        measurements['cintura'] = double.parse(_waistController.text);
+        measurements['cintura'] = _parseNumber(_waistController.text);
       }
       if (_chestController.text.isNotEmpty) {
-        measurements['pecho'] = double.parse(_chestController.text);
+        measurements['pecho'] = _parseNumber(_chestController.text);
       }
       if (_armsController.text.isNotEmpty) {
-        measurements['brazos'] = double.parse(_armsController.text);
+        measurements['brazos'] = _parseNumber(_armsController.text);
       }
       if (_thighsController.text.isNotEmpty) {
-        measurements['muslos'] = double.parse(_thighsController.text);
+        measurements['muslos'] = _parseNumber(_thighsController.text);
       }
 
       final metric = BodyMetric(
         id: const Uuid().v4(),
         recordedAt: _selectedDate,
-        weightKg: double.parse(_weightController.text),
+        weightKg: _parseNumber(_weightController.text),
         bodyFatPercentage: _bodyFatController.text.isNotEmpty
-            ? double.parse(_bodyFatController.text)
+            ? _parseNumber(_bodyFatController.text)
             : null,
         muscleMassKg: _muscleMassController.text.isNotEmpty
-            ? double.parse(_muscleMassController.text)
+            ? _parseNumber(_muscleMassController.text)
             : null,
         notes: _notesController.text.isNotEmpty ? _notesController.text : null,
         measurements: measurements,
@@ -244,20 +248,22 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
               const SizedBox(height: 16),
 
               // Weight (required)
-              TextFormField(
+              NumericInputField(
                 controller: _weightController,
-                decoration: const InputDecoration(
-                  labelText: 'Peso (kg) *',
-                  hintText: '70.5',
-                  prefixIcon: Icon(Icons.monitor_weight_outlined),
-                ),
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                labelText: 'Peso (kg) *',
+                hintText: '70.5',
+                prefixIcon: const Icon(Icons.monitor_weight_outlined),
+                decimal: true,
+                decimalDigits: 1,
+                initialStep: 0.5,
+                stepOptions: const <double>[0.5, 1, 2],
+                min: 20,
+                max: 300,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'El peso es requerido';
                   }
-                  final double? weight = double.tryParse(value);
+                  final double? weight = double.tryParse(value.replaceAll(',', '.'));
                   if (weight == null) {
                     return 'Ingresa un número válido';
                   }
@@ -270,18 +276,21 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
               const SizedBox(height: 16),
 
               // Body fat percentage (optional)
-              TextFormField(
+              NumericInputField(
                 controller: _bodyFatController,
-                decoration: const InputDecoration(
-                  labelText: 'Grasa Corporal (%)',
-                  hintText: '18.5',
-                  prefixIcon: Icon(Icons.water_drop_outlined),
-                ),
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                labelText: 'Grasa Corporal (%)',
+                hintText: '18.5',
+                prefixIcon: const Icon(Icons.water_drop_outlined),
+                decimal: true,
+                decimalDigits: 1,
+                initialStep: 0.5,
+                stepOptions: const <double>[0.5, 1, 2.5],
+                min: 1,
+                max: 70,
+                allowEmpty: true,
                 validator: (value) {
                   if (value != null && value.isNotEmpty) {
-                    final fat = double.tryParse(value);
+                    final double? fat = double.tryParse(value.replaceAll(',', '.'));
                     if (fat == null) {
                       return 'Ingresa un número válido';
                     }
@@ -295,18 +304,22 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
               const SizedBox(height: 16),
 
               // Muscle mass (optional)
-              TextFormField(
+              NumericInputField(
                 controller: _muscleMassController,
-                decoration: const InputDecoration(
-                  labelText: 'Masa Muscular (kg)',
-                  hintText: '55.0',
-                  prefixIcon: Icon(Icons.fitness_center_outlined),
-                ),
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                labelText: 'Masa Muscular (kg)',
+                hintText: '55.0',
+                prefixIcon: const Icon(Icons.fitness_center_outlined),
+                decimal: true,
+                decimalDigits: 1,
+                initialStep: 0.5,
+                stepOptions: const <double>[0.5, 1, 2.5],
+                min: 1,
+                max: 150,
+                allowEmpty: true,
                 validator: (value) {
                   if (value != null && value.isNotEmpty) {
-                    final muscle = double.tryParse(value);
+                    final double? muscle =
+                        double.tryParse(value.replaceAll(',', '.'));
                     if (muscle == null) {
                       return 'Ingresa un número válido';
                     }
@@ -338,26 +351,30 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: NumericInputField(
                       controller: _waistController,
-                      decoration: const InputDecoration(
-                        labelText: 'Cintura (cm)',
-                        hintText: '85',
-                      ),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      labelText: 'Cintura (cm)',
+                      hintText: '85',
+                      decimal: true,
+                      decimalDigits: 1,
+                      initialStep: 1,
+                      stepOptions: const <double>[1, 2.5, 5],
+                      min: 0,
+                      allowEmpty: true,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: TextFormField(
+                    child: NumericInputField(
                       controller: _chestController,
-                      decoration: const InputDecoration(
-                        labelText: 'Pecho (cm)',
-                        hintText: '95',
-                      ),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      labelText: 'Pecho (cm)',
+                      hintText: '95',
+                      decimal: true,
+                      decimalDigits: 1,
+                      initialStep: 1,
+                      stepOptions: const <double>[1, 2.5, 5],
+                      min: 0,
+                      allowEmpty: true,
                     ),
                   ),
                 ],
@@ -367,26 +384,30 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: NumericInputField(
                       controller: _armsController,
-                      decoration: const InputDecoration(
-                        labelText: 'Brazos (cm)',
-                        hintText: '32',
-                      ),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      labelText: 'Brazos (cm)',
+                      hintText: '32',
+                      decimal: true,
+                      decimalDigits: 1,
+                      initialStep: 1,
+                      stepOptions: const <double>[1, 2.5, 5],
+                      min: 0,
+                      allowEmpty: true,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: TextFormField(
+                    child: NumericInputField(
                       controller: _thighsController,
-                      decoration: const InputDecoration(
-                        labelText: 'Muslos (cm)',
-                        hintText: '55',
-                      ),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      labelText: 'Muslos (cm)',
+                      hintText: '55',
+                      decimal: true,
+                      decimalDigits: 1,
+                      initialStep: 1,
+                      stepOptions: const <double>[1, 2.5, 5],
+                      min: 0,
+                      allowEmpty: true,
                     ),
                   ),
                 ],

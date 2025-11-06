@@ -249,10 +249,10 @@ class _StatsAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       title: const Text('Estadísticas'),
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(80),
+      bottom: const PreferredSize(
+        preferredSize: Size.fromHeight(80),
         child: Column(
-          children: const [
+          children: [
             SizedBox(height: 12),
             _StatsRangeSelector(),
             SizedBox(height: 12),
@@ -348,7 +348,7 @@ class _GeneralStatsTab extends ConsumerWidget {
             error: (_, __) => const SizedBox.shrink(),
           ),
           const SizedBox(height: 24),
-          _SectionHeader(title: 'Entrenamientos'),
+          const _SectionHeader(title: 'Entrenamientos'),
           const SizedBox(height: 12),
           sessionsAsync.when(
             data: (sessions) => _WorkoutStatsSection(sessions: sessions),
@@ -356,7 +356,7 @@ class _GeneralStatsTab extends ConsumerWidget {
             error: (_, __) => const SizedBox.shrink(),
           ),
           const SizedBox(height: 24),
-          _SectionHeader(title: 'Progreso corporal'),
+          const _SectionHeader(title: 'Progreso corporal'),
           const SizedBox(height: 12),
           metricsAsync.when(
             data: (metrics) => _MetricsStatsSection(
@@ -367,7 +367,7 @@ class _GeneralStatsTab extends ConsumerWidget {
             error: (_, __) => const SizedBox.shrink(),
           ),
           const SizedBox(height: 24),
-          _SectionHeader(title: 'Rutinas'),
+          const _SectionHeader(title: 'Rutinas'),
           const SizedBox(height: 12),
           routinesAsync.when(
             data: (routines) => _RoutineStatsSection(routines: routines),

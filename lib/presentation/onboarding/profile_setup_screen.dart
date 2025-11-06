@@ -260,23 +260,27 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   fontWeight: FontWeight.w700,
                 )),
             const SizedBox(height: 24),
-            RadioListTile<String>(
-              value: 'perder',
-              groupValue: _goal,
-              title: const Text('Perder peso'),
-              onChanged: (value) => setState(() => _goal = value ?? 'perder'),
-            ),
-            RadioListTile<String>(
-              value: 'mantener',
-              groupValue: _goal,
-              title: const Text('Mantenerme'),
-              onChanged: (value) => setState(() => _goal = value ?? 'mantener'),
-            ),
-            RadioListTile<String>(
-              value: 'ganar',
-              groupValue: _goal,
-              title: const Text('Ganar masa muscular'),
-              onChanged: (value) => setState(() => _goal = value ?? 'ganar'),
+            SegmentedButton<String>(
+              segments: const <ButtonSegment<String>>[
+                ButtonSegment<String>(
+                  value: 'perder',
+                  label: Text('Perder peso'),
+                ),
+                ButtonSegment<String>(
+                  value: 'mantener',
+                  label: Text('Mantenerme'),
+                ),
+                ButtonSegment<String>(
+                  value: 'ganar',
+                  label: Text('Ganar masa muscular'),
+                ),
+              ],
+              selected: <String>{_goal},
+              onSelectionChanged: (selection) {
+                if (selection.isNotEmpty) {
+                  setState(() => _goal = selection.first);
+                }
+              },
             ),
           ],
         ),
