@@ -50,12 +50,19 @@ class _PersonalRecordTile extends StatelessWidget {
 
   final PersonalRecord record;
 
+  String _shortId(String id) {
+    if (id.length <= 8) return id;
+    return '${id.substring(0, 4)}…${id.substring(id.length - 3)}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final String title = record.exerciseName?.trim().isNotEmpty == true
+    final bool hasCustomName =
+        record.exerciseName?.trim().isNotEmpty == true;
+    final String title = hasCustomName
         ? record.exerciseName!.trim()
-        : record.exerciseId;
+        : 'Ejercicio sin nombre';
     final date = record.achievedAt;
     final String dateLabel =
         '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
@@ -114,11 +121,23 @@ class _PersonalRecordTile extends StatelessWidget {
                       ),
                     ),
                     if (record.setNumber != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        'Set #${record.setNumber}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: AppColors.textTertiary,
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.accentBlue.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          'Set #${record.setNumber}',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: AppColors.accentBlue,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
+                          ),
                         ),
                       ),
                     ],
@@ -152,50 +171,116 @@ class _PersonalRecordTile extends StatelessWidget {
               color: AppColors.veryLightGray,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Set marcado',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${record.bestWeight.toStringAsFixed(1)} kg × ${record.repetitions} rep${record.repetitions == 1 ? '' : 's'}',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w600,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Set destacado',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${record.bestWeight.toStringAsFixed(1)} kg × ${record.repetitions} rep${record.repetitions == 1 ? '' : 's'}',
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
                   children: [
-                    Text(
-                      'Sesión',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    _InfoBadge(
+                      icon: Icons.monitor_weight_outlined,
+                      label: 'Peso máximo',
+                      value: '${record.bestWeight.toStringAsFixed(1)} kg',
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      record.sessionId,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppColors.textTertiary,
-                      ),
+                    _InfoBadge(
+                      icon: Icons.repeat,
+                      label: 'Repeticiones',
+                      value: '${record.repetitions}',
+                    ),
+                    _InfoBadge(
+                      icon: Icons.fitness_center_outlined,
+                      label: 'Sesión',
+                      value: _shortId(record.sessionId),
                     ),
                   ],
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoBadge extends StatelessWidget {
+  const _InfoBadge({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.textTertiary.withValues(alpha: 0.25),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 18, color: AppColors.accentBlue),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ],
       ),
