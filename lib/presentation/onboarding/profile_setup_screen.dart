@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_fitness_tracker/domain/metrics/metrics_entities.dart';
-import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
+import 'package:my_fitness_tracker/presentation/metrics/metrics_controller.dart';
 import 'package:my_fitness_tracker/presentation/onboarding/onboarding_state.dart';
+import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
+import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
+import 'package:uuid/uuid.dart';
 
 class ProfileSetupData {
   const ProfileSetupData({
@@ -48,6 +51,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final TextEditingController _weightController = TextEditingController();
   String _goal = 'mantener';
   String _activity = 'moderado';
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -68,30 +72,84 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     );
   }
 
-  void _nextStep() {
+  Future<void> _nextStep() async {
     if (_formKeys[_currentStep].currentState?.validate() ?? false) {
       if (_currentStep == 3) {
-        _complete();
+        await _complete();
       } else {
         _goToStep(_currentStep + 1);
       }
     }
   }
 
-  void _complete() {
+  Future<void> _complete() async {
+    if (_isSaving) return;
+
+    setState(() {
+      _isSaving = true;
+    });
+
     final data = ProfileSetupData(
       name: _nameController.text.trim(),
       age: int.parse(_ageController.text.trim()),
       sex: _sex,
-      heightCm: double.parse(_heightController.text.trim()),
-      weightKg: double.parse(_weightController.text.trim()),
+      heightCm: _parseNumber(_heightController.text),
+      weightKg: _parseNumber(_weightController.text),
       goal: _goal,
       activityLevel: _activity,
     );
-    ref.read(onboardingPersistenceProvider).markProfileSetupComplete();
-    ref.invalidate(onboardingStatusProvider);
-    widget.onCompleted?.call(data);
-    Navigator.of(context).maybePop(data);
+
+    try {
+      final repository = await ref.read(metricsRepositoryProvider.future);
+
+      final profile = MetabolicProfile(
+        id: const Uuid().v4(),
+        updatedAt: DateTime.now(),
+        heightCm: data.heightCm,
+        weightKg: data.weightKg,
+        age: data.age,
+        sex: data.sex,
+        activityMultiplier: _mapActivityToMultiplier(data.activityLevel),
+      );
+
+      await repository.saveMetabolicProfile(profile);
+
+      final BodyMetric initialMetric = BodyMetric(
+        id: const Uuid().v4(),
+        recordedAt: DateTime.now(),
+        weightKg: data.weightKg,
+        bodyFatPercentage: null,
+        muscleMassKg: null,
+        notes: 'Registro inicial del perfil',
+        measurements: const <String, double>{},
+      );
+
+      await repository.upsertMetric(initialMetric);
+
+      await ref.read(onboardingPersistenceProvider).markProfileSetupComplete();
+      ref.invalidate(metabolicProfileProvider);
+      ref.invalidate(bodyMetricsProvider);
+      ref.invalidate(filteredMetricsProvider);
+      ref.invalidate(latestBodyMetricProvider);
+      ref.invalidate(onboardingStatusProvider);
+
+      widget.onCompleted?.call(data);
+      if (mounted) {
+        Navigator.of(context).maybePop(data);
+      }
+    } catch (error) {
+      if (!mounted) return;
+      AppSnackBar.showError(
+        context,
+        'No pudimos guardar tu perfil: $error',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
   }
 
   @override
@@ -143,9 +201,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _nextStep,
+                      onPressed: _isSaving ? null : () => _nextStep(),
                       child: Text(
-                        _currentStep == 3 ? 'Finalizar' : 'Siguiente',
+                        _currentStep == 3
+                            ? (_isSaving ? 'Guardando...' : 'Finalizar')
+                            : 'Siguiente',
                       ),
                     ),
                   ),
@@ -156,6 +216,24 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         ),
       ),
     );
+  }
+
+  double _parseNumber(String value) =>
+      double.parse(value.replaceAll(',', '.'));
+
+  double _mapActivityToMultiplier(String activity) {
+    switch (activity) {
+      case 'sedentario':
+        return 1.2;
+      case 'ligero':
+        return 1.375;
+      case 'moderado':
+        return 1.55;
+      case 'intenso':
+        return 1.725;
+      default:
+        return 1.2;
+    }
   }
 
   Widget _basicInfoForm(ThemeData theme) {
