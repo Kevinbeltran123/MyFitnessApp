@@ -167,13 +167,6 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
 
-              _MenuCard(
-                icon: Icons.person_outline,
-                iconColor: AppColors.mediumGray,
-                title: 'Perfil',
-                subtitle: 'Información personal',
-                onTap: () => _showComingSoon(context, 'Perfil'),
-              ),
               const SizedBox(height: 24),
 
               // Help & About section

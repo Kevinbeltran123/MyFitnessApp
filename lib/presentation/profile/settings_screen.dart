@@ -15,7 +15,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _workoutReminders = true;
   bool _progressUpdates = false;
   String _weightUnit = 'kg';
-  String _language = 'es';
 
   @override
   Widget build(BuildContext context) {
@@ -124,41 +123,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Language section
-            Text(
-              'Idioma',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            _SettingCard(
-              child: ListTile(
-                title: const Text('Idioma de la Aplicación'),
-                subtitle: Text(_language == 'es' ? 'Español' : 'English'),
-                trailing: DropdownButton<String>(
-                  value: _language,
-                  underline: const SizedBox.shrink(),
-                  items: const [
-                    DropdownMenuItem(value: 'es', child: Text('Español')),
-                    DropdownMenuItem(value: 'en', child: Text('English')),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        _language = value;
-                      });
-                      _showComingSoon('Cambio de idioma');
-                    }
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Data & Privacy section
+            // Data & Privacidad section (limited)
             Text(
               'Datos y Privacidad',
               style: theme.textTheme.titleMedium?.copyWith(
@@ -171,24 +136,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _SettingCard(
               child: Column(
                 children: [
-                  ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.accentBlue.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.cloud_upload_outlined,
-                        color: AppColors.accentBlue,
-                      ),
-                    ),
-                    title: const Text('Exportar Datos'),
-                    subtitle: const Text('Descargar tus datos en JSON'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _showComingSoon('Exportar datos'),
-                  ),
-                  const Divider(height: 1),
                   ListTile(
                     leading: Container(
                       padding: const EdgeInsets.all(8),
