@@ -197,64 +197,97 @@ class _SetRowState extends State<_SetRow> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Row(
-      children: <Widget>[
-        Expanded(
-          child: Column(
+    final Widget repsField = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        NumericInputField(
+          controller: _repsController,
+          labelText: 'Reps',
+          initialStep: 1,
+          min: 1,
+          max: 100,
+          onChanged: (_) => _emitUpdate(),
+        ),
+        if (widget.previousReps != null) ...[
+          const SizedBox(height: 6),
+          ActionChip(
+            label: Text('Copiar ${widget.previousReps}'),
+            onPressed: () => _applyRepSuggestion(widget.previousReps!),
+          ),
+        ],
+      ],
+    );
+
+    final Widget weightField = NumericInputField(
+      controller: _weightController,
+      labelText: 'Peso (kg)',
+      decimal: true,
+      decimalDigits: 1,
+      initialStep: 2.5,
+      min: 0,
+      allowEmpty: true,
+      onChanged: (_) => _emitUpdate(),
+    );
+
+    final Widget restField = NumericInputField(
+      controller: _restController,
+      labelText: 'Descanso (s)',
+      initialStep: 15,
+      min: 0,
+      max: 1200,
+      allowEmpty: true,
+      onChanged: (_) => _emitUpdate(),
+    );
+
+    final Widget deleteButton = SizedBox(
+      width: 44,
+      child: IconButton(
+        icon: const Icon(Icons.delete_outline),
+        onPressed: widget.onRemove,
+        color: theme.colorScheme.error,
+        tooltip: 'Eliminar serie',
+      ),
+    );
+
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final bool isCompact = constraints.maxWidth < 520;
+        if (isCompact) {
+          return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              NumericInputField(
-                controller: _repsController,
-                labelText: 'Reps',
-                initialStep: 1,
-                stepOptions: const <double>[1, 5, 10],
-                min: 1,
-                max: 100,
-                onChanged: (_) => _emitUpdate(),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: repsField),
+                  const SizedBox(width: 12),
+                  Expanded(child: weightField),
+                ],
               ),
-              if (widget.previousReps != null) ...[
-                const SizedBox(height: 6),
-                ActionChip(
-                  label: Text('Copiar ${widget.previousReps}'),
-                  onPressed: () => _applyRepSuggestion(widget.previousReps!),
-                ),
-              ],
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: restField),
+                  deleteButton,
+                ],
+              ),
             ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: NumericInputField(
-            controller: _weightController,
-            labelText: 'Peso (kg)',
-            decimal: true,
-            decimalDigits: 1,
-            initialStep: 2.5,
-            stepOptions: const <double>[1, 2.5, 5],
-            min: 0,
-            allowEmpty: true,
-            onChanged: (_) => _emitUpdate(),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: NumericInputField(
-            controller: _restController,
-            labelText: 'Descanso (s)',
-            initialStep: 15,
-            stepOptions: const <double>[15, 30, 60],
-            min: 0,
-            max: 1200,
-            allowEmpty: true,
-            onChanged: (_) => _emitUpdate(),
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.delete_outline),
-          onPressed: widget.onRemove,
-          color: theme.colorScheme.error,
-        ),
-      ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Expanded(child: repsField),
+            const SizedBox(width: 12),
+            Expanded(child: weightField),
+            const SizedBox(width: 12),
+            Expanded(child: restField),
+            deleteButton,
+          ],
+        );
+      },
     );
   }
 }

@@ -844,7 +844,6 @@ class _LogSetSheetState extends State<_LogSetSheet> {
                 controller: _repsController,
                 labelText: 'Repeticiones',
                 initialStep: 1,
-                stepOptions: const <double>[1, 5, 10],
                 min: 0,
                 max: 100,
                 validator: (String? value) {
@@ -880,7 +879,6 @@ class _LogSetSheetState extends State<_LogSetSheet> {
                 decimal: true,
                 decimalDigits: 1,
                 initialStep: 2.5,
-                stepOptions: const <double>[1, 2.5, 5],
                 min: 0,
                 validator: (String? value) {
                   final double? weight = double.tryParse(
@@ -897,7 +895,6 @@ class _LogSetSheetState extends State<_LogSetSheet> {
                 controller: _restController,
                 labelText: 'Descanso tomado (segundos)',
                 initialStep: 15,
-                stepOptions: const <double>[15, 30, 60],
                 min: 0,
                 max: 1200,
                 validator: (String? value) {

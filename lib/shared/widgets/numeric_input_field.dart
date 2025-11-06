@@ -16,7 +16,6 @@ class NumericInputField extends StatefulWidget {
     this.decimal = false,
     this.decimalDigits = 1,
     this.initialStep = 1,
-    this.stepOptions,
     this.min,
     this.max,
     this.allowEmpty = false,
@@ -36,7 +35,6 @@ class NumericInputField extends StatefulWidget {
   final bool decimal;
   final int decimalDigits;
   final double initialStep;
-  final List<double>? stepOptions;
   final double? min;
   final double? max;
   final bool allowEmpty;
@@ -52,26 +50,15 @@ class NumericInputField extends StatefulWidget {
 
 class _NumericInputFieldState extends State<NumericInputField> {
   late FocusNode _focusNode;
-  late double _currentStep;
+  late double _step;
 
   @override
   void initState() {
     super.initState();
     assert(widget.initialStep > 0, 'initialStep must be greater than zero');
-    assert(
-      widget.stepOptions == null || widget.stepOptions!.isNotEmpty,
-      'stepOptions cannot be empty',
-    );
-    assert(
-      widget.stepOptions == null ||
-          widget.stepOptions!.every((double step) => step > 0),
-      'stepOptions must contain values > 0',
-    );
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(_handleFocusChange);
-    _currentStep = widget.stepOptions != null && widget.stepOptions!.isNotEmpty
-        ? widget.stepOptions!.first
-        : widget.initialStep;
+    _step = widget.initialStep;
   }
 
   @override
@@ -85,15 +72,8 @@ class _NumericInputFieldState extends State<NumericInputField> {
       _focusNode = widget.focusNode ?? FocusNode();
       _focusNode.addListener(_handleFocusChange);
     }
-    if (widget.stepOptions != oldWidget.stepOptions &&
-        widget.stepOptions != null &&
-        widget.stepOptions!.isNotEmpty) {
-      final double preferred = widget.stepOptions!.contains(_currentStep)
-          ? _currentStep
-          : widget.stepOptions!.first;
-      setState(() {
-        _currentStep = preferred;
-      });
+    if (widget.initialStep != oldWidget.initialStep) {
+      _step = widget.initialStep;
     }
   }
 
@@ -122,7 +102,7 @@ class _NumericInputFieldState extends State<NumericInputField> {
     if (!widget.enabled) {
       return;
     }
-    final double step = _currentStep;
+    final double step = _step;
     final double currentValue =
         _parse(widget.controller.text) ?? widget.min ?? 0;
     double next = currentValue + (direction * step);
@@ -214,30 +194,6 @@ class _NumericInputFieldState extends State<NumericInputField> {
             ),
           ],
         ),
-        if (widget.stepOptions != null && widget.stepOptions!.length > 1)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Wrap(
-              spacing: 8,
-              children: widget.stepOptions!
-                  .map(
-                    (double step) => ChoiceChip(
-                      label: Text(_labelForStep(step)),
-                      selected: _currentStep == step,
-                      onSelected: widget.enabled
-                          ? (bool selected) {
-                              if (selected) {
-                                setState(() {
-                                  _currentStep = step;
-                                });
-                              }
-                            }
-                          : null,
-                    ),
-                  )
-                  .toList(growable: false),
-            ),
-          ),
         if (!widget.enabled)
           Padding(
             padding: const EdgeInsets.only(top: 4),
@@ -250,13 +206,6 @@ class _NumericInputFieldState extends State<NumericInputField> {
           ),
       ],
     );
-  }
-
-  String _labelForStep(double step) {
-    if (!widget.decimal || step == step.roundToDouble()) {
-      return step.toInt().toString();
-    }
-    return _formatDecimal(step, widget.decimalDigits);
   }
 }
 
