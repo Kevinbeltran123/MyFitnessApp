@@ -38,7 +38,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     ref.read(onboardingPersistenceProvider).markOnboardingComplete();
     ref.read(onboardingCompletedProvider.notifier).state = true;
     ref.invalidate(onboardingStatusProvider);
-    Navigator.of(context).pop();
+    Navigator.of(context).maybePop();
   }
 
   @override

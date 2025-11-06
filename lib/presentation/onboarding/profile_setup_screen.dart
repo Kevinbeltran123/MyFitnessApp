@@ -91,7 +91,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     ref.read(onboardingPersistenceProvider).markProfileSetupComplete();
     ref.invalidate(onboardingStatusProvider);
     widget.onCompleted?.call(data);
-    Navigator.of(context).pop(data);
+    Navigator.of(context).maybePop(data);
   }
 
   @override
