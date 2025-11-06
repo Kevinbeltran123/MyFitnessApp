@@ -16,6 +16,8 @@ import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
 import 'package:my_fitness_tracker/shared/widgets/state_widgets.dart';
 import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
 
+enum _MetricContextAction { edit, delete }
+
 /// Dashboard screen for body metrics tracking.
 ///
 /// Features:
@@ -59,7 +61,7 @@ class MetricsDashboardScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
-            onPressed: () => _navigateToAddMeasurement(context, ref),
+            onPressed: () => _openMeasurementForm(context, ref),
             tooltip: 'Agregar medida',
           ),
         ],
@@ -264,7 +266,7 @@ class MetricsDashboardScreen extends ConsumerWidget {
                           .take(10)
                           .map(
                             (metric) =>
-                                _buildHistoryItem(context, theme, metric),
+                                _buildHistoryItem(context, theme, metric, ref),
                           ),
                     ],
                   ),
@@ -430,70 +432,174 @@ class MetricsDashboardScreen extends ConsumerWidget {
     BuildContext context,
     ThemeData theme,
     BodyMetric metric,
+    WidgetRef ref,
   ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      child: Material(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.textTertiary.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onLongPress: () => _onMetricLongPress(context, ref, metric),
+          child: Container(
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.lightGray,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.textTertiary.withValues(alpha: 0.2),
+              ),
             ),
-            child: const Icon(
-              Icons.calendar_today,
-              size: 16,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(
-                  _formatDate(metric.recordedAt),
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.lightGray,
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${metric.weightKg.toStringAsFixed(1)} kg',
-                  style: theme.textTheme.bodyMedium?.copyWith(
+                  child: const Icon(
+                    Icons.calendar_today,
+                    size: 16,
                     color: AppColors.textSecondary,
                   ),
                 ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _formatDate(metric.recordedAt),
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${metric.weightKg.toStringAsFixed(1)} kg',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (metric.bodyFatPercentage != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentBlue.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${metric.bodyFatPercentage!.toStringAsFixed(1)}%',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: AppColors.accentBlue,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
-          if (metric.bodyFatPercentage != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.accentBlue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                '${metric.bodyFatPercentage!.toStringAsFixed(1)}%',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppColors.accentBlue,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-        ],
+        ),
       ),
     );
+  }
+
+  Future<void> _onMetricLongPress(
+    BuildContext context,
+    WidgetRef ref,
+    BodyMetric metric,
+  ) async {
+    final action = await showModalBottomSheet<_MetricContextAction>(
+      context: context,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.edit_outlined),
+                title: const Text('Editar medida'),
+                onTap: () =>
+                    Navigator.of(sheetContext).pop(_MetricContextAction.edit),
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline),
+                title: const Text('Eliminar medida'),
+                onTap: () =>
+                    Navigator.of(sheetContext).pop(_MetricContextAction.delete),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (action == null) {
+      return;
+    }
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (action == _MetricContextAction.edit) {
+      await _openMeasurementForm(context, ref, metric: metric);
+      return;
+    }
+
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Eliminar medida'),
+          content: const Text(
+            'Esta acción no se puede deshacer. ¿Deseas eliminar la medición seleccionada?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Eliminar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (confirm != true) {
+      return;
+    }
+
+    try {
+      final repository = await ref.read(metricsRepositoryProvider.future);
+      await repository.deleteMetric(metric.id);
+      if (!context.mounted) return;
+      _refreshMetricProviders(ref);
+      AppSnackBar.showSuccess(context, 'Medición eliminada');
+    } catch (error) {
+      if (!context.mounted) return;
+      AppSnackBar.showError(context, 'No pudimos eliminar la medición: $error');
+    }
+  }
+
+  void _refreshMetricProviders(WidgetRef ref) {
+    ref.invalidate(bodyMetricsProvider);
+    ref.invalidate(filteredMetricsProvider);
+    ref.invalidate(latestBodyMetricProvider);
   }
 
   Widget _buildEmptyState(BuildContext context) {
@@ -503,7 +609,7 @@ class MetricsDashboardScreen extends ConsumerWidget {
       message:
           'Agrega tu primera medición para visualizar tus tendencias y estadísticas.',
       primaryLabel: 'Agregar medida',
-      onPrimaryTap: () => _navigateToAddMeasurement(context, null),
+      onPrimaryTap: () => _openMeasurementForm(context, null),
     );
   }
 
@@ -516,19 +622,19 @@ class MetricsDashboardScreen extends ConsumerWidget {
     );
   }
 
-  void _navigateToAddMeasurement(BuildContext context, WidgetRef? ref) {
-    Navigator.of(context)
-        .push(
-          MaterialPageRoute(builder: (context) => const AddMeasurementScreen()),
-        )
-        .then((_) {
-          // Refresh data after returning
-          if (ref != null) {
-            ref.invalidate(bodyMetricsProvider);
-            ref.invalidate(latestBodyMetricProvider);
-            ref.invalidate(filteredMetricsProvider);
-          }
-        });
+  Future<void> _openMeasurementForm(
+    BuildContext context,
+    WidgetRef? ref, {
+    BodyMetric? metric,
+  }) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => AddMeasurementScreen(initialMetric: metric),
+      ),
+    );
+    if (ref != null) {
+      _refreshMetricProviders(ref);
+    }
   }
 
   String _formatDate(DateTime date) {

@@ -37,7 +37,9 @@ void main() {
     late RoutineService service;
 
     setUp(() {
-      repository = InMemoryRoutineRepository(<Routine>[_buildRoutine(id: 'base')]);
+      repository = InMemoryRoutineRepository(<Routine>[
+        _buildRoutine(id: 'base'),
+      ]);
       service = RoutineService(repository: repository);
     });
 
@@ -59,7 +61,9 @@ void main() {
     });
 
     test('update throws if routine has no exercises', () async {
-      final Routine routine = _buildRoutine(id: 'temp').copyWith(exercises: <RoutineExercise>[]);
+      final Routine routine = _buildRoutine(
+        id: 'temp',
+      ).copyWith(exercises: <RoutineExercise>[]);
       expect(() => service.update(routine), throwsFormatException);
     });
   });

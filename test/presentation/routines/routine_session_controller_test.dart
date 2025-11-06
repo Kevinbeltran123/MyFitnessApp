@@ -60,7 +60,9 @@ void main() {
   test('recordSet agrega el log y avanza a la siguiente serie', () async {
     final provider = routineSessionControllerProvider(routine.id);
     final controller = container.read(provider.notifier);
-    await controller.stream.firstWhere((AsyncValue<RoutineSessionState> value) => value.hasValue);
+    await controller.stream.firstWhere(
+      (AsyncValue<RoutineSessionState> value) => value.hasValue,
+    );
 
     await controller.recordSet(
       repetitions: 5,
@@ -79,7 +81,9 @@ void main() {
   test('finishSession persiste la sesión con las notas', () async {
     final provider = routineSessionControllerProvider(routine.id);
     final controller = container.read(provider.notifier);
-    await controller.stream.firstWhere((AsyncValue<RoutineSessionState> value) => value.hasValue);
+    await controller.stream.firstWhere(
+      (AsyncValue<RoutineSessionState> value) => value.hasValue,
+    );
 
     await controller.recordSet(
       repetitions: 5,

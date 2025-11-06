@@ -28,7 +28,8 @@ class _AchievementUnlockContent extends StatefulWidget {
   final Achievement achievement;
 
   @override
-  State<_AchievementUnlockContent> createState() => _AchievementUnlockContentState();
+  State<_AchievementUnlockContent> createState() =>
+      _AchievementUnlockContentState();
 }
 
 class _AchievementUnlockContentState extends State<_AchievementUnlockContent>
@@ -38,8 +39,9 @@ class _AchievementUnlockContentState extends State<_AchievementUnlockContent>
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 2))
-      ..play();
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 2),
+    )..play();
   }
 
   @override
@@ -69,7 +71,9 @@ class _AchievementUnlockContentState extends State<_AchievementUnlockContent>
           decoration: BoxDecoration(
             color: AppColors.white,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.textTertiary.withValues(alpha: 0.15)),
+            border: Border.all(
+              color: AppColors.textTertiary.withValues(alpha: 0.15),
+            ),
             boxShadow: const [
               BoxShadow(
                 color: AppColors.shadowMedium,

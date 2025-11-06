@@ -59,8 +59,9 @@ void main() {
     });
 
     test('watchPersonalRecords emits updates when sessions change', () async {
-      final List<PersonalRecord> initial =
-          await service.watchPersonalRecords().first;
+      final List<PersonalRecord> initial = await service
+          .watchPersonalRecords()
+          .first;
       expect(initial, isEmpty);
 
       repository.setSessions([

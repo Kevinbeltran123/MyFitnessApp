@@ -22,10 +22,7 @@ class VolumeInsights extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Widget content = _VolumeInsightsBody(
-      range: range,
-      padding: padding,
-    );
+    final Widget content = _VolumeInsightsBody(range: range, padding: padding);
 
     if (!enableRefresh) {
       return content;
@@ -81,22 +78,18 @@ class _VolumeInsightsBody extends ConsumerWidget {
               )
               .toList(growable: false),
           selected: <VolumeAggregation>{aggregation},
-          style: const ButtonStyle(
-            visualDensity: VisualDensity.compact,
-          ),
+          style: const ButtonStyle(visualDensity: VisualDensity.compact),
           onSelectionChanged: (selection) {
             if (selection.isNotEmpty) {
-              ref
-                  .read(selectedVolumeAggregationProvider.notifier)
-                  .state = selection.first;
+              ref.read(selectedVolumeAggregationProvider.notifier).state =
+                  selection.first;
             }
           },
         ),
         const SizedBox(height: 24),
         seriesAsync.when(
-          loading: () => const LoadingStateWidget(
-            message: 'Calculando tu volumen...',
-          ),
+          loading: () =>
+              const LoadingStateWidget(message: 'Calculando tu volumen...'),
           error: (error, _) => ErrorStateWidget(
             title: 'No pudimos cargar el volumen',
             message: error.toString(),
@@ -170,8 +163,9 @@ class _TotalVolumeCard extends StatelessWidget {
   String _formatVolume(double value) {
     if (value >= 1000) {
       final double thousands = value / 1000;
-      final String formatted =
-          thousands >= 10 ? thousands.toStringAsFixed(0) : thousands.toStringAsFixed(1);
+      final String formatted = thousands >= 10
+          ? thousands.toStringAsFixed(0)
+          : thousands.toStringAsFixed(1);
       return '${formatted}k';
     }
     return value.toStringAsFixed(0);
@@ -195,12 +189,9 @@ VolumeSeriesParams _buildVolumeParams(
 MetricDateRange _defaultVolumeRange() {
   final DateTime now = DateTime.now();
   final DateTime end = DateTime(now.year, now.month, now.day, 23, 59, 59);
-  final DateTime start = end.subtract(const Duration(days: 7 * 11)).copyWith(
-    hour: 0,
-    minute: 0,
-    second: 0,
-    millisecond: 0,
-  );
+  final DateTime start = end
+      .subtract(const Duration(days: 7 * 11))
+      .copyWith(hour: 0, minute: 0, second: 0, millisecond: 0);
   return MetricDateRange(start: start, end: end);
 }
 

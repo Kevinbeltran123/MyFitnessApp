@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
 import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
 
-/// Card displaying a workout session summary.
-///
-/// Shows session date, duration, exercises completed, sets, and total volume.
+/// Card displaying a workout session summary with quick stats.
 class WorkoutSessionCard extends StatelessWidget {
   const WorkoutSessionCard({super.key, required this.session});
 
@@ -13,21 +11,21 @@ class WorkoutSessionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final duration = session.completedAt.difference(session.startedAt);
-    final totalSets = session.exerciseLogs.fold(
+    final Duration duration = session.completedAt.difference(session.startedAt);
+    final int totalSets = session.exerciseLogs.fold<int>(
       0,
       (sum, log) => sum + log.setLogs.length,
     );
-    final totalVolume = session.exerciseLogs.fold(
-      0.0,
+    final double totalVolume = session.exerciseLogs.fold<double>(
+      0,
       (sum, log) =>
           sum +
-          log.setLogs.fold(
-            0.0,
+          log.setLogs.fold<double>(
+            0,
             (s, set) => s + (set.weight * set.repetitions),
           ),
     );
-    final exerciseCount = session.exerciseLogs.length;
+    final int exerciseCount = session.exerciseLogs.length;
 
     return Card(
       elevation: 0,
@@ -40,13 +38,12 @@ class WorkoutSessionCard extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => _showSessionDetails(context),
+        onTap: () => showWorkoutSessionDetails(context, session),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with date and time
               Row(
                 children: [
                   Container(
@@ -67,7 +64,7 @@ class WorkoutSessionCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _formatDate(session.startedAt),
+                          _formatSessionDate(session.startedAt),
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
@@ -75,7 +72,7 @@ class WorkoutSessionCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          _formatTime(session.startedAt),
+                          _formatSessionTime(session.startedAt),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: AppColors.textSecondary,
                           ),
@@ -114,13 +111,11 @@ class WorkoutSessionCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-
-              // Stats row
               Row(
                 children: [
                   _buildStat(
                     icon: Icons.timer_outlined,
-                    label: _formatDuration(duration),
+                    label: _formatSessionDuration(duration),
                     theme: theme,
                   ),
                   const SizedBox(width: 16),
@@ -138,8 +133,6 @@ class WorkoutSessionCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-
-              // Volume badge
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -200,220 +193,215 @@ class WorkoutSessionCard extends StatelessWidget {
       ),
     );
   }
+}
 
-  void _showSessionDetails(BuildContext context) {
-    final theme = Theme.of(context);
+Future<void> showWorkoutSessionDetails(
+  BuildContext context,
+  RoutineSession session,
+) async {
+  final theme = Theme.of(context);
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.8,
-          ),
-          decoration: const BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Handle bar
-              Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.textTertiary.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      return Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
+        ),
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.textTertiary.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
               ),
-
-              // Header
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
-                child: Row(
-                  children: [
-                    Expanded(
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Detalles de la sesión',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _formatSessionDate(session.startedAt),
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(24),
+                children: [
+                  for (final exerciseLog in session.exerciseLogs) ...[
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.lightGray,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Detalles de la sesión',
-                            style: theme.textTheme.titleLarge?.copyWith(
+                            exerciseLog.exerciseId,
+                            style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _formatDate(session.startedAt),
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textSecondary,
+                          const SizedBox(height: 12),
+                          for (final setLog in exerciseLog.setLogs)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.mediumGray.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      '${setLog.setNumber}',
+                                      style: theme.textTheme.labelMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      '${setLog.repetitions} reps × ${setLog.weight.toStringAsFixed(1)} kg',
+                                      style: theme.textTheme.bodyMedium,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Descanso: ${_formatSessionDuration(setLog.restTaken)}',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  if (session.notes != null && session.notes!.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.info.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.info.withValues(alpha: 0.2),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.note_outlined,
+                                size: 18,
+                                color: AppColors.info,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Notas',
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  color: AppColors.info,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            session.notes!,
+                            style: theme.textTheme.bodyMedium,
                           ),
                         ],
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
-                    ),
                   ],
-                ),
+                ],
               ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
 
-              const Divider(height: 1),
+String _formatSessionDate(DateTime date) {
+  const months = [
+    'Ene',
+    'Feb',
+    'Mar',
+    'Abr',
+    'May',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dic',
+  ];
+  return '${date.day} ${months[date.month - 1]} ${date.year}';
+}
 
-              // Content
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(24),
-                  children: [
-                    // Exercise logs
-                    for (final exerciseLog in session.exerciseLogs) ...[
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.lightGray,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              exerciseLog.exerciseId,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            for (final setLog in exerciseLog.setLogs)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 32,
-                                      height: 32,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.mediumGray
-                                            .withValues(alpha: 0.2),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        '${setLog.setNumber}',
-                                        style: theme.textTheme.labelMedium
-                                            ?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        '${setLog.repetitions} reps × ${setLog.weight.toStringAsFixed(1)} kg',
-                                        style: theme.textTheme.bodyMedium,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Descanso: ${_formatDuration(setLog.restTaken)}',
-                                      style:
-                                          theme.textTheme.bodySmall?.copyWith(
-                                        color: AppColors.textSecondary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
+String _formatSessionTime(DateTime time) {
+  final String hour = time.hour.toString().padLeft(2, '0');
+  final String minute = time.minute.toString().padLeft(2, '0');
+  return '$hour:$minute';
+}
 
-                    if (session.notes != null && session.notes!.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.info.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.info.withValues(alpha: 0.2),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.note_outlined,
-                                  size: 18,
-                                  color: AppColors.info,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Notas',
-                                  style: theme.textTheme.titleSmall?.copyWith(
-                                    color: AppColors.info,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              session.notes!,
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+String _formatSessionDuration(Duration duration) {
+  final int hours = duration.inHours;
+  final int minutes = duration.inMinutes.remainder(60);
+  if (hours > 0) {
+    return '${hours}h ${minutes}m';
   }
-
-  String _formatDate(DateTime date) {
-    const months = [
-      'Ene',
-      'Feb',
-      'Mar',
-      'Abr',
-      'May',
-      'Jun',
-      'Jul',
-      'Ago',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dic',
-    ];
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
-  }
-
-  String _formatTime(DateTime time) {
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
-  }
-
-  String _formatDuration(Duration duration) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    if (hours > 0) {
-      return '${hours}h ${minutes}m';
-    }
-    return '${minutes}m';
-  }
+  return '${minutes}m';
 }

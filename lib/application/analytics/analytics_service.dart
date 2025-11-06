@@ -114,10 +114,16 @@ class AnalyticsService {
       }
     }
 
-    final double total = points.fold<double>(0, (double acc, VolumeDataPoint p) {
+    final double total = points.fold<double>(0, (
+      double acc,
+      VolumeDataPoint p,
+    ) {
       return acc + p.volume;
     });
-    final double max = points.fold<double>(0, (double current, VolumeDataPoint p) {
+    final double max = points.fold<double>(0, (
+      double current,
+      VolumeDataPoint p,
+    ) {
       return p.volume > current ? p.volume : current;
     });
 
@@ -142,7 +148,8 @@ class AnalyticsService {
     final List<RoutineSession> sessions = await _sessionRepository
         .getAllSessions(startDate: start, endDate: end);
 
-    final Map<DateTime, _DailyAggregate> aggregates = <DateTime, _DailyAggregate>{};
+    final Map<DateTime, _DailyAggregate> aggregates =
+        <DateTime, _DailyAggregate>{};
     for (final RoutineSession session in sessions) {
       final DateTime day = _startOfDay(session.completedAt);
       final _DailyAggregate aggregate = aggregates.putIfAbsent(
@@ -168,11 +175,12 @@ class AnalyticsService {
       cursor = cursor.add(const Duration(days: 1));
     }
 
-    final List<DateTime> activeDays = aggregates.entries
-        .where((entry) => entry.value.count > 0)
-        .map((entry) => entry.key)
-        .toList()
-      ..sort();
+    final List<DateTime> activeDays =
+        aggregates.entries
+            .where((entry) => entry.value.count > 0)
+            .map((entry) => entry.key)
+            .toList()
+          ..sort();
     final _StreakStats streaks = _calculateStreaks(activeDays, end);
 
     final DateTime monthStart = _startOfMonth(reference);
@@ -194,7 +202,8 @@ class AnalyticsService {
       final bool higherVolume = point.totalVolume > mostProductive.totalVolume;
       final bool equalVolume =
           (point.totalVolume - mostProductive.totalVolume).abs() < 1e-6;
-      final bool higherSessions = point.sessionCount > mostProductive.sessionCount;
+      final bool higherSessions =
+          point.sessionCount > mostProductive.sessionCount;
       if (higherVolume || (equalVolume && higherSessions)) {
         mostProductive = point;
       }
@@ -517,9 +526,6 @@ class _DailyAggregate {
   final double volume;
 
   _DailyAggregate add(double sessionVolume) {
-    return _DailyAggregate(
-      count: count + 1,
-      volume: volume + sessionVolume,
-    );
+    return _DailyAggregate(count: count + 1, volume: volume + sessionVolume);
   }
 }

@@ -4,8 +4,9 @@ import 'package:my_fitness_tracker/domain/metrics/metrics_entities.dart';
 import 'package:my_fitness_tracker/presentation/analytics/analytics_providers.dart';
 
 /// Currently selected aggregation for the volume chart.
-final selectedVolumeAggregationProvider =
-    StateProvider<VolumeAggregation>((ref) => VolumeAggregation.weekly);
+final selectedVolumeAggregationProvider = StateProvider<VolumeAggregation>(
+  (ref) => VolumeAggregation.weekly,
+);
 
 /// Provides a volume series for the selected aggregation, anchored on today.
 final volumeSeriesProvider = FutureProvider<VolumeSeries>((ref) async {
@@ -45,14 +46,17 @@ class VolumeSeriesParams {
 
 /// Provides a volume series using custom parameters (useful for global filters).
 final volumeSeriesByParamsProvider =
-    FutureProvider.family<VolumeSeries, VolumeSeriesParams>((ref, params) async {
-  final service = await ref.watch(analyticsServiceProvider.future);
-  return service.buildVolumeSeries(
-    aggregation: params.aggregation,
-    anchor: params.anchor,
-    periods: params.periods,
-  );
-});
+    FutureProvider.family<VolumeSeries, VolumeSeriesParams>((
+      ref,
+      params,
+    ) async {
+      final service = await ref.watch(analyticsServiceProvider.future);
+      return service.buildVolumeSeries(
+        aggregation: params.aggregation,
+        anchor: params.anchor,
+        periods: params.periods,
+      );
+    });
 
 extension VolumeAggregationLabels on VolumeAggregation {
   String get label {
@@ -84,42 +88,46 @@ class MuscleDistributionSummary {
 
 /// Provides muscle distribution stats for a custom range and highlights
 /// potential imbalances (>=30% gap between top and lowest groups).
-final muscleDistributionProvider = FutureProvider.family<
-    MuscleDistributionSummary,
-    MetricDateRange>((ref, range) async {
-  final service = await ref.watch(analyticsServiceProvider.future);
-  final List<MuscleGroupStat> stats = await service.getMuscleGroupStats(range);
-  if (stats.isEmpty) {
-    return const MuscleDistributionSummary(
-      stats: <MuscleGroupStat>[],
-      totalVolume: 0,
-      dominantGroup: null,
-      imbalanceGap: 0,
-    );
-  }
+final muscleDistributionProvider =
+    FutureProvider.family<MuscleDistributionSummary, MetricDateRange>((
+      ref,
+      range,
+    ) async {
+      final service = await ref.watch(analyticsServiceProvider.future);
+      final List<MuscleGroupStat> stats = await service.getMuscleGroupStats(
+        range,
+      );
+      if (stats.isEmpty) {
+        return const MuscleDistributionSummary(
+          stats: <MuscleGroupStat>[],
+          totalVolume: 0,
+          dominantGroup: null,
+          imbalanceGap: 0,
+        );
+      }
 
-  stats.sort((a, b) => b.percentage.compareTo(a.percentage));
-  final MuscleGroupStat dominant = stats.first;
-  final MuscleGroupStat lowest = stats.last;
-  final double gap = dominant.percentage - lowest.percentage;
-  final double total = stats.fold<double>(0, (double acc, MuscleGroupStat stat) {
-    return acc + stat.volume;
-  });
+      stats.sort((a, b) => b.percentage.compareTo(a.percentage));
+      final MuscleGroupStat dominant = stats.first;
+      final MuscleGroupStat lowest = stats.last;
+      final double gap = dominant.percentage - lowest.percentage;
+      final double total = stats.fold<double>(0, (
+        double acc,
+        MuscleGroupStat stat,
+      ) {
+        return acc + stat.volume;
+      });
 
-  return MuscleDistributionSummary(
-    stats: List<MuscleGroupStat>.unmodifiable(stats),
-    totalVolume: total,
-    dominantGroup: dominant,
-    imbalanceGap: gap,
-  );
-});
+      return MuscleDistributionSummary(
+        stats: List<MuscleGroupStat>.unmodifiable(stats),
+        totalVolume: total,
+        dominantGroup: dominant,
+        imbalanceGap: gap,
+      );
+    });
 
 /// Parameters for requesting training heatmap data.
 class TrainingHeatmapParams {
-  const TrainingHeatmapParams({
-    required this.anchor,
-    required this.days,
-  });
+  const TrainingHeatmapParams({required this.anchor, required this.days});
 
   final DateTime anchor;
   final int days;
@@ -137,12 +145,14 @@ class TrainingHeatmapParams {
 }
 
 /// Provides training activity data for heatmap visualisations.
-final trainingHeatmapProvider = FutureProvider.family<
-    TrainingHeatmapData,
-    TrainingHeatmapParams>((ref, params) async {
-  final service = await ref.watch(analyticsServiceProvider.future);
-  return service.buildTrainingHeatmap(
-    anchor: params.anchor,
-    days: params.days,
-  );
-});
+final trainingHeatmapProvider =
+    FutureProvider.family<TrainingHeatmapData, TrainingHeatmapParams>((
+      ref,
+      params,
+    ) async {
+      final service = await ref.watch(analyticsServiceProvider.future);
+      return service.buildTrainingHeatmap(
+        anchor: params.anchor,
+        days: params.days,
+      );
+    });

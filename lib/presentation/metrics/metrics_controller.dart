@@ -4,12 +4,7 @@ import 'package:my_fitness_tracker/infrastructure/isar/isar_providers.dart';
 import 'package:my_fitness_tracker/infrastructure/metrics/metrics_repository_isar.dart';
 
 /// Predefined range presets for filtering metrics within the dashboard.
-enum MetricRangePreset {
-  last7Days,
-  last30Days,
-  last90Days,
-  all,
-}
+enum MetricRangePreset { last7Days, last30Days, last90Days, all }
 
 extension MetricRangePresetX on MetricRangePreset {
   String get label {
@@ -44,14 +39,17 @@ extension MetricRangePresetX on MetricRangePreset {
       return null;
     }
     final end = DateTime(now.year, now.month, now.day, 23, 59, 59);
-    final start = end.subtract(duration).copyWith(hour: 0, minute: 0, second: 0);
+    final start = end
+        .subtract(duration)
+        .copyWith(hour: 0, minute: 0, second: 0);
     return MetricDateRange(start: start, end: end);
   }
 }
 
 /// Provider for the metrics repository
-final metricsRepositoryProvider =
-    FutureProvider<MetricsRepository>((ref) async {
+final metricsRepositoryProvider = FutureProvider<MetricsRepository>((
+  ref,
+) async {
   final isar = await ref.watch(isarProvider.future);
   return MetricsRepositoryIsar(isar);
 });
@@ -69,19 +67,18 @@ final latestBodyMetricProvider = FutureProvider<BodyMetric?>((ref) async {
 });
 
 /// Provider for metabolic profile
-final metabolicProfileProvider =
-    FutureProvider<MetabolicProfile?>((ref) async {
+final metabolicProfileProvider = FutureProvider<MetabolicProfile?>((ref) async {
   final repository = await ref.watch(metricsRepositoryProvider.future);
   return repository.loadMetabolicProfile();
 });
 
 /// Selected preset for filtering metrics in the dashboard.
-final selectedMetricRangeProvider =
-    StateProvider<MetricRangePreset>((ref) => MetricRangePreset.last30Days);
+final selectedMetricRangeProvider = StateProvider<MetricRangePreset>(
+  (ref) => MetricRangePreset.last30Days,
+);
 
 /// Provider exposing metrics filtered by the currently selected range.
-final filteredMetricsProvider =
-    StreamProvider<List<BodyMetric>>((ref) async* {
+final filteredMetricsProvider = StreamProvider<List<BodyMetric>>((ref) async* {
   final repository = await ref.watch(metricsRepositoryProvider.future);
   final preset = ref.watch(selectedMetricRangeProvider);
   final now = DateTime.now();

@@ -40,8 +40,9 @@ extension StatsRangePresetX on StatsRangePreset {
   }
 }
 
-final statsRangePresetProvider =
-    StateProvider<StatsRangePreset>((ref) => StatsRangePreset.last90Days);
+final statsRangePresetProvider = StateProvider<StatsRangePreset>(
+  (ref) => StatsRangePreset.last90Days,
+);
 
 final statsRangeProvider = Provider<MetricDateRange>((ref) {
   final preset = ref.watch(statsRangePresetProvider);
@@ -70,18 +71,22 @@ class StatsKpiData {
 
 final statsKpiProvider = FutureProvider<StatsKpiData>((ref) async {
   final MetricDateRange range = ref.watch(statsRangeProvider);
-  final WorkoutStats stats = await ref.watch(workoutStatsProvider(range).future);
+  final WorkoutStats stats = await ref.watch(
+    workoutStatsProvider(range).future,
+  );
   final int days = range.end.difference(range.start).inDays + 1;
   final TrainingHeatmapParams params = TrainingHeatmapParams(
     anchor: range.end,
     days: days,
   );
-  final TrainingHeatmapData heatmap =
-      await ref.watch(trainingHeatmapProvider(params).future);
+  final TrainingHeatmapData heatmap = await ref.watch(
+    trainingHeatmapProvider(params).future,
+  );
 
   final double weeks = days / 7;
-  final double averageSessionsPerWeek =
-      weeks <= 0 ? 0 : stats.totalSessions / weeks;
+  final double averageSessionsPerWeek = weeks <= 0
+      ? 0
+      : stats.totalSessions / weeks;
 
   return StatsKpiData(
     totalSessions: stats.totalSessions,
@@ -109,21 +114,31 @@ final statsInsightsProvider = FutureProvider<List<StatInsight>>((ref) async {
   final MetricDateRange range = ref.watch(statsRangeProvider);
   final int days = range.end.difference(range.start).inDays + 1;
   final DateTime previousEnd = range.start.subtract(const Duration(days: 1));
-  final DateTime previousStart =
-      previousEnd.subtract(Duration(days: days - 1)).copyWith(hour: 0, minute: 0, second: 0, millisecond: 0);
-  final MetricDateRange previousRange =
-      MetricDateRange(start: previousStart, end: previousEnd);
+  final DateTime previousStart = previousEnd
+      .subtract(Duration(days: days - 1))
+      .copyWith(hour: 0, minute: 0, second: 0, millisecond: 0);
+  final MetricDateRange previousRange = MetricDateRange(
+    start: previousStart,
+    end: previousEnd,
+  );
 
-  final WorkoutStats currentStats =
-      await ref.watch(workoutStatsProvider(range).future);
-  final WorkoutStats previousStats =
-      await ref.watch(workoutStatsProvider(previousRange).future);
-  final MuscleDistributionSummary muscleSummary = await ref
-      .watch(muscleDistributionProvider(range).future);
-  final TrainingHeatmapData heatmap = await ref
-      .watch(trainingHeatmapProvider(TrainingHeatmapParams(anchor: range.end, days: days)).future);
-  final List<PersonalRecord> personalRecords = await ref
-      .watch(personalRecordsProvider.future);
+  final WorkoutStats currentStats = await ref.watch(
+    workoutStatsProvider(range).future,
+  );
+  final WorkoutStats previousStats = await ref.watch(
+    workoutStatsProvider(previousRange).future,
+  );
+  final MuscleDistributionSummary muscleSummary = await ref.watch(
+    muscleDistributionProvider(range).future,
+  );
+  final TrainingHeatmapData heatmap = await ref.watch(
+    trainingHeatmapProvider(
+      TrainingHeatmapParams(anchor: range.end, days: days),
+    ).future,
+  );
+  final List<PersonalRecord> personalRecords = await ref.watch(
+    personalRecordsProvider.future,
+  );
 
   final List<StatInsight> insights = <StatInsight>[];
 
@@ -131,7 +146,8 @@ final statsInsightsProvider = FutureProvider<List<StatInsight>>((ref) async {
   final double previousVolume = previousStats.totalVolume;
   final double currentVolume = currentStats.totalVolume;
   if (previousVolume > 0 && currentVolume > 0) {
-    final double delta = ((currentVolume - previousVolume) / previousVolume) * 100;
+    final double delta =
+        ((currentVolume - previousVolume) / previousVolume) * 100;
     final String trend = delta >= 0 ? 'incrementaste' : 'disminuiste';
     insights.add(
       StatInsight(
@@ -477,9 +493,7 @@ class _InsightsList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: insights
-          .map(
-            (insight) => _InsightCard(insight: insight),
-          )
+          .map((insight) => _InsightCard(insight: insight))
           .toList(growable: false),
     );
   }
@@ -499,7 +513,9 @@ class _InsightCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.textTertiary.withValues(alpha: 0.15)),
+        border: Border.all(
+          color: AppColors.textTertiary.withValues(alpha: 0.15),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -646,9 +662,7 @@ class _SectionHeader extends StatelessWidget {
     final theme = Theme.of(context);
     return Text(
       title,
-      style: theme.textTheme.titleLarge?.copyWith(
-        fontWeight: FontWeight.w700,
-      ),
+      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
     );
   }
 }
@@ -672,23 +686,26 @@ class _WorkoutStatsSection extends StatelessWidget {
       Duration.zero,
       (sum, session) => sum + session.completedAt.difference(session.startedAt),
     );
-  final int totalSets = sessions.fold<int>(0, (sum, session) {
-    final int sessionSets = session.exerciseLogs.fold<int>(
-      0,
-      (inner, log) => inner + log.setLogs.length,
-    );
-    return sum + sessionSets;
-  });
+    final int totalSets = sessions.fold<int>(0, (sum, session) {
+      final int sessionSets = session.exerciseLogs.fold<int>(
+        0,
+        (inner, log) => inner + log.setLogs.length,
+      );
+      return sum + sessionSets;
+    });
     final double totalVolume = sessions.fold<double>(
       0,
       (sum, session) =>
-          sum + session.exerciseLogs.fold<double>(
-                0,
-                (s, log) => s + log.setLogs.fold<double>(
-                      0,
-                      (v, set) => v + (set.weight * set.repetitions),
-                    ),
-              ),
+          sum +
+          session.exerciseLogs.fold<double>(
+            0,
+            (s, log) =>
+                s +
+                log.setLogs.fold<double>(
+                  0,
+                  (v, set) => v + (set.weight * set.repetitions),
+                ),
+          ),
     );
 
     return Column(
@@ -763,12 +780,15 @@ class _MetricsStatsSection extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: _StatCard(
-                icon:
-                    weightChange >= 0 ? Icons.arrow_upward : Icons.arrow_downward,
+                icon: weightChange >= 0
+                    ? Icons.arrow_upward
+                    : Icons.arrow_downward,
                 label: 'Cambio',
                 value:
                     '${weightChange >= 0 ? '+' : ''}${weightChange.toStringAsFixed(1)} kg',
-                color: weightChange >= 0 ? AppColors.warning : AppColors.success,
+                color: weightChange >= 0
+                    ? AppColors.warning
+                    : AppColors.success,
               ),
             ),
           ],

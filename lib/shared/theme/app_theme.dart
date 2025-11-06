@@ -74,10 +74,7 @@ class AppTheme {
           fontWeight: FontWeight.w700,
           letterSpacing: -0.5,
         ),
-        iconTheme: IconThemeData(
-          color: AppColors.textPrimary,
-          size: 24,
-        ),
+        iconTheme: IconThemeData(color: AppColors.textPrimary, size: 24),
       ),
 
       // ========================================================================
@@ -87,9 +84,7 @@ class AppTheme {
         color: AppColors.white,
         elevation: 0,
         shadowColor: AppColors.shadowLight,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         margin: const EdgeInsets.symmetric(vertical: 6),
       ),
 
@@ -230,11 +225,11 @@ class AppTheme {
           fontSize: 16,
           fontWeight: FontWeight.w500,
         ),
-        hintStyle: const TextStyle(
-          color: AppColors.textTertiary,
-          fontSize: 16,
+        hintStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
 
       // ========================================================================
@@ -283,15 +278,9 @@ class AppTheme {
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(
-              color: AppColors.accentBlue,
-              size: 24,
-            );
+            return const IconThemeData(color: AppColors.accentBlue, size: 24);
           }
-          return const IconThemeData(
-            color: AppColors.textSecondary,
-            size: 24,
-          );
+          return const IconThemeData(color: AppColors.textSecondary, size: 24);
         }),
       ),
 
@@ -301,9 +290,7 @@ class AppTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.white,
         elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         titleTextStyle: const TextStyle(
           color: AppColors.textPrimary,
           fontSize: 20,
@@ -338,9 +325,7 @@ class AppTheme {
           fontWeight: FontWeight.w500,
         ),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
 
       // ========================================================================

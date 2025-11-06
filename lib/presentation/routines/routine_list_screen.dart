@@ -5,6 +5,7 @@ import 'package:my_fitness_tracker/presentation/home/home_providers.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_builder_screen.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_detail_screen.dart';
 import 'package:my_fitness_tracker/presentation/routines/routine_list_controller.dart';
+import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
 import 'package:my_fitness_tracker/shared/utils/app_snackbar.dart';
 import 'package:my_fitness_tracker/shared/widgets/state_widgets.dart';
 
@@ -299,10 +300,7 @@ class _RoutineListScreenState extends ConsumerState<RoutineListScreen> {
       if (!context.mounted) return;
       await ref.read(routineListControllerProvider.notifier).refresh();
       if (!context.mounted) return;
-      AppSnackBar.showInfo(
-        context,
-        'Rutina "${routine.name}" archivada.',
-      );
+      AppSnackBar.showInfo(context, 'Rutina "${routine.name}" archivada.');
     } catch (_) {
       if (!context.mounted) return;
       _showServiceError(context);
@@ -320,10 +318,7 @@ class _RoutineListScreenState extends ConsumerState<RoutineListScreen> {
       if (!context.mounted) return;
       await ref.read(routineListControllerProvider.notifier).refresh();
       if (!context.mounted) return;
-      AppSnackBar.showSuccess(
-        context,
-        'Rutina "${routine.name}" restaurada.',
-      );
+      AppSnackBar.showSuccess(context, 'Rutina "${routine.name}" restaurada.');
     } catch (_) {
       if (!context.mounted) return;
       _showServiceError(context);
@@ -372,9 +367,9 @@ class _RoutineTile extends StatelessWidget {
   final Routine routine;
   final DateTime? lastUsedAt;
   final VoidCallback? onTap;
-  final VoidCallback? onArchive;
-  final VoidCallback? onRestore;
-  final VoidCallback? onDuplicate;
+  final Future<void> Function()? onArchive;
+  final Future<void> Function()? onRestore;
+  final Future<void> Function()? onDuplicate;
 
   @override
   Widget build(BuildContext context) {
@@ -394,7 +389,7 @@ class _RoutineTile extends StatelessWidget {
         ? 'Último uso: ${localizations.formatMediumDate(lastUsedAt!)}'
         : 'Actualizada: ${localizations.formatMediumDate(referenceDate)}';
 
-    return Card(
+    final Widget cardContent = Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
@@ -431,22 +426,22 @@ class _RoutineTile extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (onDuplicate != null)
+                  if (onDuplicate != null && !archived)
                     IconButton(
                       icon: const Icon(Icons.copy_rounded),
-                      onPressed: onDuplicate,
+                      onPressed: () => onDuplicate?.call(),
                       tooltip: 'Duplicar',
                     ),
                   if (!archived && onArchive != null)
                     IconButton(
                       icon: const Icon(Icons.archive_outlined),
-                      onPressed: onArchive,
+                      onPressed: () => onArchive?.call(),
                       tooltip: 'Archivar',
                     )
                   else if (archived && onRestore != null)
                     IconButton(
                       icon: const Icon(Icons.unarchive_outlined),
-                      onPressed: onRestore,
+                      onPressed: () => onRestore?.call(),
                       tooltip: 'Restaurar',
                     ),
                 ],
@@ -494,6 +489,82 @@ class _RoutineTile extends StatelessWidget {
         ),
       ),
     );
+
+    final Widget? startBackground = (!archived && onDuplicate != null)
+        ? const _SwipeActionBackground(
+            alignment: Alignment.centerLeft,
+            icon: Icons.copy_rounded,
+            label: 'Duplicar',
+            color: AppColors.info,
+          )
+        : archived && onRestore != null
+        ? const _SwipeActionBackground(
+            alignment: Alignment.centerLeft,
+            icon: Icons.unarchive_outlined,
+            label: 'Restaurar',
+            color: AppColors.success,
+          )
+        : null;
+
+    final Widget? endBackground = (!archived && onArchive != null)
+        ? const _SwipeActionBackground(
+            alignment: Alignment.centerRight,
+            icon: Icons.archive_outlined,
+            label: 'Archivar',
+            color: AppColors.warning,
+          )
+        : archived && onRestore != null
+        ? const _SwipeActionBackground(
+            alignment: Alignment.centerRight,
+            icon: Icons.unarchive_outlined,
+            label: 'Restaurar',
+            color: AppColors.success,
+          )
+        : null;
+
+    final DismissDirection direction = archived
+        ? (onRestore != null
+              ? DismissDirection.horizontal
+              : DismissDirection.none)
+        : (onArchive != null || onDuplicate != null)
+        ? DismissDirection.horizontal
+        : DismissDirection.none;
+
+    if (direction == DismissDirection.none) {
+      return cardContent;
+    }
+
+    return Dismissible(
+      key: ValueKey<String>(
+        'routine-${routine.id}-${archived ? 'arch' : 'act'}',
+      ),
+      direction: direction,
+      background: startBackground,
+      secondaryBackground: endBackground,
+      confirmDismiss: (DismissDirection dismissDirection) async {
+        if (dismissDirection == DismissDirection.startToEnd) {
+          if (archived) {
+            if (onRestore != null) {
+              await onRestore!.call();
+              return true;
+            }
+          } else if (onDuplicate != null) {
+            await onDuplicate!.call();
+            return false;
+          }
+        } else if (dismissDirection == DismissDirection.endToStart) {
+          if (!archived && onArchive != null) {
+            await onArchive!.call();
+            return true;
+          } else if (archived && onRestore != null) {
+            await onRestore!.call();
+            return true;
+          }
+        }
+        return false;
+      },
+      child: cardContent,
+    );
   }
 }
 
@@ -512,6 +583,46 @@ class _SectionLabel extends StatelessWidget {
         style: theme.textTheme.titleMedium?.copyWith(
           fontWeight: FontWeight.w700,
         ),
+      ),
+    );
+  }
+}
+
+class _SwipeActionBackground extends StatelessWidget {
+  const _SwipeActionBackground({
+    required this.alignment,
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  final Alignment alignment;
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: alignment,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -371,9 +371,7 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
               ),
               const Padding(
                 padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: LoadingStateWidget(
-                  message: 'Cargando ejercicios...',
-                ),
+                child: LoadingStateWidget(message: 'Cargando ejercicios...'),
               ),
             ],
           ),
@@ -422,7 +420,11 @@ class _ExercisesScreenState extends State<ExercisesScreen> {
             return const ExerciseGridPlaceholder();
           }
           final WorkoutPlan plan = _results[index];
-          return ExerciseGridItem(plan: plan, onTap: () => _openDetail(plan));
+          return ExerciseGridItem(
+            plan: plan,
+            onTap: () => _openDetail(plan),
+            onLongPress: () => _openDetail(plan),
+          );
         }, childCount: _results.length + (_isLoadingMore ? 2 : 0)),
       ),
     );

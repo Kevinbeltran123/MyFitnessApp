@@ -47,9 +47,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
       ref.invalidate(routineByIdProvider(widget.routineId));
       ref.invalidate(routineListControllerProvider);
       messenger.showSnackBar(
-        AppSnackBar.successSnack(
-          'Rutina "${updated.name}" actualizada.',
-        ),
+        AppSnackBar.successSnack('Rutina "${updated.name}" actualizada.'),
       );
     }
   }
@@ -66,9 +64,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
       }
       ref.invalidate(routineListControllerProvider);
       messenger.showSnackBar(
-        AppSnackBar.successSnack(
-          'Rutina duplicada como "${duplicated.name}".',
-        ),
+        AppSnackBar.successSnack('Rutina duplicada como "${duplicated.name}".'),
       );
     } catch (_) {
       if (!mounted) return;
@@ -103,9 +99,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
     } catch (_) {
       if (!mounted) return;
       messenger.showSnackBar(
-        AppSnackBar.errorSnack(
-          'No se pudo actualizar el estado de la rutina.',
-        ),
+        AppSnackBar.errorSnack('No se pudo actualizar el estado de la rutina.'),
       );
     }
   }

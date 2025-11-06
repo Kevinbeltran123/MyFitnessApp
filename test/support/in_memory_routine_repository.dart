@@ -49,7 +49,10 @@ class InMemoryRoutineRepository implements RoutineRepository {
   }
 
   @override
-  Future<void> reorderExercises(String routineId, List<String> orderedExerciseIds) async {
+  Future<void> reorderExercises(
+    String routineId,
+    List<String> orderedExerciseIds,
+  ) async {
     final Routine? routine = _routines[routineId];
     if (routine == null) {
       return;
@@ -58,13 +61,17 @@ class InMemoryRoutineRepository implements RoutineRepository {
       for (int i = 0; i < orderedExerciseIds.length; i += 1)
         orderedExerciseIds[i]: i,
     };
-    final List<RoutineExercise> ordered = List<RoutineExercise>.from(routine.exercises)
-      ..sort((RoutineExercise a, RoutineExercise b) {
-        final int orderA = orderMap[a.exerciseId] ?? a.order;
-        final int orderB = orderMap[b.exerciseId] ?? b.order;
-        return orderA.compareTo(orderB);
-      });
-    _routines[routineId] = routine.copyWith(exercises: ordered, updatedAt: DateTime.now());
+    final List<RoutineExercise> ordered =
+        List<RoutineExercise>.from(routine.exercises)
+          ..sort((RoutineExercise a, RoutineExercise b) {
+            final int orderA = orderMap[a.exerciseId] ?? a.order;
+            final int orderB = orderMap[b.exerciseId] ?? b.order;
+            return orderA.compareTo(orderB);
+          });
+    _routines[routineId] = routine.copyWith(
+      exercises: ordered,
+      updatedAt: DateTime.now(),
+    );
     _emitRoutines();
   }
 

@@ -2,10 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
 import 'package:my_fitness_tracker/presentation/home/home_providers.dart';
 
-final routineListControllerProvider = AutoDisposeAsyncNotifierProvider<
-  RoutineListController,
-  List<Routine>
->(RoutineListController.new);
+final routineListControllerProvider =
+    AutoDisposeAsyncNotifierProvider<RoutineListController, List<Routine>>(
+      RoutineListController.new,
+    );
 
 class RoutineListController extends AutoDisposeAsyncNotifier<List<Routine>> {
   @override

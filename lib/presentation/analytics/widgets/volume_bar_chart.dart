@@ -5,10 +5,7 @@ import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
 
 /// Bar chart displaying lifted volume per week/month for the selected period.
 class VolumeBarChart extends StatelessWidget {
-  const VolumeBarChart({
-    super.key,
-    required this.series,
-  });
+  const VolumeBarChart({super.key, required this.series});
 
   final VolumeSeries series;
 
@@ -32,7 +29,10 @@ class VolumeBarChart extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.bar_chart_outlined, color: AppColors.textSecondary),
+              const Icon(
+                Icons.bar_chart_outlined,
+                color: AppColors.textSecondary,
+              ),
               const SizedBox(height: 12),
               Text(
                 'Aún no hay datos de volumen en este periodo',
@@ -105,7 +105,10 @@ class VolumeBarChart extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [AppColors.darkGray, AppColors.mediumDarkGray],
@@ -142,14 +145,19 @@ class VolumeBarChart extends StatelessWidget {
                 ),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       interval: interval,
                       reservedSize: 48,
-                      getTitlesWidget: (value, meta) => _buildLeftTitle(value, meta, theme),
+                      getTitlesWidget: (value, meta) =>
+                          _buildLeftTitle(value, meta, theme),
                     ),
                   ),
                   bottomTitles: AxisTitles(
@@ -183,8 +191,10 @@ class VolumeBarChart extends StatelessWidget {
                         return null;
                       }
                       final point = points[index];
-                      final String periodLabel =
-                          _bottomLabel(series.aggregation, index);
+                      final String periodLabel = _bottomLabel(
+                        series.aggregation,
+                        index,
+                      );
                       return BarTooltipItem(
                         '$periodLabel\n',
                         const TextStyle(
@@ -232,11 +242,7 @@ class VolumeBarChart extends StatelessWidget {
     return padded < 10 ? 10 : padded;
   }
 
-  static Widget _buildLeftTitle(
-    double value,
-    TitleMeta meta,
-    ThemeData theme,
-  ) {
+  static Widget _buildLeftTitle(double value, TitleMeta meta, ThemeData theme) {
     if (value < 0) {
       return const SizedBox.shrink();
     }
@@ -301,8 +307,9 @@ class VolumeBarChart extends StatelessWidget {
   static String _formatVolume(double value) {
     if (value >= 1000) {
       final double inThousands = value / 1000;
-      final String formatted =
-          (inThousands >= 10) ? inThousands.toStringAsFixed(0) : inThousands.toStringAsFixed(1);
+      final String formatted = (inThousands >= 10)
+          ? inThousands.toStringAsFixed(0)
+          : inThousands.toStringAsFixed(1);
       return '${formatted}k';
     }
     return value.toStringAsFixed(0);

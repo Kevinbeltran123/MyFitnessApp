@@ -35,23 +35,20 @@ class _RoutineSetEditorState extends State<RoutineSetEditor> {
 
   void _addSet() {
     if (_sets.length >= 10) {
-      AppSnackBar.showWarning(
-        context,
-        'Máximo 10 series por ejercicio.',
-      );
+      AppSnackBar.showWarning(context, 'Máximo 10 series por ejercicio.');
       return;
     }
     final int nextNumber = (_sets.isNotEmpty ? _sets.last.setNumber : 0) + 1;
-    _sets = <RoutineSet>[..._sets, RoutineSet(setNumber: nextNumber, repetitions: 10)];
+    _sets = <RoutineSet>[
+      ..._sets,
+      RoutineSet(setNumber: nextNumber, repetitions: 10),
+    ];
     _update();
   }
 
   void _removeSet(int index) {
     if (_sets.length == 1) {
-      AppSnackBar.showWarning(
-        context,
-        'Debe existir al menos una serie.',
-      );
+      AppSnackBar.showWarning(context, 'Debe existir al menos una serie.');
       return;
     }
     _sets = List<RoutineSet>.from(_sets)..removeAt(index);
@@ -76,6 +73,7 @@ class _RoutineSetEditorState extends State<RoutineSetEditor> {
                 _update();
               },
               onRemove: () => _removeSet(i),
+              previousReps: i > 0 ? _sets[i - 1].repetitions : null,
             ),
           ),
         TextButton.icon(
@@ -93,11 +91,13 @@ class _SetRow extends StatefulWidget {
     required this.set,
     required this.onChanged,
     required this.onRemove,
+    this.previousReps,
   });
 
   final RoutineSet set;
   final ValueChanged<RoutineSet> onChanged;
   final VoidCallback onRemove;
+  final int? previousReps;
 
   @override
   State<_SetRow> createState() => _SetRowState();
@@ -111,8 +111,12 @@ class _SetRowState extends State<_SetRow> {
   @override
   void initState() {
     super.initState();
-    _repsController = TextEditingController(text: widget.set.repetitions.toString());
-    _weightController = TextEditingController(text: widget.set.targetWeight?.toString() ?? '');
+    _repsController = TextEditingController(
+      text: widget.set.repetitions.toString(),
+    );
+    _weightController = TextEditingController(
+      text: widget.set.targetWeight?.toString() ?? '',
+    );
     _restController = TextEditingController(
       text: widget.set.restInterval?.inSeconds.toString() ?? '',
     );
@@ -124,6 +128,16 @@ class _SetRowState extends State<_SetRow> {
     _weightController.dispose();
     _restController.dispose();
     super.dispose();
+  }
+
+  void _applyRepSuggestion(int value) {
+    final int clamped = value.clamp(1, 100);
+    _repsController
+      ..text = clamped.toString()
+      ..selection = TextSelection.fromPosition(
+        TextPosition(offset: _repsController.text.length),
+      );
+    _emitUpdate();
   }
 
   void _emitUpdate() {
@@ -186,14 +200,26 @@ class _SetRowState extends State<_SetRow> {
     return Row(
       children: <Widget>[
         Expanded(
-          child: NumericInputField(
-            controller: _repsController,
-            labelText: 'Reps',
-            initialStep: 1,
-            stepOptions: const <double>[1, 5, 10],
-            min: 1,
-            max: 100,
-            onChanged: (_) => _emitUpdate(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              NumericInputField(
+                controller: _repsController,
+                labelText: 'Reps',
+                initialStep: 1,
+                stepOptions: const <double>[1, 5, 10],
+                min: 1,
+                max: 100,
+                onChanged: (_) => _emitUpdate(),
+              ),
+              if (widget.previousReps != null) ...[
+                const SizedBox(height: 6),
+                ActionChip(
+                  label: Text('Copiar ${widget.previousReps}'),
+                  onPressed: () => _applyRepSuggestion(widget.previousReps!),
+                ),
+              ],
+            ],
           ),
         ),
         const SizedBox(width: 12),

@@ -154,17 +154,11 @@ class BMICalculator extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.info.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: AppColors.info.withValues(alpha: 0.2),
-              ),
+              border: Border.all(color: AppColors.info.withValues(alpha: 0.2)),
             ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.info_outline,
-                  size: 18,
-                  color: AppColors.info,
-                ),
+                const Icon(Icons.info_outline, size: 18, color: AppColors.info),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -226,10 +220,7 @@ class BMICalculator extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: AppColors.white,
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.darkGray,
-                          width: 2,
-                        ),
+                        border: Border.all(color: AppColors.darkGray, width: 2),
                       ),
                     ),
                   ),

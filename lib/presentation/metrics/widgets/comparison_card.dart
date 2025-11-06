@@ -3,10 +3,7 @@ import 'package:my_fitness_tracker/presentation/metrics/models/metric_insights.d
 import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
 
 class ComparisonCard extends StatelessWidget {
-  const ComparisonCard({
-    super.key,
-    required this.metrics,
-  });
+  const ComparisonCard({super.key, required this.metrics});
 
   final List<ComparisonMetricData> metrics;
 
@@ -98,11 +95,7 @@ class _ComparisonItem extends StatelessWidget {
                   color: AppColors.textSecondary,
                 ),
               ),
-              Icon(
-                trendIcon,
-                color: trendColor,
-                size: 18,
-              ),
+              Icon(trendIcon, color: trendColor, size: 18),
             ],
           ),
           const SizedBox(height: 12),

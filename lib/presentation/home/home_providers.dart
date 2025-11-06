@@ -8,19 +8,11 @@ import 'package:my_fitness_tracker/infrastructure/routines/routine_repository_is
 import 'package:my_fitness_tracker/services/api_client.dart';
 import 'package:my_fitness_tracker/services/workout_service.dart';
 import 'package:my_fitness_tracker/application/timers/rest_timer_service.dart';
-import 'package:my_fitness_tracker/domain/metrics/metrics_entities.dart';
-import 'package:my_fitness_tracker/infrastructure/metrics/in_memory_metrics_repository.dart';
 
 final apiClientProvider = Provider<ApiClient>((Ref ref) {
   final client = ApiClient();
   ref.onDispose(client.close);
   return client;
-});
-
-final metricsRepositoryProvider = Provider<MetricsRepository>((Ref ref) {
-  final repository = InMemoryMetricsRepository();
-  ref.onDispose(repository.dispose);
-  return repository;
 });
 
 final restTimerEngineProvider = Provider<RestTimerEngine>((Ref ref) {

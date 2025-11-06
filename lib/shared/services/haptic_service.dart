@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vibration/vibration.dart';
 
@@ -54,19 +55,23 @@ class HapticService {
     if (kIsWeb) {
       return;
     }
-    if (!await _hasHapticSupport()) {
+    if (!await _hasHapticSupport(refresh: true)) {
       return;
     }
     final bool customAmplitude = await _hasCustomAmplitude();
-    if (customAmplitude) {
-      await _adapter.vibrate(duration: duration, amplitude: amplitude);
-    } else {
-      await _adapter.vibrate(duration: duration);
+    try {
+      if (customAmplitude) {
+        await _adapter.vibrate(duration: duration, amplitude: amplitude);
+      } else {
+        await _adapter.vibrate(duration: duration);
+      }
+    } on PlatformException catch (_) {
+      _supportsHaptics = false;
     }
   }
 
-  Future<bool> _hasHapticSupport() async {
-    if (_supportsHaptics != null) {
+  Future<bool> _hasHapticSupport({bool refresh = false}) async {
+    if (!refresh && _supportsHaptics != null) {
       return _supportsHaptics!;
     }
     final bool? hasVibrator = await _adapter.hasVibrator();

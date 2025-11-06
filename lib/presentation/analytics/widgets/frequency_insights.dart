@@ -75,7 +75,8 @@ class _FrequencyInsightsBody extends ConsumerWidget {
               return const EmptyStateWidget(
                 icon: Icons.calendar_today_outlined,
                 title: 'Sin datos de entrenamientos',
-                message: 'Empieza a registrar tus sesiones para ver el heatmap de consistencia.',
+                message:
+                    'Empieza a registrar tus sesiones para ver el heatmap de consistencia.',
               );
             }
 
@@ -186,8 +187,9 @@ class _HighlightCard extends StatelessWidget {
     }
     if (value >= 1000) {
       final double thousands = value / 1000;
-      final String formatted =
-          thousands >= 10 ? thousands.toStringAsFixed(0) : thousands.toStringAsFixed(1);
+      final String formatted = thousands >= 10
+          ? thousands.toStringAsFixed(0)
+          : thousands.toStringAsFixed(1);
       return '${formatted}k';
     }
     return value.toStringAsFixed(0);
@@ -215,7 +217,9 @@ class _StatTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.textTertiary.withValues(alpha: 0.15)),
+        border: Border.all(
+          color: AppColors.textTertiary.withValues(alpha: 0.15),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

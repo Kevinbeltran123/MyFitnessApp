@@ -57,10 +57,7 @@ class _NumericInputFieldState extends State<NumericInputField> {
   @override
   void initState() {
     super.initState();
-    assert(
-      widget.initialStep > 0,
-      'initialStep must be greater than zero',
-    );
+    assert(widget.initialStep > 0, 'initialStep must be greater than zero');
     assert(
       widget.stepOptions == null || widget.stepOptions!.isNotEmpty,
       'stepOptions cannot be empty',
@@ -72,10 +69,9 @@ class _NumericInputFieldState extends State<NumericInputField> {
     );
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(_handleFocusChange);
-    _currentStep =
-        widget.stepOptions != null && widget.stepOptions!.isNotEmpty
-            ? widget.stepOptions!.first
-            : widget.initialStep;
+    _currentStep = widget.stepOptions != null && widget.stepOptions!.isNotEmpty
+        ? widget.stepOptions!.first
+        : widget.initialStep;
   }
 
   @override
@@ -92,10 +88,9 @@ class _NumericInputFieldState extends State<NumericInputField> {
     if (widget.stepOptions != oldWidget.stepOptions &&
         widget.stepOptions != null &&
         widget.stepOptions!.isNotEmpty) {
-      final double preferred =
-          widget.stepOptions!.contains(_currentStep)
-              ? _currentStep
-              : widget.stepOptions!.first;
+      final double preferred = widget.stepOptions!.contains(_currentStep)
+          ? _currentStep
+          : widget.stepOptions!.first;
       setState(() {
         _currentStep = preferred;
       });
@@ -202,9 +197,7 @@ class _NumericInputFieldState extends State<NumericInputField> {
                     : TextInputType.number,
                 inputFormatters: <TextInputFormatter>[
                   FilteringTextInputFormatter.allow(
-                    widget.decimal
-                        ? RegExp(r'[0-9.,]')
-                        : RegExp(r'[0-9]'),
+                    widget.decimal ? RegExp(r'[0-9.,]') : RegExp(r'[0-9]'),
                   ),
                 ],
                 validator: widget.validator,
@@ -233,12 +226,12 @@ class _NumericInputFieldState extends State<NumericInputField> {
                       selected: _currentStep == step,
                       onSelected: widget.enabled
                           ? (bool selected) {
-                            if (selected) {
-                              setState(() {
-                                _currentStep = step;
-                              });
+                              if (selected) {
+                                setState(() {
+                                  _currentStep = step;
+                                });
+                              }
                             }
-                          }
                           : null,
                     ),
                   )
@@ -283,10 +276,7 @@ class _AdjustButton extends StatelessWidget {
     return Material(
       color: enabled ? AppColors.lightGray : AppColors.veryLightGray,
       shape: const CircleBorder(),
-      child: IconButton(
-        onPressed: enabled ? onTap : null,
-        icon: Icon(icon),
-      ),
+      child: IconButton(onPressed: enabled ? onTap : null, icon: Icon(icon)),
     );
   }
 }

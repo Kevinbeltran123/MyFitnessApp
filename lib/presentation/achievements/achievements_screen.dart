@@ -20,8 +20,10 @@ class AchievementsScreen extends ConsumerWidget {
     final milestone = ref.watch(streakMilestoneProvider);
     final highlightId = ref.watch(latestUnlockedAchievementProvider);
 
-    ref.listen<AsyncValue<List<Achievement>>>(achievementsProvider,
-        (previous, next) {
+    ref.listen<AsyncValue<List<Achievement>>>(achievementsProvider, (
+      previous,
+      next,
+    ) {
       if (!next.hasValue) {
         return;
       }
@@ -37,14 +39,16 @@ class AchievementsScreen extends ConsumerWidget {
         return;
       }
 
-      final String? newId = unlockedIds
-          .firstWhereOrNull((id) => !seenNotifier.state.contains(id));
+      final String? newId = unlockedIds.firstWhereOrNull(
+        (id) => !seenNotifier.state.contains(id),
+      );
 
       if (newId != null) {
         seenNotifier.state = {...seenNotifier.state, newId};
         ref.read(latestUnlockedAchievementProvider.notifier).state = newId;
-        final Achievement achievement =
-            achievements.firstWhere((item) => item.id == newId);
+        final Achievement achievement = achievements.firstWhere(
+          (item) => item.id == newId,
+        );
         WidgetsBinding.instance.addPostFrameCallback((_) {
           showAchievementUnlockModal(context, achievement).whenComplete(() {
             ref.read(latestUnlockedAchievementProvider.notifier).state = null;
@@ -54,9 +58,7 @@ class AchievementsScreen extends ConsumerWidget {
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Logros'),
-      ),
+      appBar: AppBar(title: const Text('Logros')),
       body: achievementsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => ErrorStateWidget(
@@ -108,7 +110,9 @@ class _AchievementsContent extends StatelessWidget {
       );
     }
 
-    final unlocked = achievements.where((achievement) => achievement.isUnlocked()).length;
+    final unlocked = achievements
+        .where((achievement) => achievement.isUnlocked())
+        .length;
 
     return RefreshIndicator(
       onRefresh: onRefresh,
@@ -138,15 +142,16 @@ class _AchievementsContent extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.local_fire_department_outlined,
-                              color: AppColors.textSecondary),
+                          const Icon(
+                            Icons.local_fire_department_outlined,
+                            color: AppColors.textSecondary,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'Comienza a registrar tus sesiones para construir una racha.',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: AppColors.textSecondary),
                             ),
                           ),
                         ],
@@ -156,9 +161,9 @@ class _AchievementsContent extends StatelessWidget {
                   Text(
                     'Has desbloqueado $unlocked de ${achievements.length} logros',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary,
-                        ),
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -173,68 +178,67 @@ class _AchievementsContent extends StatelessWidget {
                 crossAxisSpacing: 16,
                 childAspectRatio: 0.8,
               ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final achievement = achievements[index];
-                  final bool unlocked = achievement.isUnlocked();
-                  final double progress = achievement.progress();
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final achievement = achievements[index];
+                final bool unlocked = achievement.isUnlocked();
+                final double progress = achievement.progress();
 
-                  return Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: AppColors.textTertiary.withValues(alpha: 0.15),
-                      ),
+                return Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(
+                      color: AppColors.textTertiary.withValues(alpha: 0.15),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          AchievementBadge(
-                            achievement: achievement,
-                            showProgress: !unlocked,
-                            highlight: highlightedAchievementId == achievement.id,
-                            size: 72,
-                          ),
-                          Column(
-                            children: [
-                              Text(
-                                achievement.description,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
-                              ),
-                              const SizedBox(height: 8),
-                              LinearProgressIndicator(
-                                value: unlocked ? 1 : progress,
-                                minHeight: 6,
-                                backgroundColor: AppColors.veryLightGray,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  unlocked ? AppColors.success : AppColors.accentBlue,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        AchievementBadge(
+                          achievement: achievement,
+                          showProgress: !unlocked,
+                          highlight: highlightedAchievementId == achievement.id,
+                          size: 72,
+                        ),
+                        Column(
+                          children: [
+                            Text(
+                              achievement.description,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.textSecondary),
+                            ),
+                            const SizedBox(height: 8),
+                            LinearProgressIndicator(
+                              value: unlocked ? 1 : progress,
+                              minHeight: 6,
+                              backgroundColor: AppColors.veryLightGray,
+                              valueColor: AlwaysStoppedAnimation<Color>(
                                 unlocked
-                                    ? 'Logro desbloqueado'
-                                    : 'Progreso ${(progress * 100).clamp(0, 100).toStringAsFixed(0)}%',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: AppColors.textSecondary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                    ? AppColors.success
+                                    : AppColors.accentBlue,
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              unlocked
+                                  ? 'Logro desbloqueado'
+                                  : 'Progreso ${(progress * 100).clamp(0, 100).toStringAsFixed(0)}%',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  );
-                },
-                childCount: achievements.length,
-              ),
+                  ),
+                );
+              }, childCount: achievements.length),
             ),
           ),
         ],

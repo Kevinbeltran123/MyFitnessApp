@@ -3,10 +3,7 @@ import 'package:my_fitness_tracker/presentation/metrics/models/metric_insights.d
 import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
 
 class TrendIndicator extends StatelessWidget {
-  const TrendIndicator({
-    super.key,
-    required this.insights,
-  });
+  const TrendIndicator({super.key, required this.insights});
 
   final TrendInsights insights;
 
@@ -38,10 +35,7 @@ class TrendIndicator extends StatelessWidget {
                   color: AppColors.textPrimary,
                 ),
               ),
-              Icon(
-                trendIcon,
-                color: trendColor,
-              ),
+              Icon(trendIcon, color: trendColor),
             ],
           ),
           const SizedBox(height: 12),
@@ -120,10 +114,7 @@ class TrendIndicator extends StatelessWidget {
 }
 
 class _TrendSparklinePainter extends CustomPainter {
-  _TrendSparklinePainter({
-    required this.points,
-    required this.color,
-  });
+  _TrendSparklinePainter({required this.points, required this.color});
 
   final List<double> points;
   final Color color;

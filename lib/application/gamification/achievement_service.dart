@@ -18,12 +18,12 @@ class AchievementService {
     required PersonalRecordService personalRecordService,
     required StreakTracker streakTracker,
     AchievementCatalog? catalog,
-  })  : _routineRepository = routineRepository,
-        _sessionRepository = sessionRepository,
-        _metricsRepository = metricsRepository,
-        _personalRecordService = personalRecordService,
-        _streakTracker = streakTracker,
-        _catalog = catalog ?? kAchievementCatalog;
+  }) : _routineRepository = routineRepository,
+       _sessionRepository = sessionRepository,
+       _metricsRepository = metricsRepository,
+       _personalRecordService = personalRecordService,
+       _streakTracker = streakTracker,
+       _catalog = catalog ?? kAchievementCatalog;
 
   final RoutineRepository _routineRepository;
   final SessionRepository _sessionRepository;
@@ -33,14 +33,15 @@ class AchievementService {
   final AchievementCatalog _catalog;
 
   Future<List<Achievement>> evaluateAchievements({DateTime? anchor}) async {
-    final List<RoutineSession> sessions =
-        await _sessionRepository.getAllSessions();
+    final List<RoutineSession> sessions = await _sessionRepository
+        .getAllSessions();
     final List<Routine> routines = await _loadRoutines();
     final List<BodyMetric> metrics = await _loadMetrics();
-    final List<PersonalRecord> personalRecords =
-        await _personalRecordService.loadPersonalRecords();
-    final StreakSnapshot streakSnapshot =
-        await _streakTracker.buildSnapshot(anchor: anchor);
+    final List<PersonalRecord> personalRecords = await _personalRecordService
+        .loadPersonalRecords();
+    final StreakSnapshot streakSnapshot = await _streakTracker.buildSnapshot(
+      anchor: anchor,
+    );
 
     final double totalVolume = _calculateTotalVolume(sessions);
     final int totalSessions = sessions.length;
@@ -78,13 +79,18 @@ class AchievementService {
   double _calculateTotalVolume(List<RoutineSession> sessions) {
     return sessions.fold<double>(
       0,
-      (total, session) => total + session.exerciseLogs.fold<double>(
-        0,
-        (subTotal, log) => subTotal + log.setLogs.fold<double>(
-              0,
-              (setTotal, set) => setTotal + max(0, set.weight) * set.repetitions,
-            ),
-      ),
+      (total, session) =>
+          total +
+          session.exerciseLogs.fold<double>(
+            0,
+            (subTotal, log) =>
+                subTotal +
+                log.setLogs.fold<double>(
+                  0,
+                  (setTotal, set) =>
+                      setTotal + max(0, set.weight) * set.repetitions,
+                ),
+          ),
     );
   }
 }
@@ -106,10 +112,12 @@ _MetricProgress _calculateMetricProgress(List<BodyMetric> metrics) {
 
   final double weightLoss = max(0, oldest.weightKg - latest.weightKg);
 
-  final BodyMetric? latestMuscle =
-      metrics.firstWhereOrNull((metric) => metric.muscleMassKg != null);
-  final BodyMetric? oldestMuscle =
-      metrics.lastWhereOrNull((metric) => metric.muscleMassKg != null);
+  final BodyMetric? latestMuscle = metrics.firstWhereOrNull(
+    (metric) => metric.muscleMassKg != null,
+  );
+  final BodyMetric? oldestMuscle = metrics.lastWhereOrNull(
+    (metric) => metric.muscleMassKg != null,
+  );
 
   double muscleGain = 0;
   if (latestMuscle != null && oldestMuscle != null) {

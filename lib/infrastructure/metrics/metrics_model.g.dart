@@ -42,11 +42,7 @@ const BodyMetricModelSchema = CollectionSchema(
       name: r'muscleMassKg',
       type: IsarType.double,
     ),
-    r'notes': PropertySchema(
-      id: 5,
-      name: r'notes',
-      type: IsarType.string,
-    ),
+    r'notes': PropertySchema(id: 5, name: r'notes', type: IsarType.string),
     r'recordedAt': PropertySchema(
       id: 6,
       name: r'recordedAt',
@@ -56,7 +52,7 @@ const BodyMetricModelSchema = CollectionSchema(
       id: 7,
       name: r'weightKg',
       type: IsarType.double,
-    )
+    ),
   },
   estimateSize: _bodyMetricModelEstimateSize,
   serialize: _bodyMetricModelSerialize,
@@ -74,7 +70,7 @@ const BodyMetricModelSchema = CollectionSchema(
           name: r'metricId',
           type: IndexType.hash,
           caseSensitive: true,
-        )
+        ),
       ],
     ),
     r'recordedAt': IndexSchema(
@@ -87,9 +83,9 @@ const BodyMetricModelSchema = CollectionSchema(
           name: r'recordedAt',
           type: IndexType.value,
           caseSensitive: false,
-        )
+        ),
       ],
-    )
+    ),
   },
   links: {},
   embeddedSchemas: {},
@@ -195,7 +191,10 @@ List<IsarLinkBase<dynamic>> _bodyMetricModelGetLinks(BodyMetricModel object) {
 }
 
 void _bodyMetricModelAttach(
-    IsarCollection<dynamic> col, Id id, BodyMetricModel object) {
+  IsarCollection<dynamic> col,
+  Id id,
+  BodyMetricModel object,
+) {
   object.id = id;
 }
 
@@ -248,8 +247,10 @@ extension BodyMetricModelByIndex on IsarCollection<BodyMetricModel> {
     return putAllByIndex(r'metricId', objects);
   }
 
-  List<Id> putAllByMetricIdSync(List<BodyMetricModel> objects,
-      {bool saveLinks = true}) {
+  List<Id> putAllByMetricIdSync(
+    List<BodyMetricModel> objects, {
+    bool saveLinks = true,
+  }) {
     return putAllByIndexSync(r'metricId', objects, saveLinks: saveLinks);
   }
 }
@@ -274,17 +275,15 @@ extension BodyMetricModelQueryWhereSort
 extension BodyMetricModelQueryWhere
     on QueryBuilder<BodyMetricModel, BodyMetricModel, QWhereClause> {
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterWhereClause> idEqualTo(
-      Id id) {
+    Id id,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
+      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterWhereClause>
-      idNotEqualTo(Id id) {
+  idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -307,7 +306,7 @@ extension BodyMetricModelQueryWhere
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterWhereClause>
-      idGreaterThan(Id id, {bool include = false}) {
+  idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -316,8 +315,9 @@ extension BodyMetricModelQueryWhere
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterWhereClause> idLessThan(
-      Id id,
-      {bool include = false}) {
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -332,150 +332,166 @@ extension BodyMetricModelQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerId,
+          includeLower: includeLower,
+          upper: upperId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterWhereClause>
-      metricIdEqualTo(String metricId) {
+  metricIdEqualTo(String metricId) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'metricId',
-        value: [metricId],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'metricId', value: [metricId]),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterWhereClause>
-      metricIdNotEqualTo(String metricId) {
+  metricIdNotEqualTo(String metricId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'metricId',
-              lower: [],
-              upper: [metricId],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'metricId',
-              lower: [metricId],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'metricId',
+                lower: [],
+                upper: [metricId],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'metricId',
+                lower: [metricId],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'metricId',
-              lower: [metricId],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'metricId',
-              lower: [],
-              upper: [metricId],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'metricId',
+                lower: [metricId],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'metricId',
+                lower: [],
+                upper: [metricId],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterWhereClause>
-      recordedAtEqualTo(DateTime recordedAt) {
+  recordedAtEqualTo(DateTime recordedAt) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'recordedAt',
-        value: [recordedAt],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'recordedAt', value: [recordedAt]),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterWhereClause>
-      recordedAtNotEqualTo(DateTime recordedAt) {
+  recordedAtNotEqualTo(DateTime recordedAt) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordedAt',
-              lower: [],
-              upper: [recordedAt],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordedAt',
-              lower: [recordedAt],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordedAt',
+                lower: [],
+                upper: [recordedAt],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordedAt',
+                lower: [recordedAt],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordedAt',
-              lower: [recordedAt],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordedAt',
-              lower: [],
-              upper: [recordedAt],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordedAt',
+                lower: [recordedAt],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordedAt',
+                lower: [],
+                upper: [recordedAt],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterWhereClause>
-      recordedAtGreaterThan(
-    DateTime recordedAt, {
-    bool include = false,
-  }) {
+  recordedAtGreaterThan(DateTime recordedAt, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'recordedAt',
-        lower: [recordedAt],
-        includeLower: include,
-        upper: [],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'recordedAt',
+          lower: [recordedAt],
+          includeLower: include,
+          upper: [],
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterWhereClause>
-      recordedAtLessThan(
-    DateTime recordedAt, {
-    bool include = false,
-  }) {
+  recordedAtLessThan(DateTime recordedAt, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'recordedAt',
-        lower: [],
-        upper: [recordedAt],
-        includeUpper: include,
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'recordedAt',
+          lower: [],
+          upper: [recordedAt],
+          includeUpper: include,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterWhereClause>
-      recordedAtBetween(
+  recordedAtBetween(
     DateTime lowerRecordedAt,
     DateTime upperRecordedAt, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.between(
-        indexName: r'recordedAt',
-        lower: [lowerRecordedAt],
-        includeLower: includeLower,
-        upper: [upperRecordedAt],
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'recordedAt',
+          lower: [lowerRecordedAt],
+          includeLower: includeLower,
+          upper: [upperRecordedAt],
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -483,71 +499,74 @@ extension BodyMetricModelQueryWhere
 extension BodyMetricModelQueryFilter
     on QueryBuilder<BodyMetricModel, BodyMetricModel, QFilterCondition> {
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      bodyFatPercentageIsNull() {
+  bodyFatPercentageIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'bodyFatPercentage',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'bodyFatPercentage'),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      bodyFatPercentageIsNotNull() {
+  bodyFatPercentageIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'bodyFatPercentage',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'bodyFatPercentage'),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      bodyFatPercentageEqualTo(
-    double? value, {
-    double epsilon = Query.epsilon,
-  }) {
+  bodyFatPercentageEqualTo(double? value, {double epsilon = Query.epsilon}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'bodyFatPercentage',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'bodyFatPercentage',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      bodyFatPercentageGreaterThan(
-    double? value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'bodyFatPercentage',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      bodyFatPercentageLessThan(
+  bodyFatPercentageGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'bodyFatPercentage',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'bodyFatPercentage',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      bodyFatPercentageBetween(
+  bodyFatPercentageLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'bodyFatPercentage',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
+  bodyFatPercentageBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -555,121 +574,125 @@ extension BodyMetricModelQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'bodyFatPercentage',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'bodyFatPercentage',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      idEqualTo(Id value) {
+  idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: value),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      idGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+  idGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      idLessThan(
-    Id value, {
-    bool include = false,
-  }) {
+  idLessThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      idBetween(
+  idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysElementEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  measurementKeysElementEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'measurementKeys',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'measurementKeys',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysElementGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'measurementKeys',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysElementLessThan(
+  measurementKeysElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'measurementKeys',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'measurementKeys',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysElementBetween(
+  measurementKeysElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'measurementKeys',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
+  measurementKeysElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -677,149 +700,119 @@ extension BodyMetricModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'measurementKeys',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysElementStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'measurementKeys',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysElementEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'measurementKeys',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysElementContains(String value,
-          {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'measurementKeys',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysElementMatches(String pattern,
-          {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'measurementKeys',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysElementIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'measurementKeys',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysElementIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'measurementKeys',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'measurementKeys',
-        length,
-        true,
-        length,
-        true,
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'measurementKeys',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysIsEmpty() {
+  measurementKeysElementStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'measurementKeys',
-        0,
-        true,
-        0,
-        true,
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'measurementKeys',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysIsNotEmpty() {
+  measurementKeysElementEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'measurementKeys',
-        0,
-        false,
-        999999,
-        true,
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'measurementKeys',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
+  measurementKeysElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'measurementKeys',
-        0,
-        true,
-        length,
-        include,
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'measurementKeys',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
+  measurementKeysElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'measurementKeys',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
+  measurementKeysElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'measurementKeys', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
+  measurementKeysElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'measurementKeys', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
+  measurementKeysLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'measurementKeys', length, true, length, true);
+    });
+  }
+
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
+  measurementKeysIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'measurementKeys', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
+  measurementKeysIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'measurementKeys', 0, false, 999999, true);
+    });
+  }
+
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
+  measurementKeysLengthLessThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'measurementKeys', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
+  measurementKeysLengthGreaterThan(int length, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
         r'measurementKeys',
@@ -832,7 +825,7 @@ extension BodyMetricModelQueryFilter
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementKeysLengthBetween(
+  measurementKeysLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -850,53 +843,59 @@ extension BodyMetricModelQueryFilter
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementValuesElementEqualTo(
+  measurementValuesElementEqualTo(
     double value, {
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'measurementValues',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'measurementValues',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementValuesElementGreaterThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'measurementValues',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementValuesElementLessThan(
+  measurementValuesElementGreaterThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'measurementValues',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'measurementValues',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementValuesElementBetween(
+  measurementValuesElementLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'measurementValues',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
+  measurementValuesElementBetween(
     double lower,
     double upper, {
     bool includeLower = true,
@@ -904,77 +903,49 @@ extension BodyMetricModelQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'measurementValues',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementValuesLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'measurementValues',
-        length,
-        true,
-        length,
-        true,
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'measurementValues',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          epsilon: epsilon,
+        ),
       );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementValuesIsEmpty() {
+  measurementValuesLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'measurementValues',
-        0,
-        true,
-        0,
-        true,
-      );
+      return query.listLength(r'measurementValues', length, true, length, true);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementValuesIsNotEmpty() {
+  measurementValuesIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'measurementValues',
-        0,
-        false,
-        999999,
-        true,
-      );
+      return query.listLength(r'measurementValues', 0, true, 0, true);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementValuesLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
+  measurementValuesIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'measurementValues',
-        0,
-        true,
-        length,
-        include,
-      );
+      return query.listLength(r'measurementValues', 0, false, 999999, true);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementValuesLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
+  measurementValuesLengthLessThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'measurementValues', 0, true, length, include);
+    });
+  }
+
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
+  measurementValuesLengthGreaterThan(int length, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
         r'measurementValues',
@@ -987,7 +958,7 @@ extension BodyMetricModelQueryFilter
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      measurementValuesLengthBetween(
+  measurementValuesLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -1005,53 +976,56 @@ extension BodyMetricModelQueryFilter
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      metricIdEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  metricIdEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'metricId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'metricId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      metricIdGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'metricId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      metricIdLessThan(
+  metricIdGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'metricId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'metricId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      metricIdBetween(
+  metricIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'metricId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
+  metricIdBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1059,153 +1033,158 @@ extension BodyMetricModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'metricId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'metricId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      metricIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  metricIdStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'metricId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'metricId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      metricIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  metricIdEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'metricId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'metricId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      metricIdContains(String value, {bool caseSensitive = true}) {
+  metricIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'metricId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'metricId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      metricIdMatches(String pattern, {bool caseSensitive = true}) {
+  metricIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'metricId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'metricId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      metricIdIsEmpty() {
+  metricIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'metricId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'metricId', value: ''),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      metricIdIsNotEmpty() {
+  metricIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'metricId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'metricId', value: ''),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      muscleMassKgIsNull() {
+  muscleMassKgIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'muscleMassKg',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'muscleMassKg'),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      muscleMassKgIsNotNull() {
+  muscleMassKgIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'muscleMassKg',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'muscleMassKg'),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      muscleMassKgEqualTo(
-    double? value, {
-    double epsilon = Query.epsilon,
-  }) {
+  muscleMassKgEqualTo(double? value, {double epsilon = Query.epsilon}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'muscleMassKg',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'muscleMassKg',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      muscleMassKgGreaterThan(
-    double? value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'muscleMassKg',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      muscleMassKgLessThan(
+  muscleMassKgGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'muscleMassKg',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'muscleMassKg',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      muscleMassKgBetween(
+  muscleMassKgLessThan(
+    double? value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'muscleMassKg',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
+  muscleMassKgBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -1213,83 +1192,88 @@ extension BodyMetricModelQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'muscleMassKg',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'muscleMassKg',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      notesIsNull() {
+  notesIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'notes',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'notes'),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      notesIsNotNull() {
+  notesIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'notes',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'notes'),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      notesEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  notesEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'notes',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      notesGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      notesLessThan(
+  notesGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'notes',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      notesBetween(
+  notesLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'notes',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
+  notesBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -1297,191 +1281,195 @@ extension BodyMetricModelQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'notes',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'notes',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      notesStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  notesStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'notes',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      notesEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  notesEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'notes',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      notesContains(String value, {bool caseSensitive = true}) {
+  notesContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'notes',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'notes',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      notesMatches(String pattern, {bool caseSensitive = true}) {
+  notesMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'notes',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'notes',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      notesIsEmpty() {
+  notesIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'notes',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'notes', value: ''),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      notesIsNotEmpty() {
+  notesIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'notes',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'notes', value: ''),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      recordedAtEqualTo(DateTime value) {
+  recordedAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'recordedAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'recordedAt', value: value),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      recordedAtGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  recordedAtGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'recordedAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'recordedAt',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      recordedAtLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  recordedAtLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'recordedAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'recordedAt',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      recordedAtBetween(
+  recordedAtBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'recordedAt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'recordedAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      weightKgEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
-  }) {
+  weightKgEqualTo(double value, {double epsilon = Query.epsilon}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'weightKg',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'weightKg',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      weightKgGreaterThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'weightKg',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      weightKgLessThan(
+  weightKgGreaterThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'weightKg',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'weightKg',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
-      weightKgBetween(
+  weightKgLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'weightKg',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterFilterCondition>
+  weightKgBetween(
     double lower,
     double upper, {
     bool includeLower = true,
@@ -1489,14 +1477,16 @@ extension BodyMetricModelQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'weightKg',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'weightKg',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 }
@@ -1510,42 +1500,42 @@ extension BodyMetricModelQueryLinks
 extension BodyMetricModelQuerySortBy
     on QueryBuilder<BodyMetricModel, BodyMetricModel, QSortBy> {
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      sortByBodyFatPercentage() {
+  sortByBodyFatPercentage() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'bodyFatPercentage', Sort.asc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      sortByBodyFatPercentageDesc() {
+  sortByBodyFatPercentageDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'bodyFatPercentage', Sort.desc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      sortByMetricId() {
+  sortByMetricId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'metricId', Sort.asc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      sortByMetricIdDesc() {
+  sortByMetricIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'metricId', Sort.desc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      sortByMuscleMassKg() {
+  sortByMuscleMassKg() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'muscleMassKg', Sort.asc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      sortByMuscleMassKgDesc() {
+  sortByMuscleMassKgDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'muscleMassKg', Sort.desc);
     });
@@ -1558,35 +1548,35 @@ extension BodyMetricModelQuerySortBy
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      sortByNotesDesc() {
+  sortByNotesDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'notes', Sort.desc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      sortByRecordedAt() {
+  sortByRecordedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'recordedAt', Sort.asc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      sortByRecordedAtDesc() {
+  sortByRecordedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'recordedAt', Sort.desc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      sortByWeightKg() {
+  sortByWeightKg() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'weightKg', Sort.asc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      sortByWeightKgDesc() {
+  sortByWeightKgDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'weightKg', Sort.desc);
     });
@@ -1596,14 +1586,14 @@ extension BodyMetricModelQuerySortBy
 extension BodyMetricModelQuerySortThenBy
     on QueryBuilder<BodyMetricModel, BodyMetricModel, QSortThenBy> {
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      thenByBodyFatPercentage() {
+  thenByBodyFatPercentage() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'bodyFatPercentage', Sort.asc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      thenByBodyFatPercentageDesc() {
+  thenByBodyFatPercentageDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'bodyFatPercentage', Sort.desc);
     });
@@ -1622,28 +1612,28 @@ extension BodyMetricModelQuerySortThenBy
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      thenByMetricId() {
+  thenByMetricId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'metricId', Sort.asc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      thenByMetricIdDesc() {
+  thenByMetricIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'metricId', Sort.desc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      thenByMuscleMassKg() {
+  thenByMuscleMassKg() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'muscleMassKg', Sort.asc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      thenByMuscleMassKgDesc() {
+  thenByMuscleMassKgDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'muscleMassKg', Sort.desc);
     });
@@ -1656,35 +1646,35 @@ extension BodyMetricModelQuerySortThenBy
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      thenByNotesDesc() {
+  thenByNotesDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'notes', Sort.desc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      thenByRecordedAt() {
+  thenByRecordedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'recordedAt', Sort.asc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      thenByRecordedAtDesc() {
+  thenByRecordedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'recordedAt', Sort.desc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      thenByWeightKg() {
+  thenByWeightKg() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'weightKg', Sort.asc);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QAfterSortBy>
-      thenByWeightKgDesc() {
+  thenByWeightKgDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'weightKg', Sort.desc);
     });
@@ -1694,56 +1684,58 @@ extension BodyMetricModelQuerySortThenBy
 extension BodyMetricModelQueryWhereDistinct
     on QueryBuilder<BodyMetricModel, BodyMetricModel, QDistinct> {
   QueryBuilder<BodyMetricModel, BodyMetricModel, QDistinct>
-      distinctByBodyFatPercentage() {
+  distinctByBodyFatPercentage() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'bodyFatPercentage');
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QDistinct>
-      distinctByMeasurementKeys() {
+  distinctByMeasurementKeys() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'measurementKeys');
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QDistinct>
-      distinctByMeasurementValues() {
+  distinctByMeasurementValues() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'measurementValues');
     });
   }
 
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QDistinct> distinctByMetricId(
-      {bool caseSensitive = true}) {
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QDistinct> distinctByMetricId({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'metricId', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QDistinct>
-      distinctByMuscleMassKg() {
+  distinctByMuscleMassKg() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'muscleMassKg');
     });
   }
 
-  QueryBuilder<BodyMetricModel, BodyMetricModel, QDistinct> distinctByNotes(
-      {bool caseSensitive = true}) {
+  QueryBuilder<BodyMetricModel, BodyMetricModel, QDistinct> distinctByNotes({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'notes', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QDistinct>
-      distinctByRecordedAt() {
+  distinctByRecordedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'recordedAt');
     });
   }
 
   QueryBuilder<BodyMetricModel, BodyMetricModel, QDistinct>
-      distinctByWeightKg() {
+  distinctByWeightKg() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'weightKg');
     });
@@ -1759,21 +1751,21 @@ extension BodyMetricModelQueryProperty
   }
 
   QueryBuilder<BodyMetricModel, double?, QQueryOperations>
-      bodyFatPercentageProperty() {
+  bodyFatPercentageProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'bodyFatPercentage');
     });
   }
 
   QueryBuilder<BodyMetricModel, List<String>, QQueryOperations>
-      measurementKeysProperty() {
+  measurementKeysProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'measurementKeys');
     });
   }
 
   QueryBuilder<BodyMetricModel, List<double>, QQueryOperations>
-      measurementValuesProperty() {
+  measurementValuesProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'measurementValues');
     });
@@ -1786,7 +1778,7 @@ extension BodyMetricModelQueryProperty
   }
 
   QueryBuilder<BodyMetricModel, double?, QQueryOperations>
-      muscleMassKgProperty() {
+  muscleMassKgProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'muscleMassKg');
     });
@@ -1799,7 +1791,7 @@ extension BodyMetricModelQueryProperty
   }
 
   QueryBuilder<BodyMetricModel, DateTime, QQueryOperations>
-      recordedAtProperty() {
+  recordedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'recordedAt');
     });
@@ -1829,11 +1821,7 @@ const MetabolicProfileModelSchema = CollectionSchema(
       name: r'activityMultiplier',
       type: IsarType.double,
     ),
-    r'age': PropertySchema(
-      id: 1,
-      name: r'age',
-      type: IsarType.long,
-    ),
+    r'age': PropertySchema(id: 1, name: r'age', type: IsarType.long),
     r'heightCm': PropertySchema(
       id: 2,
       name: r'heightCm',
@@ -1864,7 +1852,7 @@ const MetabolicProfileModelSchema = CollectionSchema(
       id: 7,
       name: r'weightKg',
       type: IsarType.double,
-    )
+    ),
   },
   estimateSize: _metabolicProfileModelEstimateSize,
   serialize: _metabolicProfileModelSerialize,
@@ -1882,9 +1870,9 @@ const MetabolicProfileModelSchema = CollectionSchema(
           name: r'profileId',
           type: IndexType.hash,
           caseSensitive: true,
-        )
+        ),
       ],
-    )
+    ),
   },
   links: {},
   embeddedSchemas: {},
@@ -1939,8 +1927,10 @@ MetabolicProfileModel _metabolicProfileModelDeserialize(
   object.id = id;
   object.profileId = reader.readString(offsets[3]);
   object.profileImagePath = reader.readStringOrNull(offsets[4]);
-  object.sex = _MetabolicProfileModelsexValueEnumMap[
-          reader.readByteOrNull(offsets[5])] ??
+  object.sex =
+      _MetabolicProfileModelsexValueEnumMap[reader.readByteOrNull(
+        offsets[5],
+      )] ??
       BiologicalSex.male;
   object.updatedAt = reader.readDateTime(offsets[6]);
   object.weightKg = reader.readDouble(offsets[7]);
@@ -1965,9 +1955,11 @@ P _metabolicProfileModelDeserializeProp<P>(
     case 4:
       return (reader.readStringOrNull(offset)) as P;
     case 5:
-      return (_MetabolicProfileModelsexValueEnumMap[
-              reader.readByteOrNull(offset)] ??
-          BiologicalSex.male) as P;
+      return (_MetabolicProfileModelsexValueEnumMap[reader.readByteOrNull(
+                offset,
+              )] ??
+              BiologicalSex.male)
+          as P;
     case 6:
       return (reader.readDateTime(offset)) as P;
     case 7:
@@ -1993,12 +1985,16 @@ Id _metabolicProfileModelGetId(MetabolicProfileModel object) {
 }
 
 List<IsarLinkBase<dynamic>> _metabolicProfileModelGetLinks(
-    MetabolicProfileModel object) {
+  MetabolicProfileModel object,
+) {
   return [];
 }
 
 void _metabolicProfileModelAttach(
-    IsarCollection<dynamic> col, Id id, MetabolicProfileModel object) {
+  IsarCollection<dynamic> col,
+  Id id,
+  MetabolicProfileModel object,
+) {
   object.id = id;
 }
 
@@ -2021,13 +2017,15 @@ extension MetabolicProfileModelByIndex
   }
 
   Future<List<MetabolicProfileModel?>> getAllByProfileId(
-      List<String> profileIdValues) {
+    List<String> profileIdValues,
+  ) {
     final values = profileIdValues.map((e) => [e]).toList();
     return getAllByIndex(r'profileId', values);
   }
 
   List<MetabolicProfileModel?> getAllByProfileIdSync(
-      List<String> profileIdValues) {
+    List<String> profileIdValues,
+  ) {
     final values = profileIdValues.map((e) => [e]).toList();
     return getAllByIndexSync(r'profileId', values);
   }
@@ -2054,8 +2052,10 @@ extension MetabolicProfileModelByIndex
     return putAllByIndex(r'profileId', objects);
   }
 
-  List<Id> putAllByProfileIdSync(List<MetabolicProfileModel> objects,
-      {bool saveLinks = true}) {
+  List<Id> putAllByProfileIdSync(
+    List<MetabolicProfileModel> objects, {
+    bool saveLinks = true,
+  }) {
     return putAllByIndexSync(r'profileId', objects, saveLinks: saveLinks);
   }
 }
@@ -2063,27 +2063,29 @@ extension MetabolicProfileModelByIndex
 extension MetabolicProfileModelQueryWhereSort
     on QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QWhere> {
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterWhere>
-      anyId() {
+  anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 }
 
-extension MetabolicProfileModelQueryWhere on QueryBuilder<MetabolicProfileModel,
-    MetabolicProfileModel, QWhereClause> {
+extension MetabolicProfileModelQueryWhere
+    on
+        QueryBuilder<
+          MetabolicProfileModel,
+          MetabolicProfileModel,
+          QWhereClause
+        > {
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterWhereClause>
-      idEqualTo(Id id) {
+  idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
+      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterWhereClause>
-      idNotEqualTo(Id id) {
+  idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -2106,7 +2108,7 @@ extension MetabolicProfileModelQueryWhere on QueryBuilder<MetabolicProfileModel,
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterWhereClause>
-      idGreaterThan(Id id, {bool include = false}) {
+  idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -2115,7 +2117,7 @@ extension MetabolicProfileModelQueryWhere on QueryBuilder<MetabolicProfileModel,
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterWhereClause>
-      idLessThan(Id id, {bool include = false}) {
+  idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -2124,118 +2126,151 @@ extension MetabolicProfileModelQueryWhere on QueryBuilder<MetabolicProfileModel,
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterWhereClause>
-      idBetween(
+  idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerId,
+          includeLower: includeLower,
+          upper: upperId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterWhereClause>
-      profileIdEqualTo(String profileId) {
+  profileIdEqualTo(String profileId) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'profileId',
-        value: [profileId],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'profileId', value: [profileId]),
+      );
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterWhereClause>
-      profileIdNotEqualTo(String profileId) {
+  profileIdNotEqualTo(String profileId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'profileId',
-              lower: [],
-              upper: [profileId],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'profileId',
-              lower: [profileId],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'profileId',
+                lower: [],
+                upper: [profileId],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'profileId',
+                lower: [profileId],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'profileId',
-              lower: [profileId],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'profileId',
-              lower: [],
-              upper: [profileId],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'profileId',
+                lower: [profileId],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'profileId',
+                lower: [],
+                upper: [profileId],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 }
 
-extension MetabolicProfileModelQueryFilter on QueryBuilder<
-    MetabolicProfileModel, MetabolicProfileModel, QFilterCondition> {
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> activityMultiplierEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
-  }) {
+extension MetabolicProfileModelQueryFilter
+    on
+        QueryBuilder<
+          MetabolicProfileModel,
+          MetabolicProfileModel,
+          QFilterCondition
+        > {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  activityMultiplierEqualTo(double value, {double epsilon = Query.epsilon}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'activityMultiplier',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'activityMultiplier',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> activityMultiplierGreaterThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'activityMultiplier',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> activityMultiplierLessThan(
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  activityMultiplierGreaterThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'activityMultiplier',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'activityMultiplier',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> activityMultiplierBetween(
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  activityMultiplierLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'activityMultiplier',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  activityMultiplierBetween(
     double lower,
     double upper, {
     bool includeLower = true,
@@ -2243,121 +2278,157 @@ extension MetabolicProfileModelQueryFilter on QueryBuilder<
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'activityMultiplier',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'activityMultiplier',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> ageEqualTo(int value) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  ageEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'age',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'age', value: value),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> ageGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  ageGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'age',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'age',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> ageLessThan(
-    int value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  ageLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'age',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'age',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> ageBetween(
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  ageBetween(
     int lower,
     int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'age',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'age',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> heightCmEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  heightCmEqualTo(double value, {double epsilon = Query.epsilon}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'heightCm',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'heightCm',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> heightCmGreaterThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'heightCm',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> heightCmLessThan(
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  heightCmGreaterThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'heightCm',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'heightCm',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> heightCmBetween(
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  heightCmLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'heightCm',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  heightCmBetween(
     double lower,
     double upper, {
     bool includeLower = true,
@@ -2365,121 +2436,157 @@ extension MetabolicProfileModelQueryFilter on QueryBuilder<
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'heightCm',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'heightCm',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> idEqualTo(Id value) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: value),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> idGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  idGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> idLessThan(
-    Id value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  idLessThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> idBetween(
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileIdEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileIdEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'profileId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'profileId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileIdGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'profileId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileIdLessThan(
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileIdGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'profileId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'profileId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileIdBetween(
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'profileId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileIdBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -2487,155 +2594,206 @@ extension MetabolicProfileModelQueryFilter on QueryBuilder<
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'profileId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'profileId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileIdStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'profileId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'profileId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileIdEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'profileId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'profileId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-          QAfterFilterCondition>
-      profileIdContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'profileId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'profileId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-          QAfterFilterCondition>
-      profileIdMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'profileId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'profileId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileIdIsEmpty() {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'profileId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'profileId', value: ''),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileIdIsNotEmpty() {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'profileId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'profileId', value: ''),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileImagePathIsNull() {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileImagePathIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'profileImagePath',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'profileImagePath'),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileImagePathIsNotNull() {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileImagePathIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'profileImagePath',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'profileImagePath'),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileImagePathEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileImagePathEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'profileImagePath',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'profileImagePath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileImagePathGreaterThan(
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileImagePathGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'profileImagePath',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'profileImagePath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileImagePathLessThan(
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileImagePathLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'profileImagePath',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'profileImagePath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileImagePathBetween(
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileImagePathBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -2643,249 +2801,322 @@ extension MetabolicProfileModelQueryFilter on QueryBuilder<
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'profileImagePath',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'profileImagePath',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileImagePathStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileImagePathStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'profileImagePath',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'profileImagePath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileImagePathEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileImagePathEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'profileImagePath',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'profileImagePath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-          QAfterFilterCondition>
-      profileImagePathContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileImagePathContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'profileImagePath',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'profileImagePath',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-          QAfterFilterCondition>
-      profileImagePathMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileImagePathMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'profileImagePath',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'profileImagePath',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileImagePathIsEmpty() {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileImagePathIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'profileImagePath',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'profileImagePath', value: ''),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> profileImagePathIsNotEmpty() {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  profileImagePathIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'profileImagePath',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'profileImagePath', value: ''),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> sexEqualTo(BiologicalSex value) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  sexEqualTo(BiologicalSex value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'sex',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'sex', value: value),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> sexGreaterThan(
-    BiologicalSex value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  sexGreaterThan(BiologicalSex value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'sex',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'sex',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> sexLessThan(
-    BiologicalSex value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  sexLessThan(BiologicalSex value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'sex',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'sex',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> sexBetween(
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  sexBetween(
     BiologicalSex lower,
     BiologicalSex upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'sex',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'sex',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> updatedAtEqualTo(DateTime value) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  updatedAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'updatedAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'updatedAt', value: value),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> updatedAtGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  updatedAtGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'updatedAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'updatedAt',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> updatedAtLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  updatedAtLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'updatedAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'updatedAt',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> updatedAtBetween(
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  updatedAtBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'updatedAt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'updatedAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> weightKgEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
-  }) {
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  weightKgEqualTo(double value, {double epsilon = Query.epsilon}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'weightKg',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'weightKg',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> weightKgGreaterThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'weightKg',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> weightKgLessThan(
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  weightKgGreaterThan(
     double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'weightKg',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'weightKg',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
-  QueryBuilder<MetabolicProfileModel, MetabolicProfileModel,
-      QAfterFilterCondition> weightKgBetween(
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  weightKgLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'weightKg',
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    MetabolicProfileModel,
+    MetabolicProfileModel,
+    QAfterFilterCondition
+  >
+  weightKgBetween(
     double lower,
     double upper, {
     bool includeLower = true,
@@ -2893,133 +3124,145 @@ extension MetabolicProfileModelQueryFilter on QueryBuilder<
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'weightKg',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'weightKg',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 }
 
-extension MetabolicProfileModelQueryObject on QueryBuilder<
-    MetabolicProfileModel, MetabolicProfileModel, QFilterCondition> {}
+extension MetabolicProfileModelQueryObject
+    on
+        QueryBuilder<
+          MetabolicProfileModel,
+          MetabolicProfileModel,
+          QFilterCondition
+        > {}
 
-extension MetabolicProfileModelQueryLinks on QueryBuilder<MetabolicProfileModel,
-    MetabolicProfileModel, QFilterCondition> {}
+extension MetabolicProfileModelQueryLinks
+    on
+        QueryBuilder<
+          MetabolicProfileModel,
+          MetabolicProfileModel,
+          QFilterCondition
+        > {}
 
 extension MetabolicProfileModelQuerySortBy
     on QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QSortBy> {
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortByActivityMultiplier() {
+  sortByActivityMultiplier() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'activityMultiplier', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortByActivityMultiplierDesc() {
+  sortByActivityMultiplierDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'activityMultiplier', Sort.desc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortByAge() {
+  sortByAge() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'age', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortByAgeDesc() {
+  sortByAgeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'age', Sort.desc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortByHeightCm() {
+  sortByHeightCm() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'heightCm', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortByHeightCmDesc() {
+  sortByHeightCmDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'heightCm', Sort.desc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortByProfileId() {
+  sortByProfileId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'profileId', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortByProfileIdDesc() {
+  sortByProfileIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'profileId', Sort.desc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortByProfileImagePath() {
+  sortByProfileImagePath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'profileImagePath', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortByProfileImagePathDesc() {
+  sortByProfileImagePathDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'profileImagePath', Sort.desc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortBySex() {
+  sortBySex() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'sex', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortBySexDesc() {
+  sortBySexDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'sex', Sort.desc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortByUpdatedAt() {
+  sortByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortByUpdatedAtDesc() {
+  sortByUpdatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.desc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortByWeightKg() {
+  sortByWeightKg() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'weightKg', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      sortByWeightKgDesc() {
+  sortByWeightKgDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'weightKg', Sort.desc);
     });
@@ -3029,126 +3272,126 @@ extension MetabolicProfileModelQuerySortBy
 extension MetabolicProfileModelQuerySortThenBy
     on QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QSortThenBy> {
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenByActivityMultiplier() {
+  thenByActivityMultiplier() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'activityMultiplier', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenByActivityMultiplierDesc() {
+  thenByActivityMultiplierDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'activityMultiplier', Sort.desc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenByAge() {
+  thenByAge() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'age', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenByAgeDesc() {
+  thenByAgeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'age', Sort.desc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenByHeightCm() {
+  thenByHeightCm() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'heightCm', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenByHeightCmDesc() {
+  thenByHeightCmDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'heightCm', Sort.desc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenById() {
+  thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenByIdDesc() {
+  thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenByProfileId() {
+  thenByProfileId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'profileId', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenByProfileIdDesc() {
+  thenByProfileIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'profileId', Sort.desc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenByProfileImagePath() {
+  thenByProfileImagePath() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'profileImagePath', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenByProfileImagePathDesc() {
+  thenByProfileImagePathDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'profileImagePath', Sort.desc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenBySex() {
+  thenBySex() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'sex', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenBySexDesc() {
+  thenBySexDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'sex', Sort.desc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenByUpdatedAt() {
+  thenByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenByUpdatedAtDesc() {
+  thenByUpdatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.desc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenByWeightKg() {
+  thenByWeightKg() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'weightKg', Sort.asc);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QAfterSortBy>
-      thenByWeightKgDesc() {
+  thenByWeightKgDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'weightKg', Sort.desc);
     });
@@ -3158,65 +3401,72 @@ extension MetabolicProfileModelQuerySortThenBy
 extension MetabolicProfileModelQueryWhereDistinct
     on QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QDistinct> {
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QDistinct>
-      distinctByActivityMultiplier() {
+  distinctByActivityMultiplier() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'activityMultiplier');
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QDistinct>
-      distinctByAge() {
+  distinctByAge() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'age');
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QDistinct>
-      distinctByHeightCm() {
+  distinctByHeightCm() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'heightCm');
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QDistinct>
-      distinctByProfileId({bool caseSensitive = true}) {
+  distinctByProfileId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'profileId', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QDistinct>
-      distinctByProfileImagePath({bool caseSensitive = true}) {
+  distinctByProfileImagePath({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'profileImagePath',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'profileImagePath',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QDistinct>
-      distinctBySex() {
+  distinctBySex() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'sex');
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QDistinct>
-      distinctByUpdatedAt() {
+  distinctByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'updatedAt');
     });
   }
 
   QueryBuilder<MetabolicProfileModel, MetabolicProfileModel, QDistinct>
-      distinctByWeightKg() {
+  distinctByWeightKg() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'weightKg');
     });
   }
 }
 
-extension MetabolicProfileModelQueryProperty on QueryBuilder<
-    MetabolicProfileModel, MetabolicProfileModel, QQueryProperty> {
+extension MetabolicProfileModelQueryProperty
+    on
+        QueryBuilder<
+          MetabolicProfileModel,
+          MetabolicProfileModel,
+          QQueryProperty
+        > {
   QueryBuilder<MetabolicProfileModel, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
@@ -3224,7 +3474,7 @@ extension MetabolicProfileModelQueryProperty on QueryBuilder<
   }
 
   QueryBuilder<MetabolicProfileModel, double, QQueryOperations>
-      activityMultiplierProperty() {
+  activityMultiplierProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'activityMultiplier');
     });
@@ -3237,42 +3487,42 @@ extension MetabolicProfileModelQueryProperty on QueryBuilder<
   }
 
   QueryBuilder<MetabolicProfileModel, double, QQueryOperations>
-      heightCmProperty() {
+  heightCmProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'heightCm');
     });
   }
 
   QueryBuilder<MetabolicProfileModel, String, QQueryOperations>
-      profileIdProperty() {
+  profileIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'profileId');
     });
   }
 
   QueryBuilder<MetabolicProfileModel, String?, QQueryOperations>
-      profileImagePathProperty() {
+  profileImagePathProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'profileImagePath');
     });
   }
 
   QueryBuilder<MetabolicProfileModel, BiologicalSex, QQueryOperations>
-      sexProperty() {
+  sexProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'sex');
     });
   }
 
   QueryBuilder<MetabolicProfileModel, DateTime, QQueryOperations>
-      updatedAtProperty() {
+  updatedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'updatedAt');
     });
   }
 
   QueryBuilder<MetabolicProfileModel, double, QQueryOperations>
-      weightKgProperty() {
+  weightKgProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'weightKg');
     });

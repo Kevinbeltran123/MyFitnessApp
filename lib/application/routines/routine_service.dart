@@ -20,7 +20,9 @@ class RoutineService {
 
   Future<void> update(Routine routine) async {
     if (!routine.hasExercises) {
-      throw const FormatException('La rutina debe contener al menos un ejercicio.');
+      throw const FormatException(
+        'La rutina debe contener al menos un ejercicio.',
+      );
     }
     await _repository.saveRoutine(routine.copyWith(updatedAt: DateTime.now()));
   }
@@ -54,7 +56,9 @@ class RoutineService {
     if (routine == null) {
       return;
     }
-    await _repository.saveRoutine(routine.copyWith(isArchived: true, updatedAt: DateTime.now()));
+    await _repository.saveRoutine(
+      routine.copyWith(isArchived: true, updatedAt: DateTime.now()),
+    );
   }
 
   Future<void> restore(String routineId) async {
@@ -62,14 +66,19 @@ class RoutineService {
     if (routine == null) {
       return;
     }
-    await _repository.saveRoutine(routine.copyWith(isArchived: false, updatedAt: DateTime.now()));
+    await _repository.saveRoutine(
+      routine.copyWith(isArchived: false, updatedAt: DateTime.now()),
+    );
   }
 
   Future<void> delete(String routineId, {bool hardDelete = false}) {
     return _repository.deleteRoutine(routineId, hardDelete: hardDelete);
   }
 
-  Future<void> reorderExercises(String routineId, List<String> orderedExerciseIds) {
+  Future<void> reorderExercises(
+    String routineId,
+    List<String> orderedExerciseIds,
+  ) {
     return _repository.reorderExercises(routineId, orderedExerciseIds);
   }
 

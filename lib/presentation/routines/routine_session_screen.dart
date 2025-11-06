@@ -185,6 +185,7 @@ class _RoutineSessionScreenState extends ConsumerState<RoutineSessionScreen> {
           exercise: exercise,
           routineSet: routineSet,
           initialRest: suggestedRest,
+          previousLogs: state.logsForExercise(exercise.exerciseId),
         );
       },
     );
@@ -743,11 +744,13 @@ class _LogSetSheet extends StatefulWidget {
     required this.exercise,
     required this.routineSet,
     required this.initialRest,
+    required this.previousLogs,
   });
 
   final RoutineExercise exercise;
   final RoutineSet routineSet;
   final Duration initialRest;
+  final List<SetLog> previousLogs;
 
   @override
   State<_LogSetSheet> createState() => _LogSetSheetState();
@@ -758,6 +761,9 @@ class _LogSetSheetState extends State<_LogSetSheet> {
   late final TextEditingController _repsController;
   late final TextEditingController _weightController;
   late final TextEditingController _restController;
+
+  SetLog? get _previousSet =>
+      widget.previousLogs.isNotEmpty ? widget.previousLogs.last : null;
 
   @override
   void initState() {
@@ -781,9 +787,42 @@ class _LogSetSheetState extends State<_LogSetSheet> {
     super.dispose();
   }
 
+  void _applyRepsSuggestion(int reps) {
+    final String text = reps.clamp(0, 100).toString();
+    _repsController
+      ..text = text
+      ..selection = TextSelection.fromPosition(
+        TextPosition(offset: text.length),
+      );
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final double bottom = MediaQuery.of(context).viewInsets.bottom;
+    final List<_RepsSuggestion> repsSuggestions = <_RepsSuggestion>[];
+    final Set<int> seenValues = <int>{};
+    void addSuggestion(String label, int value) {
+      if (value < 0) return;
+      if (seenValues.add(value)) {
+        repsSuggestions.add(_RepsSuggestion(label: label, value: value));
+      }
+    }
+
+    final SetLog? previous = _previousSet;
+    if (previous != null) {
+      addSuggestion(
+        'Última serie (${previous.repetitions})',
+        previous.repetitions,
+      );
+    }
+    if (widget.routineSet.repetitions > 0) {
+      addSuggestion(
+        'Plan (${widget.routineSet.repetitions})',
+        widget.routineSet.repetitions,
+      );
+    }
+
     return Padding(
       padding: EdgeInsets.only(bottom: bottom),
       child: SingleChildScrollView(
@@ -819,6 +858,21 @@ class _LogSetSheetState extends State<_LogSetSheet> {
                   return null;
                 },
               ),
+              if (repsSuggestions.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: repsSuggestions
+                      .map(
+                        (suggestion) => ActionChip(
+                          label: Text(suggestion.label),
+                          onPressed: () =>
+                              _applyRepsSuggestion(suggestion.value),
+                        ),
+                      )
+                      .toList(growable: false),
+                ),
+              ],
               const SizedBox(height: 12),
               NumericInputField(
                 controller: _weightController,
@@ -829,8 +883,9 @@ class _LogSetSheetState extends State<_LogSetSheet> {
                 stepOptions: const <double>[1, 2.5, 5],
                 min: 0,
                 validator: (String? value) {
-                  final double? weight =
-                      double.tryParse((value ?? '').replaceAll(',', '.'));
+                  final double? weight = double.tryParse(
+                    (value ?? '').replaceAll(',', '.'),
+                  );
                   if (weight == null || weight < 0) {
                     return 'Ingresa un peso mayor o igual a 0';
                   }
@@ -895,4 +950,11 @@ class _LogSetResult {
   final int repetitions;
   final double weight;
   final int restSeconds;
+}
+
+class _RepsSuggestion {
+  const _RepsSuggestion({required this.label, required this.value});
+
+  final String label;
+  final int value;
 }

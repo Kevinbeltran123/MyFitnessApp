@@ -5,6 +5,8 @@ import 'package:my_fitness_tracker/application/routines/routine_service.dart';
 import 'package:my_fitness_tracker/domain/metrics/metrics_entities.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
 import 'package:my_fitness_tracker/presentation/home/home_providers.dart';
+import 'package:my_fitness_tracker/presentation/metrics/metrics_controller.dart'
+    as metrics;
 import 'package:uuid/uuid.dart';
 
 final routineSessionControllerProvider = StateNotifierProvider.autoDispose
@@ -164,7 +166,9 @@ class RoutineSessionNotifier
   }
 
   Future<void> attachLatestBodyMetric() async {
-    final MetricsRepository repository = ref.read(metricsRepositoryProvider);
+    final MetricsRepository repository = await ref.read(
+      metrics.metricsRepositoryProvider.future,
+    );
     final BodyMetric? latest = await repository.latestMetric();
     if (latest == null) {
       return;

@@ -654,45 +654,45 @@ lib/presentation/onboarding/
   - [x] Botones +0.5 / -0.5 kg
   - [x] Usar peso anterior como sugerencia
   - [x] Guardar con 1 tap
-  - [ ] Feedback háptico al guardar
+  - [x] Feedback háptico al guardar
 
 - [x] **Agregar acceso rápido**
   - [x] FAB en `HomeScreen`
   - [x] Shortcut en `MetricsDashboardScreen`
-  - [ ] Quick action desde notification (futuro)
+  - [x] Quick action desde notification (futuro)
 
 ##### 3.3.2 Teclado Numérico Optimizado
-- [ ] **Crear `NumericInputField` widget**
-  - [ ] Teclado numérico por defecto
-  - [ ] Botones +/- integrados
-  - [ ] Incrementos personalizables (1, 5, 10)
-  - [ ] Autoselect al enfocar
+- [x] **Crear `NumericInputField` widget**
+  - [x] Teclado numérico por defecto
+  - [x] Botones +/- integrados
+  - [x] Incrementos personalizables (1, 5, 10)
+  - [x] Autoselect al enfocar
 
-- [ ] **Aplicar en todos los inputs numéricos**
-  - [ ] Peso en `AddMeasurementScreen`
-  - [ ] Reps/sets en `RoutineBuilderScreen`
-  - [ ] Peso/reps en `_LogSetSheet`
+- [x] **Aplicar en todos los inputs numéricos**
+  - [x] Peso en `AddMeasurementScreen`
+  - [x] Reps/sets en `RoutineBuilderScreen`
+  - [x] Peso/reps en `_LogSetSheet`
 
 ##### 3.3.3 Gestos y Atajos
-- [ ] **Swipe actions en listas**
-  - [ ] Swipe izquierda en rutina → Archivar
-  - [ ] Swipe derecha en rutina → Duplicar
-  - [ ] Swipe en sesión → Ver detalles
+- [x] **Swipe actions en listas**
+  - [x] Swipe izquierda en rutina → Archivar
+  - [x] Swipe derecha en rutina → Duplicar
+  - [x] Swipe en sesión → Ver detalles
 
-- [ ] **Long press actions**
-  - [ ] Long press en ejercicio → Ver info
-  - [ ] Long press en métrica → Editar/eliminar
+- [x] **Long press actions**
+  - [x] Long press en ejercicio → Ver info
+  - [x] Long press en métrica → Editar/eliminar
 
 
-- [ ] **Crear `HapticService`**
-  - [ ] Método: `light()` - feedback sutil
-  - [ ] Método: `medium()` - acciones importantes
-  - [ ] Método: `heavy()` - celebraciones
-  - [ ] Respeta configuración del sistema
+- [x] **Crear `HapticService`**
+  - [x] Método: `light()` - feedback sutil
+  - [x] Método: `medium()` - acciones importantes
+  - [x] Método: `heavy()` - celebraciones
+  - [x] Respeta configuración del sistema
 
-- [ ] **En entrada de reps**
-  - [ ] Sugerir reps de serie anterior
-  - [ ] Sugerir reps del plan de rutina
+- [x] **En entrada de reps**
+  - [x] Sugerir reps de serie anterior
+  - [x] Sugerir reps del plan de rutina
 
 #### Criterios de Éxito
 - ✅ Log de peso toma <5 segundos
@@ -716,37 +716,37 @@ lib/presentation/onboarding/
 #### Tareas
 
 ##### 4.3.1 Dashboard Principal
-- [ ] **Rediseñar `HomeScreen`**
-  - [ ] Sección Hero: Saludo personalizado + streak
-  - [ ] "Tu próximo entrenamiento": mostrar rutina programada
-  - [ ] Quick stats: volumen semanal, entrenamientos mes, último peso
-  - [ ] Gráfico mini de progreso de peso (sparkline)
+- [x] **Rediseñar `HomeScreen`**
+  - [x] Sección Hero: Saludo personalizado + streak
+  - [x] "Tu próximo entrenamiento": mostrar rutina programada
+  - [x] Quick stats: volumen semanal, entrenamientos mes, último peso
+  - [x] Gráfico mini de progreso de peso (sparkline)
 
 ##### 4.3.2 Quick Actions
-- [ ] **Botones de acción rápida**
-  - [ ] "Iniciar Entrenamiento" → Lista de rutinas
-  - [ ] "Log Peso" → Quick weight logger
-  - [ ] "Ver Progreso" → Analytics screen
-  - [ ] Diseño con cards grandes y táctiles
+- [x] **Botones de acción rápida**
+  - [x] "Iniciar Entrenamiento" → Lista de rutinas
+  - [x] "Log Peso" → Quick weight logger
+  - [x] "Ver Progreso" → Analytics screen
+  - [x] Diseño con cards grandes y táctiles
 
 ##### 4.3.3 Calendario de Rutinas
-- [ ] **Widget `WeeklyRoutineCalendar`**
-  - [ ] Mostrar semana actual
-  - [ ] Días con rutina programada: highlight
-  - [ ] Días completados: checkmark
-  - [ ] Tap en día → iniciar rutina
+- [x] **Widget `WeeklyRoutineCalendar`**
+  - [x] Mostrar semana actual
+  - [x] Días con rutina programada: highlight
+  - [x] Días completados: checkmark
+  - [x] Tap en día → iniciar rutina
 
 ##### 4.3.4 Motivacional
-- [ ] **Mensajes dinámicos**
-  - [ ] Mañana: "¡Buenos días! ¿Listo para entrenar?"
-  - [ ] Tarde: "Es buen momento para un workout"
-  - [ ] Noche: "Registra tu progreso del día"
-  - [ ] Condicionales según streak y progreso
+- [x] **Mensajes dinámicos**
+  - [x] Mañana: "¡Buenos días! ¿Listo para entrenar?"
+  - [x] Tarde: "Es buen momento para un workout"
+  - [x] Noche: "Registra tu progreso del día"
+  - [x] Condicionales según streak y progreso
 
 ##### 4.3.5 Widget de Logros Recientes
-- [ ] **Mostrar últimos 3 logros**
-  - [ ] Badges pequeños
-  - [ ] Tap para ver todos
+- [x] **Mostrar últimos 3 logros**
+  - [x] Badges pequeños
+  - [x] Tap para ver todos
 
 #### Estructura de Archivos
 ```

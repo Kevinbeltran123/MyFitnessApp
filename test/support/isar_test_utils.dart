@@ -90,8 +90,9 @@ class TestIsarFactory {
       if (entry['name'] == packageName) {
         final String rootUriString = entry['rootUri'] as String;
         final Uri rootUri = Uri.parse(rootUriString);
-        final Uri resolved =
-            rootUri.isAbsolute ? rootUri : configFile.uri.resolveUri(rootUri);
+        final Uri resolved = rootUri.isAbsolute
+            ? rootUri
+            : configFile.uri.resolveUri(rootUri);
         return Directory.fromUri(resolved);
       }
     }

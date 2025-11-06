@@ -32,7 +32,9 @@ class _MusclePieChartState extends State<MusclePieChart> {
         decoration: BoxDecoration(
           color: AppColors.lightGray,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.textTertiary.withValues(alpha: 0.2)),
+          border: Border.all(
+            color: AppColors.textTertiary.withValues(alpha: 0.2),
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -53,15 +55,18 @@ class _MusclePieChartState extends State<MusclePieChart> {
     }
 
     final int touched = _touchedIndex ?? -1;
-    final MuscleGroupStat? focused =
-        (touched >= 0 && touched < stats.length) ? stats[touched] : null;
+    final MuscleGroupStat? focused = (touched >= 0 && touched < stats.length)
+        ? stats[touched]
+        : null;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.textTertiary.withValues(alpha: 0.15)),
+        border: Border.all(
+          color: AppColors.textTertiary.withValues(alpha: 0.15),
+        ),
         boxShadow: const [
           BoxShadow(
             color: AppColors.shadowLight,
@@ -84,10 +89,12 @@ class _MusclePieChartState extends State<MusclePieChart> {
                     touchCallback: (event, response) {
                       if (!mounted) return;
                       setState(() {
-                        if (!event.isInterestedForInteractions || response == null) {
+                        if (!event.isInterestedForInteractions ||
+                            response == null) {
                           _touchedIndex = null;
                         } else {
-                          _touchedIndex = response.touchedSection?.touchedSectionIndex;
+                          _touchedIndex =
+                              response.touchedSection?.touchedSectionIndex;
                         }
                       });
                     },
@@ -245,8 +252,9 @@ class _LegendTile extends StatelessWidget {
   String _formatVolume(double value) {
     if (value >= 1000) {
       final double thousands = value / 1000;
-      final String formatted =
-          thousands >= 10 ? thousands.toStringAsFixed(0) : thousands.toStringAsFixed(1);
+      final String formatted = thousands >= 10
+          ? thousands.toStringAsFixed(0)
+          : thousands.toStringAsFixed(1);
       return '${formatted}k';
     }
     return value.toStringAsFixed(0);

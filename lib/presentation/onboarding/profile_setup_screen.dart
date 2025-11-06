@@ -112,7 +112,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             LinearProgressIndicator(
               value: (_currentStep + 1) / 4,
               backgroundColor: AppColors.veryLightGray,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accentBlue),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                AppColors.accentBlue,
+              ),
             ),
             Expanded(
               child: PageView(
@@ -142,7 +144,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _nextStep,
-                      child: Text(_currentStep == 3 ? 'Finalizar' : 'Siguiente'),
+                      child: Text(
+                        _currentStep == 3 ? 'Finalizar' : 'Siguiente',
+                      ),
                     ),
                   ),
                 ],
@@ -162,16 +166,19 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Datos básicos',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                )),
+            Text(
+              'Datos básicos',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             const SizedBox(height: 24),
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Nombre'),
-              validator: (value) =>
-                  (value == null || value.trim().isEmpty) ? 'Ingresa tu nombre' : null,
+              validator: (value) => (value == null || value.trim().isEmpty)
+                  ? 'Ingresa tu nombre'
+                  : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -191,11 +198,21 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               initialValue: _sex,
               decoration: const InputDecoration(labelText: 'Sexo'),
               items: const [
-                DropdownMenuItem(value: BiologicalSex.male, child: Text('Masculino')),
-                DropdownMenuItem(value: BiologicalSex.female, child: Text('Femenino')),
-                DropdownMenuItem(value: BiologicalSex.other, child: Text('Otro')),
+                DropdownMenuItem(
+                  value: BiologicalSex.male,
+                  child: Text('Masculino'),
+                ),
+                DropdownMenuItem(
+                  value: BiologicalSex.female,
+                  child: Text('Femenino'),
+                ),
+                DropdownMenuItem(
+                  value: BiologicalSex.other,
+                  child: Text('Otro'),
+                ),
               ],
-              onChanged: (value) => setState(() => _sex = value ?? BiologicalSex.male),
+              onChanged: (value) =>
+                  setState(() => _sex = value ?? BiologicalSex.male),
             ),
           ],
         ),
@@ -211,10 +228,12 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Medidas iniciales',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                )),
+            Text(
+              'Medidas iniciales',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             const SizedBox(height: 24),
             TextFormField(
               controller: _heightController,
@@ -255,10 +274,12 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Objetivo principal',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                )),
+            Text(
+              'Objetivo principal',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             const SizedBox(height: 24),
             SegmentedButton<String>(
               segments: const <ButtonSegment<String>>[
@@ -296,10 +317,12 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Nivel de actividad',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                )),
+            Text(
+              'Nivel de actividad',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             const SizedBox(height: 24),
             DropdownButtonFormField<String>(
               initialValue: _activity,
@@ -307,12 +330,25 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 labelText: 'Selecciona tu nivel',
               ),
               items: const [
-                DropdownMenuItem(value: 'sedentario', child: Text('Sedentario')),
-                DropdownMenuItem(value: 'ligero', child: Text('Ligero (1-2 días)')),
-                DropdownMenuItem(value: 'moderado', child: Text('Moderado (3-4 días)')),
-                DropdownMenuItem(value: 'intenso', child: Text('Intenso (5+ días)')),
+                DropdownMenuItem(
+                  value: 'sedentario',
+                  child: Text('Sedentario'),
+                ),
+                DropdownMenuItem(
+                  value: 'ligero',
+                  child: Text('Ligero (1-2 días)'),
+                ),
+                DropdownMenuItem(
+                  value: 'moderado',
+                  child: Text('Moderado (3-4 días)'),
+                ),
+                DropdownMenuItem(
+                  value: 'intenso',
+                  child: Text('Intenso (5+ días)'),
+                ),
               ],
-              onChanged: (value) => setState(() => _activity = value ?? 'moderado'),
+              onChanged: (value) =>
+                  setState(() => _activity = value ?? 'moderado'),
             ),
             const SizedBox(height: 16),
             Text(

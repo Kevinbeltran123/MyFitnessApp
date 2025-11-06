@@ -96,7 +96,8 @@ class _AchievementBadgeState extends State<AchievementBadge>
                 size: widget.size * 0.42,
               ),
             ),
-            if (state == AchievementBadgeState.inProgress && widget.showProgress)
+            if (state == AchievementBadgeState.inProgress &&
+                widget.showProgress)
               SizedBox(
                 width: widget.size,
                 height: widget.size,
@@ -119,7 +120,11 @@ class _AchievementBadgeState extends State<AchievementBadge>
                     shape: BoxShape.circle,
                     border: Border.all(color: accent, width: 2),
                   ),
-                  child: const Icon(Icons.check, size: 14, color: AppColors.success),
+                  child: const Icon(
+                    Icons.check,
+                    size: 14,
+                    color: AppColors.success,
+                  ),
                 ),
               ),
             if (widget.highlight)
@@ -154,9 +159,9 @@ class _AchievementBadgeState extends State<AchievementBadge>
           child: Text(
             widget.achievement.name,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -202,7 +207,8 @@ class _AchievementBadgeState extends State<AchievementBadge>
   }
 
   Color _resolveAccent(AchievementBadgeState state) {
-    final Color base = _colorFromHex(widget.achievement.badgeColor) ?? AppColors.warning;
+    final Color base =
+        _colorFromHex(widget.achievement.badgeColor) ?? AppColors.warning;
     switch (state) {
       case AchievementBadgeState.locked:
         return base.withValues(alpha: 0.5);

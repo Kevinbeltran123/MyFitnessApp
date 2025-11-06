@@ -79,15 +79,12 @@ class ProfileScreen extends ConsumerWidget {
                 error: (_, __) => const SizedBox.shrink(),
               ),
               if (achievementsAsync.asData?.value.isNotEmpty == true)
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
               streakAsync.when(
                 data: (snapshot) => Padding(
                   padding: const EdgeInsets.only(bottom: 24),
-                  child: StreakCounter(
-                    snapshot: snapshot,
-                    daysToDisplay: 7,
-                  ),
+                  child: StreakCounter(snapshot: snapshot, daysToDisplay: 7),
                 ),
                 loading: () => const SizedBox(height: 24),
                 error: (_, __) => const SizedBox(height: 24),
@@ -284,15 +281,15 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   void _navigateToAnalytics(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const AnalyticsScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const AnalyticsScreen()));
   }
 
   void _navigateToAchievements(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const AchievementsScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const AchievementsScreen()));
   }
 
   void _navigateToSettings(BuildContext context) {
@@ -498,7 +495,9 @@ class _AchievementsPreview extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.textTertiary.withValues(alpha: 0.15)),
+        border: Border.all(
+          color: AppColors.textTertiary.withValues(alpha: 0.15),
+        ),
         boxShadow: const [
           BoxShadow(
             color: AppColors.shadowLight,
@@ -520,10 +519,7 @@ class _AchievementsPreview extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              TextButton(
-                onPressed: onViewAll,
-                child: const Text('Ver todos'),
-              ),
+              TextButton(onPressed: onViewAll, child: const Text('Ver todos')),
             ],
           ),
           if (streak != null) ...[
@@ -555,7 +551,9 @@ class _AchievementsPreview extends StatelessWidget {
             value: _globalProgress(preview),
             minHeight: 6,
             backgroundColor: AppColors.veryLightGray,
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accentBlue),
+            valueColor: const AlwaysStoppedAnimation<Color>(
+              AppColors.accentBlue,
+            ),
           ),
         ],
       ),
@@ -566,7 +564,10 @@ class _AchievementsPreview extends StatelessWidget {
     if (preview.isEmpty) {
       return 0;
     }
-    final double total = preview.fold<double>(0, (sum, item) => sum + item.progress());
+    final double total = preview.fold<double>(
+      0,
+      (sum, item) => sum + item.progress(),
+    );
     return (total / preview.length).clamp(0, 1);
   }
 }

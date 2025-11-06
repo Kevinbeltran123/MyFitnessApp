@@ -6,10 +6,7 @@ import 'package:my_fitness_tracker/shared/theme/app_colors.dart';
 
 /// GitHub-style heatmap for training frequency across the last 90 days.
 class FrequencyHeatmap extends StatefulWidget {
-  const FrequencyHeatmap({
-    super.key,
-    required this.points,
-  });
+  const FrequencyHeatmap({super.key, required this.points});
 
   final List<DailyActivityPoint> points;
 
@@ -39,7 +36,9 @@ class _FrequencyHeatmapState extends State<FrequencyHeatmap> {
         decoration: BoxDecoration(
           color: AppColors.lightGray,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.textTertiary.withValues(alpha: 0.2)),
+          border: Border.all(
+            color: AppColors.textTertiary.withValues(alpha: 0.2),
+          ),
         ),
         child: const Text(
           'Sin datos de entrenamientos en los últimos 90 días.',
@@ -97,7 +96,8 @@ class _FrequencyHeatmapState extends State<FrequencyHeatmap> {
                                 child: _HeatCell(
                                   point: point,
                                   size: cellSize,
-                                  isSelected: point != null && point == _focused,
+                                  isSelected:
+                                      point != null && point == _focused,
                                   color: _colorForPoint(point, maxVolume),
                                   onTap: () {
                                     if (point == null) return;
@@ -126,9 +126,14 @@ class _FrequencyHeatmapState extends State<FrequencyHeatmap> {
     );
   }
 
-  List<List<DailyActivityPoint?>> _groupByWeek(List<DailyActivityPoint> points) {
+  List<List<DailyActivityPoint?>> _groupByWeek(
+    List<DailyActivityPoint> points,
+  ) {
     final List<List<DailyActivityPoint?>> weeks = <List<DailyActivityPoint?>>[];
-    List<DailyActivityPoint?> currentWeek = List<DailyActivityPoint?>.filled(7, null);
+    List<DailyActivityPoint?> currentWeek = List<DailyActivityPoint?>.filled(
+      7,
+      null,
+    );
     int previousWeekday = -1;
 
     for (final DailyActivityPoint point in points) {
@@ -214,7 +219,15 @@ class _DayLabels extends StatelessWidget {
   final double cellSize;
   final double spacing;
 
-  static const List<String> _labels = <String>['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  static const List<String> _labels = <String>[
+    'L',
+    'M',
+    'X',
+    'J',
+    'V',
+    'S',
+    'D',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -257,7 +270,9 @@ class _DetailCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.textTertiary.withValues(alpha: 0.15)),
+        border: Border.all(
+          color: AppColors.textTertiary.withValues(alpha: 0.15),
+        ),
       ),
       child: Row(
         children: [
@@ -315,8 +330,9 @@ class _DetailCard extends StatelessWidget {
     }
     if (value >= 1000) {
       final double thousands = value / 1000;
-      final String formatted =
-          thousands >= 10 ? thousands.toStringAsFixed(0) : thousands.toStringAsFixed(1);
+      final String formatted = thousands >= 10
+          ? thousands.toStringAsFixed(0)
+          : thousands.toStringAsFixed(1);
       return '${formatted}k';
     }
     return value.toStringAsFixed(0);
@@ -334,8 +350,16 @@ class _Legend extends StatelessWidget {
     final List<Color> scale = <Color>[
       AppColors.lightGray,
       AppColors.success.withValues(alpha: 0.25),
-      Color.lerp(AppColors.success.withValues(alpha: 0.25), AppColors.success, 0.33)!,
-      Color.lerp(AppColors.success.withValues(alpha: 0.25), AppColors.success, 0.66)!,
+      Color.lerp(
+        AppColors.success.withValues(alpha: 0.25),
+        AppColors.success,
+        0.33,
+      )!,
+      Color.lerp(
+        AppColors.success.withValues(alpha: 0.25),
+        AppColors.success,
+        0.66,
+      )!,
       AppColors.success,
     ];
 
@@ -358,7 +382,9 @@ class _Legend extends StatelessWidget {
             decoration: BoxDecoration(
               color: color,
               borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: AppColors.textTertiary.withValues(alpha: 0.15)),
+              border: Border.all(
+                color: AppColors.textTertiary.withValues(alpha: 0.15),
+              ),
             ),
           ),
         const SizedBox(width: 8),

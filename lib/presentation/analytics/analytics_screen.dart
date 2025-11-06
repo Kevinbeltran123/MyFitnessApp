@@ -14,10 +14,7 @@ class AnalyticsScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: _AnalyticsAppBar(),
         body: TabBarView(
-          children: [
-            VolumeInsights(),
-            MuscleDistributionInsights(),
-          ],
+          children: [VolumeInsights(), MuscleDistributionInsights()],
         ),
       ),
     );

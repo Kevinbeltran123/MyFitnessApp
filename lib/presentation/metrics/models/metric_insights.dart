@@ -1,8 +1,4 @@
-enum MetricTrend {
-  up,
-  down,
-  stable,
-}
+enum MetricTrend { up, down, stable }
 
 class ComparisonMetricData {
   const ComparisonMetricData({

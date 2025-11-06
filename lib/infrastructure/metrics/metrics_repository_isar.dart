@@ -50,8 +50,10 @@ class MetricsRepositoryIsar implements MetricsRepository {
 
   @override
   Future<BodyMetric?> latestMetric() async {
-    final model =
-        await _isar.bodyMetricModels.where().sortByRecordedAtDesc().findFirst();
+    final model = await _isar.bodyMetricModels
+        .where()
+        .sortByRecordedAtDesc()
+        .findFirst();
     return model?.toDomain();
   }
 

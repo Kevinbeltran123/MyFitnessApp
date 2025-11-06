@@ -32,10 +32,12 @@ class _QuickWeightLoggerSheet extends ConsumerStatefulWidget {
   final WidgetRef ref;
 
   @override
-  ConsumerState<_QuickWeightLoggerSheet> createState() => _QuickWeightLoggerSheetState();
+  ConsumerState<_QuickWeightLoggerSheet> createState() =>
+      _QuickWeightLoggerSheetState();
 }
 
-class _QuickWeightLoggerSheetState extends ConsumerState<_QuickWeightLoggerSheet> {
+class _QuickWeightLoggerSheetState
+    extends ConsumerState<_QuickWeightLoggerSheet> {
   final TextEditingController _weightController = TextEditingController();
   bool _isSaving = false;
 
@@ -62,7 +64,9 @@ class _QuickWeightLoggerSheetState extends ConsumerState<_QuickWeightLoggerSheet
     setState(() => _isSaving = true);
 
     try {
-      final repository = await widget.ref.read(metricsRepositoryProvider.future);
+      final repository = await widget.ref.read(
+        metricsRepositoryProvider.future,
+      );
       final metric = BodyMetric(
         id: const Uuid().v4(),
         recordedAt: DateTime.now(),
@@ -87,7 +91,8 @@ class _QuickWeightLoggerSheetState extends ConsumerState<_QuickWeightLoggerSheet
   }
 
   void _adjust(double delta) {
-    final current = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0;
+    final current =
+        double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0;
     final next = (current + delta).clamp(20, 300);
     setState(() {
       _weightController.text = next.toStringAsFixed(1);
@@ -138,7 +143,9 @@ class _QuickWeightLoggerSheetState extends ConsumerState<_QuickWeightLoggerSheet
                 Expanded(
                   child: TextField(
                     controller: _weightController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     textAlign: TextAlign.center,
                     style: theme.textTheme.displaySmall?.copyWith(
                       fontWeight: FontWeight.w700,
@@ -186,10 +193,7 @@ class _AdjustButton extends StatelessWidget {
     return Material(
       color: AppColors.lightGray,
       shape: const CircleBorder(),
-      child: IconButton(
-        onPressed: onTap,
-        icon: Icon(icon),
-      ),
+      child: IconButton(onPressed: onTap, icon: Icon(icon)),
     );
   }
 }

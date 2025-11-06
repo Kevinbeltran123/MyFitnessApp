@@ -137,10 +137,7 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
       return;
     }
     if (_exercises.isEmpty) {
-      AppSnackBar.showWarning(
-        context,
-        'Agrega al menos un ejercicio.',
-      );
+      AppSnackBar.showWarning(context, 'Agrega al menos un ejercicio.');
       return;
     }
 
@@ -176,7 +173,8 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
           return;
         }
         final Duration? rest = set.restInterval;
-        if (rest != null && (rest.isNegative || rest > const Duration(minutes: 20))) {
+        if (rest != null &&
+            (rest.isNegative || rest > const Duration(minutes: 20))) {
           AppSnackBar.showWarning(
             context,
             'El descanso en "$exerciseName" debe ser entre 0 y 20 minutos.',

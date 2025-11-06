@@ -3,10 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:my_fitness_tracker/models/workout_plan.dart';
 
 class ExerciseGridItem extends StatelessWidget {
-  const ExerciseGridItem({super.key, required this.plan, required this.onTap});
+  const ExerciseGridItem({
+    super.key,
+    required this.plan,
+    required this.onTap,
+    this.onLongPress,
+  });
 
   final WorkoutPlan plan;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +28,7 @@ class ExerciseGridItem extends StatelessWidget {
       elevation: 2,
       child: InkWell(
         onTap: onTap,
+        onLongPress: onLongPress,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[

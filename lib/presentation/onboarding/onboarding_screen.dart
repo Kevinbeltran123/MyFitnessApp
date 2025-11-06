@@ -73,7 +73,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         Expanded(
                           child: Container(
                             decoration: BoxDecoration(
-                              color: page.background?.withValues(alpha: 0.15) ??
+                              color:
+                                  page.background?.withValues(alpha: 0.15) ??
                                   AppColors.veryLightGray,
                               borderRadius: BorderRadius.circular(24),
                             ),

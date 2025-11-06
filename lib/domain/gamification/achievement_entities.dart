@@ -1,13 +1,7 @@
 import 'package:collection/collection.dart';
 
 /// Category that groups achievements by the type of behaviour they encourage.
-enum AchievementType {
-  routine,
-  workout,
-  metric,
-  streak,
-  personalRecord,
-}
+enum AchievementType { routine, workout, metric, streak, personalRecord }
 
 /// Represents an achievement definition plus the user's current progress.
 class Achievement {
@@ -72,7 +66,9 @@ class Achievement {
     final bool unlocked = unlockedAt != null || nextValue >= targetValue;
     return copyWith(
       currentValue: nextValue,
-      unlockedAt: unlocked ? (unlockedAt ?? this.unlockedAt ?? DateTime.now()) : this.unlockedAt,
+      unlockedAt: unlocked
+          ? (unlockedAt ?? this.unlockedAt ?? DateTime.now())
+          : this.unlockedAt,
     );
   }
 
@@ -154,8 +150,10 @@ class AchievementDefinition {
 typedef AchievementCatalog = List<AchievementDefinition>;
 
 extension AchievementDefinitionListX on AchievementCatalog {
-  Map<String, AchievementDefinition> asIndex() =>
-      {for (final definition in this) definition.id: definition};
+  Map<String, AchievementDefinition> asIndex() => {
+    for (final definition in this) definition.id: definition,
+  };
 
-  AchievementDefinition? byId(String id) => firstWhereOrNull((def) => def.id == id);
+  AchievementDefinition? byId(String id) =>
+      firstWhereOrNull((def) => def.id == id);
 }

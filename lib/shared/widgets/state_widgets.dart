@@ -36,11 +36,7 @@ class EmptyStateWidget extends StatelessWidget {
                 color: AppColors.lightGray,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                size: 56,
-                color: AppColors.textSecondary,
-              ),
+              child: Icon(icon, size: 56, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 24),
             Text(
@@ -61,10 +57,7 @@ class EmptyStateWidget extends StatelessWidget {
             ),
             if (primaryLabel != null && onPrimaryTap != null) ...<Widget>[
               const SizedBox(height: 24),
-              FilledButton(
-                onPressed: onPrimaryTap,
-                child: Text(primaryLabel!),
-              ),
+              FilledButton(onPressed: onPrimaryTap, child: Text(primaryLabel!)),
             ],
             if (secondaryLabel != null && onSecondaryTap != null) ...<Widget>[
               const SizedBox(height: 12),
@@ -103,11 +96,7 @@ class ErrorStateWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Icon(
-              Icons.error_outline,
-              size: 72,
-              color: AppColors.error,
-            ),
+            const Icon(Icons.error_outline, size: 72, color: AppColors.error),
             const SizedBox(height: 16),
             Text(
               title,
@@ -138,10 +127,7 @@ class ErrorStateWidget extends StatelessWidget {
 }
 
 class LoadingStateWidget extends StatelessWidget {
-  const LoadingStateWidget({
-    super.key,
-    this.message,
-  });
+  const LoadingStateWidget({super.key, this.message});
 
   final String? message;
 

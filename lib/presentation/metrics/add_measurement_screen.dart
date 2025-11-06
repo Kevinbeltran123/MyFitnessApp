@@ -9,7 +9,9 @@ import 'package:uuid/uuid.dart';
 
 /// Screen for adding a new body measurement.
 class AddMeasurementScreen extends ConsumerStatefulWidget {
-  const AddMeasurementScreen({super.key});
+  const AddMeasurementScreen({super.key, this.initialMetric});
+
+  final BodyMetric? initialMetric;
 
   @override
   ConsumerState<AddMeasurementScreen> createState() =>
@@ -30,7 +32,37 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
   final _thighsController = TextEditingController();
 
   bool _isLoading = false;
-  DateTime _selectedDate = DateTime.now();
+  late bool _isEditing;
+  late DateTime _selectedDate;
+
+  BodyMetric? get _initialMetric => widget.initialMetric;
+
+  @override
+  void initState() {
+    super.initState();
+    _isEditing = widget.initialMetric != null;
+    _selectedDate = widget.initialMetric?.recordedAt ?? DateTime.now();
+    if (_isEditing) {
+      _populateFromMetric(widget.initialMetric!);
+    }
+  }
+
+  void _populateFromMetric(BodyMetric metric) {
+    _weightController.text = metric.weightKg.toStringAsFixed(1);
+    if (metric.bodyFatPercentage != null) {
+      _bodyFatController.text = metric.bodyFatPercentage!.toStringAsFixed(1);
+    }
+    if (metric.muscleMassKg != null) {
+      _muscleMassController.text = metric.muscleMassKg!.toStringAsFixed(1);
+    }
+    if (metric.notes?.isNotEmpty == true) {
+      _notesController.text = metric.notes!;
+    }
+    _waistController.text = metric.measurements['cintura']?.toString() ?? '';
+    _chestController.text = metric.measurements['pecho']?.toString() ?? '';
+    _armsController.text = metric.measurements['brazos']?.toString() ?? '';
+    _thighsController.text = metric.measurements['muslos']?.toString() ?? '';
+  }
 
   @override
   void dispose() {
@@ -52,8 +84,7 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
     return DateTime(now.year - 2, now.month, now.day);
   }
 
-  double _parseNumber(String value) =>
-      double.parse(value.replaceAll(',', '.'));
+  double _parseNumber(String value) => double.parse(value.replaceAll(',', '.'));
 
   Future<void> _selectDate() async {
     final picked = await showDatePicker(
@@ -65,9 +96,9 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-                  primary: AppColors.accentBlue,
-                  onPrimary: AppColors.white,
-                ),
+              primary: AppColors.accentBlue,
+              onPrimary: AppColors.white,
+            ),
           ),
           child: child!,
         );
@@ -107,23 +138,25 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
     try {
       final repository = await ref.read(metricsRepositoryProvider.future);
 
-      // Build measurements map
-      final measurements = <String, double>{};
-      if (_waistController.text.isNotEmpty) {
-        measurements['cintura'] = _parseNumber(_waistController.text);
-      }
-      if (_chestController.text.isNotEmpty) {
-        measurements['pecho'] = _parseNumber(_chestController.text);
-      }
-      if (_armsController.text.isNotEmpty) {
-        measurements['brazos'] = _parseNumber(_armsController.text);
-      }
-      if (_thighsController.text.isNotEmpty) {
-        measurements['muslos'] = _parseNumber(_thighsController.text);
+      final Map<String, double> measurements = Map<String, double>.from(
+        _initialMetric?.measurements ?? <String, double>{},
+      );
+
+      void updateMeasurement(String key, TextEditingController controller) {
+        if (controller.text.isNotEmpty) {
+          measurements[key] = _parseNumber(controller.text);
+        } else {
+          measurements.remove(key);
+        }
       }
 
+      updateMeasurement('cintura', _waistController);
+      updateMeasurement('pecho', _chestController);
+      updateMeasurement('brazos', _armsController);
+      updateMeasurement('muslos', _thighsController);
+
       final metric = BodyMetric(
-        id: const Uuid().v4(),
+        id: _isEditing ? _initialMetric!.id : const Uuid().v4(),
         recordedAt: _selectedDate,
         weightKg: _parseNumber(_weightController.text),
         bodyFatPercentage: _bodyFatController.text.isNotEmpty
@@ -140,7 +173,10 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
 
       if (!mounted) return;
 
-      AppSnackBar.showSuccess(context, 'Medida guardada exitosamente');
+      AppSnackBar.showSuccess(
+        context,
+        _isEditing ? 'Medida actualizada' : 'Medida guardada exitosamente',
+      );
       Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) return;
@@ -161,7 +197,7 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nueva Medida'),
+        title: Text(_isEditing ? 'Editar Medida' : 'Nueva Medida'),
         actions: [
           if (_isLoading)
             const Center(
@@ -263,7 +299,9 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
                   if (value == null || value.isEmpty) {
                     return 'El peso es requerido';
                   }
-                  final double? weight = double.tryParse(value.replaceAll(',', '.'));
+                  final double? weight = double.tryParse(
+                    value.replaceAll(',', '.'),
+                  );
                   if (weight == null) {
                     return 'Ingresa un número válido';
                   }
@@ -290,7 +328,9 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
                 allowEmpty: true,
                 validator: (value) {
                   if (value != null && value.isNotEmpty) {
-                    final double? fat = double.tryParse(value.replaceAll(',', '.'));
+                    final double? fat = double.tryParse(
+                      value.replaceAll(',', '.'),
+                    );
                     if (fat == null) {
                       return 'Ingresa un número válido';
                     }
@@ -318,8 +358,9 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
                 allowEmpty: true,
                 validator: (value) {
                   if (value != null && value.isNotEmpty) {
-                    final double? muscle =
-                        double.tryParse(value.replaceAll(',', '.'));
+                    final double? muscle = double.tryParse(
+                      value.replaceAll(',', '.'),
+                    );
                     if (muscle == null) {
                       return 'Ingresa un número válido';
                     }
@@ -444,8 +485,9 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(AppColors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.white,
+                          ),
                         ),
                       )
                     : const Icon(Icons.save),
@@ -475,7 +517,7 @@ class _AddMeasurementScreenState extends ConsumerState<AddMeasurementScreen> {
       'Sep',
       'Oct',
       'Nov',
-      'Dic'
+      'Dic',
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }

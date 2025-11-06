@@ -43,12 +43,9 @@ class MuscleDistributionInsights extends ConsumerWidget {
   MetricDateRange _defaultRange() {
     final DateTime now = DateTime.now();
     final DateTime end = DateTime(now.year, now.month, now.day, 23, 59, 59);
-    final DateTime start = end.subtract(const Duration(days: 29)).copyWith(
-      hour: 0,
-      minute: 0,
-      second: 0,
-      millisecond: 0,
-    );
+    final DateTime start = end
+        .subtract(const Duration(days: 29))
+        .copyWith(hour: 0, minute: 0, second: 0, millisecond: 0);
     return MetricDateRange(start: start, end: end);
   }
 }
@@ -131,7 +128,9 @@ class _RangeCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.textTertiary.withValues(alpha: 0.15)),
+        border: Border.all(
+          color: AppColors.textTertiary.withValues(alpha: 0.15),
+        ),
       ),
       child: Row(
         children: [

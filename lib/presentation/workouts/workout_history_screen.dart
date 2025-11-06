@@ -26,11 +26,9 @@ class _WorkoutHistoryScreenState extends ConsumerState<WorkoutHistoryScreen> {
 
   void _showDateRangePicker() async {
     final now = DateTime.now();
-    final initialRange = _selectedDateRange ??
-        DateTimeRange(
-          start: now.subtract(const Duration(days: 30)),
-          end: now,
-        );
+    final initialRange =
+        _selectedDateRange ??
+        DateTimeRange(start: now.subtract(const Duration(days: 30)), end: now);
 
     final picked = await showDateRangePicker(
       context: context,
@@ -41,9 +39,9 @@ class _WorkoutHistoryScreenState extends ConsumerState<WorkoutHistoryScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-                  primary: AppColors.accentBlue,
-                  onPrimary: AppColors.white,
-                ),
+              primary: AppColors.accentBlue,
+              onPrimary: AppColors.white,
+            ),
           ),
           child: child!,
         );
@@ -115,13 +113,12 @@ class _WorkoutHistoryScreenState extends ConsumerState<WorkoutHistoryScreen> {
     final filteredSessions = _selectedDateRange == null
         ? sessions
         : sessions.where((session) {
-            return session.startedAt
-                    .isAfter(_selectedDateRange!.start.subtract(
-                      const Duration(days: 1),
-                    )) &&
-                session.startedAt.isBefore(_selectedDateRange!.end.add(
-                      const Duration(days: 1),
-                    ));
+            return session.startedAt.isAfter(
+                  _selectedDateRange!.start.subtract(const Duration(days: 1)),
+                ) &&
+                session.startedAt.isBefore(
+                  _selectedDateRange!.end.add(const Duration(days: 1)),
+                );
           }).toList();
 
     if (filteredSessions.isEmpty) {
@@ -132,8 +129,7 @@ class _WorkoutHistoryScreenState extends ConsumerState<WorkoutHistoryScreen> {
     final totalSessions = filteredSessions.length;
     final totalDuration = filteredSessions.fold<Duration>(
       Duration.zero,
-      (sum, session) =>
-          sum + session.completedAt.difference(session.startedAt),
+      (sum, session) => sum + session.completedAt.difference(session.startedAt),
     );
 
     return RefreshIndicator(
@@ -226,16 +222,31 @@ class _WorkoutHistoryScreenState extends ConsumerState<WorkoutHistoryScreen> {
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final session = filteredSessions[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final session = filteredSessions[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Dismissible(
+                    key: ValueKey<String>('session-${session.id}'),
+                    direction: DismissDirection.horizontal,
+                    background: const _SessionSwipeBackground(
+                      alignment: Alignment.centerLeft,
+                      icon: Icons.visibility_outlined,
+                      label: 'Ver detalles',
+                    ),
+                    secondaryBackground: const _SessionSwipeBackground(
+                      alignment: Alignment.centerRight,
+                      icon: Icons.visibility_outlined,
+                      label: 'Ver detalles',
+                    ),
+                    confirmDismiss: (direction) async {
+                      await showWorkoutSessionDetails(context, session);
+                      return false;
+                    },
                     child: WorkoutSessionCard(session: session),
-                  );
-                },
-                childCount: filteredSessions.length,
-              ),
+                  ),
+                );
+              }, childCount: filteredSessions.length),
             ),
           ),
         ],
@@ -308,5 +319,43 @@ class _WorkoutHistoryScreenState extends ConsumerState<WorkoutHistoryScreen> {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
+  }
+}
+
+class _SessionSwipeBackground extends StatelessWidget {
+  const _SessionSwipeBackground({
+    required this.alignment,
+    required this.icon,
+    required this.label,
+  });
+
+  final Alignment alignment;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: alignment,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: BoxDecoration(
+        color: AppColors.accentBlue.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.accentBlue),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: AppColors.accentBlue,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

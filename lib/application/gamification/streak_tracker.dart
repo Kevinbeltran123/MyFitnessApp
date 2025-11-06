@@ -24,10 +24,10 @@ class StreakTracker {
   StreakTracker({
     required SessionRepository sessionRepository,
     List<int>? milestoneThresholds,
-  })  : _sessionRepository = sessionRepository,
-        _milestones = List<int>.unmodifiable(
-          (milestoneThresholds ?? const <int>[3, 7, 14, 30, 60, 90])..sort(),
-        );
+  }) : _sessionRepository = sessionRepository,
+       _milestones = List<int>.unmodifiable(
+         (milestoneThresholds ?? const <int>[3, 7, 14, 30, 60, 90])..sort(),
+       );
 
   final SessionRepository _sessionRepository;
   final List<int> _milestones;
@@ -37,8 +37,8 @@ class StreakTracker {
     int lookBackDays = 30,
   }) async {
     final DateTime today = _startOfDay(anchor ?? DateTime.now());
-    final List<RoutineSession> sessions =
-        await _sessionRepository.getAllSessions();
+    final List<RoutineSession> sessions = await _sessionRepository
+        .getAllSessions();
     if (sessions.isEmpty) {
       return const StreakSnapshot(
         currentStreak: 0,
@@ -68,9 +68,7 @@ class StreakTracker {
     final List<DateTime> recentActiveDays = List<DateTime>.generate(
       lookBackDays,
       (index) => today.subtract(Duration(days: index)),
-    )
-        .where(activeDays.contains)
-        .toList();
+    ).where(activeDays.contains).toList();
 
     return StreakSnapshot(
       currentStreak: current,
@@ -82,22 +80,25 @@ class StreakTracker {
   }
 
   Future<int> currentStreak({DateTime? anchor}) async {
-    final StreakSnapshot snapshot =
-        await buildSnapshot(anchor: anchor, lookBackDays: 0);
+    final StreakSnapshot snapshot = await buildSnapshot(
+      anchor: anchor,
+      lookBackDays: 0,
+    );
     return snapshot.currentStreak;
   }
 
   Future<int> longestStreak() async {
-    final List<RoutineSession> sessions =
-        await _sessionRepository.getAllSessions();
+    final List<RoutineSession> sessions = await _sessionRepository
+        .getAllSessions();
     if (sessions.isEmpty) {
       return 0;
     }
-    final List<DateTime> days = sessions
-        .map((session) => _startOfDay(session.completedAt))
-        .toSet()
-        .toList()
-      ..sort();
+    final List<DateTime> days =
+        sessions
+            .map((session) => _startOfDay(session.completedAt))
+            .toSet()
+            .toList()
+          ..sort();
     return _calculateLongestStreak(days);
   }
 

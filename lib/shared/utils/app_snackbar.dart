@@ -12,8 +12,13 @@ class AppSnackBar {
     String? actionLabel,
     VoidCallback? onAction,
   }) {
-    _show(context, message, AppSnackBarTone.success,
-        actionLabel: actionLabel, onAction: onAction);
+    _show(
+      context,
+      message,
+      AppSnackBarTone.success,
+      actionLabel: actionLabel,
+      onAction: onAction,
+    );
   }
 
   static void showError(
@@ -22,8 +27,13 @@ class AppSnackBar {
     String? actionLabel,
     VoidCallback? onAction,
   }) {
-    _show(context, message, AppSnackBarTone.error,
-        actionLabel: actionLabel, onAction: onAction);
+    _show(
+      context,
+      message,
+      AppSnackBarTone.error,
+      actionLabel: actionLabel,
+      onAction: onAction,
+    );
   }
 
   static void showWarning(
@@ -32,8 +42,13 @@ class AppSnackBar {
     String? actionLabel,
     VoidCallback? onAction,
   }) {
-    _show(context, message, AppSnackBarTone.warning,
-        actionLabel: actionLabel, onAction: onAction);
+    _show(
+      context,
+      message,
+      AppSnackBarTone.warning,
+      actionLabel: actionLabel,
+      onAction: onAction,
+    );
   }
 
   static void showInfo(
@@ -42,12 +57,20 @@ class AppSnackBar {
     String? actionLabel,
     VoidCallback? onAction,
   }) {
-    _show(context, message, AppSnackBarTone.info,
-        actionLabel: actionLabel, onAction: onAction);
+    _show(
+      context,
+      message,
+      AppSnackBarTone.info,
+      actionLabel: actionLabel,
+      onAction: onAction,
+    );
   }
 
-  static SnackBar successSnack(String message,
-      {String? actionLabel, VoidCallback? onAction}) {
+  static SnackBar successSnack(
+    String message, {
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
     return _buildSnackBar(
       message: message,
       tone: AppSnackBarTone.success,
@@ -56,8 +79,11 @@ class AppSnackBar {
     );
   }
 
-  static SnackBar errorSnack(String message,
-      {String? actionLabel, VoidCallback? onAction}) {
+  static SnackBar errorSnack(
+    String message, {
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
     return _buildSnackBar(
       message: message,
       tone: AppSnackBarTone.error,
@@ -66,8 +92,11 @@ class AppSnackBar {
     );
   }
 
-  static SnackBar warningSnack(String message,
-      {String? actionLabel, VoidCallback? onAction}) {
+  static SnackBar warningSnack(
+    String message, {
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
     return _buildSnackBar(
       message: message,
       tone: AppSnackBarTone.warning,
@@ -76,8 +105,11 @@ class AppSnackBar {
     );
   }
 
-  static SnackBar infoSnack(String message,
-      {String? actionLabel, VoidCallback? onAction}) {
+  static SnackBar infoSnack(
+    String message, {
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
     return _buildSnackBar(
       message: message,
       tone: AppSnackBarTone.info,

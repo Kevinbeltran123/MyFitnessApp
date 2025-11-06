@@ -22,9 +22,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ajustes'),
-      ),
+      appBar: AppBar(title: const Text('Ajustes')),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -255,10 +253,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showComingSoon(String feature) {
-    AppSnackBar.showInfo(
-      context,
-      '$feature estará disponible próximamente',
-    );
+    AppSnackBar.showInfo(context, '$feature estará disponible próximamente');
   }
 
   void _confirmClearCache() {
@@ -304,9 +299,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Navigator.pop(context);
               _showComingSoon('Eliminar datos');
             },
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('Eliminar Todo'),
           ),
         ],

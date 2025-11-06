@@ -9,13 +9,15 @@ import 'package:my_fitness_tracker/domain/metrics/metrics_entities.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_entities.dart';
 import 'package:my_fitness_tracker/domain/routines/routine_repository.dart';
 import 'package:my_fitness_tracker/presentation/analytics/analytics_providers.dart';
-import 'package:my_fitness_tracker/presentation/home/home_providers.dart'
-    hide metricsRepositoryProvider;
-import 'package:my_fitness_tracker/presentation/metrics/metrics_controller.dart';
+import 'package:my_fitness_tracker/presentation/home/home_providers.dart';
+import 'package:my_fitness_tracker/presentation/metrics/metrics_controller.dart'
+    as metrics;
 import 'package:my_fitness_tracker/presentation/workouts/workout_history_controller.dart';
 
 final streakMilestoneProvider = StateProvider<int?>((ref) => null);
-final seenAchievementsProvider = StateProvider<Set<String>>((ref) => <String>{});
+final seenAchievementsProvider = StateProvider<Set<String>>(
+  (ref) => <String>{},
+);
 final latestUnlockedAchievementProvider = StateProvider<String?>((ref) => null);
 
 /// Provides a configured [StreakTracker] instance.
@@ -25,15 +27,21 @@ final streakTrackerProvider = FutureProvider<StreakTracker>((ref) async {
 });
 
 /// Provides the [AchievementService] with all dependencies wired up.
-final achievementServiceProvider = FutureProvider<AchievementService>((ref) async {
-  final RoutineRepository routineRepository =
-      await ref.watch(routineRepositoryProvider.future);
-  final SessionRepository sessionRepository =
-      await ref.watch(sessionRepositoryProvider.future);
-  final MetricsRepository metricsRepository =
-      await ref.watch(metricsRepositoryProvider.future);
-  final StreakTracker streakTracker =
-      await ref.watch(streakTrackerProvider.future);
+final achievementServiceProvider = FutureProvider<AchievementService>((
+  ref,
+) async {
+  final RoutineRepository routineRepository = await ref.watch(
+    routineRepositoryProvider.future,
+  );
+  final SessionRepository sessionRepository = await ref.watch(
+    sessionRepositoryProvider.future,
+  );
+  final MetricsRepository metricsRepository = await ref.watch(
+    metrics.metricsRepositoryProvider.future,
+  );
+  final StreakTracker streakTracker = await ref.watch(
+    streakTrackerProvider.future,
+  );
   final personalRecordService = PersonalRecordService(
     sessionRepository: sessionRepository,
     calculator: ref.watch(oneRepMaxCalculatorProvider),
@@ -50,19 +58,24 @@ final achievementServiceProvider = FutureProvider<AchievementService>((ref) asyn
 
 /// Stream of achievements. Recomputes whenever routines, sessions or metrics change.
 final achievementsProvider = StreamProvider<List<Achievement>>((ref) async* {
-  final RoutineRepository routineRepository =
-      await ref.watch(routineRepositoryProvider.future);
-  final SessionRepository sessionRepository =
-      await ref.watch(sessionRepositoryProvider.future);
-  final MetricsRepository metricsRepository =
-      await ref.watch(metricsRepositoryProvider.future);
-  final AchievementService service =
-      await ref.watch(achievementServiceProvider.future);
+  final RoutineRepository routineRepository = await ref.watch(
+    routineRepositoryProvider.future,
+  );
+  final SessionRepository sessionRepository = await ref.watch(
+    sessionRepositoryProvider.future,
+  );
+  final MetricsRepository metricsRepository = await ref.watch(
+    metrics.metricsRepositoryProvider.future,
+  );
+  final AchievementService service = await ref.watch(
+    achievementServiceProvider.future,
+  );
 
-  final Stream<List<Routine>> routines$ =
-      routineRepository.watchAll(includeArchived: true);
-  final Stream<List<RoutineSession>> sessions$ =
-      sessionRepository.watchSessions();
+  final Stream<List<Routine>> routines$ = routineRepository.watchAll(
+    includeArchived: true,
+  );
+  final Stream<List<RoutineSession>> sessions$ = sessionRepository
+      .watchSessions();
   final Stream<List<BodyMetric>> metrics$ = metricsRepository.watchMetrics();
 
   final controller = StreamController<List<Achievement>>();

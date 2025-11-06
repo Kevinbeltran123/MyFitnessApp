@@ -124,7 +124,8 @@ class StreakCounter extends StatelessWidget {
       return _DayStatus(
         label: label,
         active: isActive,
-        isToday: normalized.year == today.year &&
+        isToday:
+            normalized.year == today.year &&
             normalized.month == today.month &&
             normalized.day == today.day,
       );
