@@ -4,10 +4,13 @@
 // expected to provide concrete scheduling/notification behaviour while the
 // presentation layer consumes the immutable snapshots emitted here.
 
+import 'package:flutter/foundation.dart';
+
 // Status of a rest timer lifecycle.
 enum RestTimerStatus { idle, running, paused, completed, cancelled }
 
 // Configuration parameters that define how a rest timer should behave.
+@immutable
 class RestTimerConfig {
   const RestTimerConfig({
     required this.target,
@@ -47,10 +50,32 @@ class RestTimerConfig {
       autoStartNextSet: autoStartNextSet ?? this.autoStartNextSet,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other.runtimeType != runtimeType) return false;
+    return other is RestTimerConfig &&
+        other.target == target &&
+        other.warningThreshold == warningThreshold &&
+        other.enableVibration == enableVibration &&
+        other.enableNotification == enableNotification &&
+        other.autoStartNextSet == autoStartNextSet;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        target,
+        warningThreshold,
+        enableVibration,
+        enableNotification,
+        autoStartNextSet,
+      );
 }
 
 // Metadata required to uniquely identify a timer request in the context of a
 // routine session.
+@immutable
 class RestTimerRequest {
   const RestTimerRequest({
     required this.routineId,
@@ -81,6 +106,22 @@ class RestTimerRequest {
       sessionId: sessionId ?? this.sessionId,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other.runtimeType != runtimeType) return false;
+    return other is RestTimerRequest &&
+        other.routineId == routineId &&
+        other.exerciseId == exerciseId &&
+        other.setIndex == setIndex &&
+        other.sessionId == sessionId &&
+        other.config == config;
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(routineId, exerciseId, setIndex, sessionId, config);
 }
 
 // Snapshot emitted by the timer engine describing the current progress.
