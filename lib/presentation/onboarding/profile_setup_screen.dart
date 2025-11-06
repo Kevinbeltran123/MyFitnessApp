@@ -126,7 +126,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
       await repository.upsertMetric(initialMetric);
 
-      await ref.read(onboardingPersistenceProvider).markProfileSetupComplete();
+      await ref
+          .read(onboardingPersistenceProvider)
+          .markProfileSetupComplete();
       ref.invalidate(metabolicProfileProvider);
       ref.invalidate(bodyMetricsProvider);
       ref.invalidate(filteredMetricsProvider);

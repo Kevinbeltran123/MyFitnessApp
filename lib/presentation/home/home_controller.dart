@@ -42,14 +42,15 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboardState> {
       currentStreakProvider.future,
     );
 
-    final List<Routine> routines = await routineRepository
-        .watchAll(includeArchived: false)
-        .first;
-    final List<RoutineSession> sessions = await sessionRepository
-        .getAllSessions();
-    final List<BodyMetric> metricList = await metricsRepository
-        .watchMetrics()
-        .first;
+    final List<Routine> routines = List<Routine>.from(
+      await routineRepository.watchAll(includeArchived: false).first,
+    );
+    final List<RoutineSession> sessions = List<RoutineSession>.from(
+      await sessionRepository.getAllSessions(),
+    );
+    final List<BodyMetric> metricList = List<BodyMetric>.from(
+      await metricsRepository.watchMetrics().first,
+    );
     final BodyMetric? latestMetric = metricList.isNotEmpty
         ? metricList.first
         : null;

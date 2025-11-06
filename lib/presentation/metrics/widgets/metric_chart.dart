@@ -64,8 +64,8 @@ class MetricChart extends StatelessWidget {
         .toList(growable: false);
 
     return Container(
-      height: 240,
-      padding: const EdgeInsets.all(16),
+      constraints: const BoxConstraints(minHeight: 240),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
@@ -105,9 +105,9 @@ class MetricChart extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           SizedBox(
-            height: 160,
+            height: 180,
             child: LineChart(
               _buildChartData(
                 dataPoints: dataPoints,
@@ -121,7 +121,7 @@ class MetricChart extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

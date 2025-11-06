@@ -24,13 +24,19 @@ class StreakTracker {
   StreakTracker({
     required SessionRepository sessionRepository,
     List<int>? milestoneThresholds,
-  }) : _sessionRepository = sessionRepository,
-       _milestones = List<int>.unmodifiable(
-         (milestoneThresholds ?? const <int>[3, 7, 14, 30, 60, 90])..sort(),
-       );
+  })  : _sessionRepository = sessionRepository,
+        _milestones = _prepareMilestones(milestoneThresholds);
 
   final SessionRepository _sessionRepository;
   final List<int> _milestones;
+
+  static List<int> _prepareMilestones(List<int>? milestoneThresholds) {
+    final List<int> thresholds = List<int>.from(
+      milestoneThresholds ?? const <int>[3, 7, 14, 30, 60, 90],
+    );
+    thresholds.sort();
+    return List<int>.unmodifiable(thresholds);
+  }
 
   Future<StreakSnapshot> buildSnapshot({
     DateTime? anchor,
