@@ -14,25 +14,28 @@ class HomeQuickStats extends StatelessWidget {
     }
     return LayoutBuilder(
       builder: (context, constraints) {
-        final bool isWide = constraints.maxWidth > 540;
-        final List<Widget> children = stats
+        final bool isWide = constraints.hasBoundedWidth &&
+            constraints.maxWidth >= 600;
+        final List<Widget> cards = stats
             .map((stat) => _QuickStatCard(stat: stat))
             .toList(growable: false);
+
         if (isWide) {
           return Row(
             children: [
-              for (int i = 0; i < children.length; i += 1) ...[
-                Expanded(child: children[i]),
-                if (i != children.length - 1) const SizedBox(width: 12),
+              for (int i = 0; i < cards.length; i += 1) ...[
+                Expanded(child: cards[i]),
+                if (i != cards.length - 1) const SizedBox(width: 12),
               ],
             ],
           );
         }
+
         return Column(
           children: [
-            for (int i = 0; i < children.length; i += 1) ...[
-              children[i],
-              if (i != children.length - 1) const SizedBox(height: 12),
+            for (int i = 0; i < cards.length; i += 1) ...[
+              cards[i],
+              if (i != cards.length - 1) const SizedBox(height: 12),
             ],
           ],
         );

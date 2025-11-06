@@ -41,7 +41,8 @@ class QuickActionsGrid extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final bool isWide = constraints.maxWidth > 560;
+        final bool isWide = constraints.hasBoundedWidth &&
+            constraints.maxWidth >= 620;
         if (isWide) {
           return Row(
             children: [

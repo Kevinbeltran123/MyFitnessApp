@@ -57,8 +57,9 @@ class HomeDashboardNotifier extends AsyncNotifier<HomeDashboardState> {
     final AsyncValue<List<Achievement>> achievementsAsync = ref.watch(
       achievementsProvider,
     );
-    final List<Achievement> achievements =
-        achievementsAsync.asData?.value ?? const <Achievement>[];
+    final List<Achievement> achievements = List<Achievement>.from(
+      achievementsAsync.valueOrNull ?? const <Achievement>[],
+    );
 
     final double weeklyVolume = await analyticsService.calculateWeeklyVolume(
       now,
